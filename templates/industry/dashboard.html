@@ -1,0 +1,287 @@
+{% extends 'industry_base.html' %}
+{% set active = 'dashboard' %}
+{% set title = 'Industry Dashboard - BlueCarbon' %}
+{% set header = 'Dashboard' %}
+{% set subheader = 'Welcome back, ' + company_name %}
+
+{% block content %}
+<!-- Top Overview Cards -->
+<div class="stats-grid">
+    <div class="stat-card" style="border-top: 4px solid var(--primary);">
+        <div class="stat-value" style="color: var(--primary);">{{ "{:,}".format(stats.credits_purchased) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-leaf"></i>
+            Credits Purchased (tCO₂e)
+        </div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> +12% from last month
+        </div>
+    </div>
+    
+    <div class="stat-card" style="border-top: 4px solid var(--success);">
+        <div class="stat-value" style="color: var(--success);">{{ "{:,}".format(stats.active_credits) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-check-circle"></i>
+            Active Credits (Available for Offsetting)
+        </div>
+        <div class="stat-change positive">
+            Ready to retire for offsetting
+        </div>
+    </div>
+    
+    <div class="stat-card" style="border-top: 4px solid var(--warning);">
+        <div class="stat-value" style="color: var(--warning);">₹{{ "{:,}".format(stats.total_revenue_contributed) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-rupee-sign"></i>
+            Total Revenue Contributed
+        </div>
+        <div class="stat-change">
+            Supporting {{ recent_purchases|length }}+ projects
+        </div>
+    </div>
+    
+    <div class="stat-card" style="border-top: 4px solid var(--info);">
+        <div class="stat-value" style="color: var(--info);">{{ stats.offset_percentage }}%</div>
+        <div class="stat-label">
+            <i class="fas fa-calculator"></i>
+            Carbon Footprint Offset
+        </div>
+        <div class="stat-change {{ 'positive' if stats.offset_percentage >= 50 else 'negative' }}">
+            {{ stats.credits_retired }}/{{ stats.annual_emissions }} tCO₂e
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Grid -->
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Left Column -->
+    <div>
+        <!-- Recent Purchases -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3><i class="fas fa-history"></i> Recent Purchases</h3>
+            </div>
+            <div class="card-body">
+                {% if recent_purchases %}
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Project</th>
+                                <th>Credits</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for purchase in recent_purchases %}
+                            <tr>
+                                <td>
+                                    <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                                        {{ purchase.transaction_id }}
+                                    </code>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 500;">{{ purchase.project_name }}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">{{ purchase.project_id }}</div>
+                                </td>
+                                <td>
+                                    <span style="font-weight: 600; color: var(--success);">{{ purchase.credits_purchased }}</span>
+                                    <span style="font-size: 12px; color: var(--text-muted);"> tCO₂e</span>
+                                </td>
+                                <td>
+                                    <div style="font-weight: 600;">₹{{ "{:,}".format(purchase.total_paid) }}</div>
+                                    <div style="font-size: 12px; color: var(--text-muted);">@ ₹{{ purchase.price_per_credit }}/credit</div>
+                                </td>
+                                <td>{{ purchase.purchase_date.strftime('%d %b %Y') }}</td>
+                                <td>
+                                    <span class="badge {{ 'badge-success' if purchase.status == 'Active' else 'badge-warning' if purchase.status == 'Retired' else 'badge-info' }}">
+                                        {{ purchase.status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="/industry/credits" class="btn btn-outline">
+                        <i class="fas fa-eye"></i> View All Credits
+                    </a>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                    <i class="fas fa-leaf" style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+                    <p>No purchases yet. Start by buying your first carbon credits!</p>
+                    <a href="/industry/marketplace" class="btn btn-primary">
+                        <i class="fas fa-shopping-cart"></i> Browse Marketplace
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Carbon Footprint Overview -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-pie"></i> Carbon Footprint Overview</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: center;">
+                    <!-- Progress Circle (Mock visualization) -->
+                    <div style="text-align: center;">
+                        <div style="position: relative; display: inline-block;">
+                            <div style="width: 150px; height: 150px; border-radius: 50%; background: conic-gradient(var(--success) {{ stats.offset_percentage * 3.6 }}deg, #e2e8f0 0deg); display: flex; align-items: center; justify-content: center;">
+                                <div style="width: 120px; height: 120px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                                    <div style="font-size: 2rem; font-weight: bold; color: var(--success);">{{ stats.offset_percentage }}%</div>
+                                    <div style="font-size: 0.75rem; color: var(--text-muted);">Offset</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Stats -->
+                    <div>
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Annual Emissions</span>
+                                <strong>{{ "{:,}".format(stats.annual_emissions) }} tCO₂e</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                <span>Credits Retired</span>
+                                <strong style="color: var(--success);">{{ "{:,}".format(stats.credits_retired) }} tCO₂e</strong>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                                <span>Remaining Emissions</span>
+                                <strong style="color: var(--danger);">{{ "{:,}".format(stats.annual_emissions - stats.credits_retired) }} tCO₂e</strong>
+                            </div>
+                        </div>
+                        
+                        <a href="/industry/footprint" class="btn btn-primary" style="width: 100%;">
+                            <i class="fas fa-calculator"></i>
+                            View Detailed Tracker
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div>
+        <!-- Quick Actions -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3><i class="fas fa-bolt"></i> Quick Actions</h3>
+            </div>
+            <div class="card-body">
+                <div style="display: grid; gap: 1rem;">
+                    <a href="/industry/marketplace" class="btn btn-primary" style="justify-content: center;">
+                        <i class="fas fa-shopping-cart"></i>
+                        Buy Carbon Credits
+                    </a>
+                    <a href="/industry/credits" class="btn btn-outline" style="justify-content: center;">
+                        <i class="fas fa-leaf"></i>
+                        Retire Credits
+                    </a>
+                    <a href="/industry/reports" class="btn btn-outline" style="justify-content: center;">
+                        <i class="fas fa-download"></i>
+                        Download Reports
+                    </a>
+                    <a href="/industry/profile" class="btn btn-outline" style="justify-content: center;">
+                        <i class="fas fa-cog"></i>
+                        Update Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sustainability Goals -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3><i class="fas fa-target"></i> Sustainability Goals</h3>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.875rem;">Carbon Neutral by 2025</span>
+                        <span style="font-size: 0.875rem; font-weight: 600;">{{ stats.offset_percentage }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ stats.offset_percentage }}%;"></div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.875rem;">Net Zero by 2030</span>
+                        <span style="font-size: 0.875rem; font-weight: 600;">{{ (stats.offset_percentage * 0.8)|round(1) }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ (stats.offset_percentage * 0.8) }}%; background: var(--warning);"></div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid var(--success);">
+                    <div style="font-size: 0.875rem; color: #166534; margin-bottom: 0.5rem;">
+                        <i class="fas fa-info-circle"></i> Goal Status
+                    </div>
+                    <div style="font-weight: 600; color: #166534;">
+                        {% if stats.offset_percentage >= 80 %}
+                        On track for carbon neutrality!
+                        {% elif stats.offset_percentage >= 50 %}
+                        Good progress towards goals
+                        {% else %}
+                        More credits needed to reach targets
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Insights -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-chart-line"></i> Market Insights</h3>
+            </div>
+            <div class="card-body">
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.875rem;">Average Credit Price</span>
+                        <span style="font-weight: 600; color: var(--success);">₹245</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        <i class="fas fa-arrow-up" style="color: var(--success);"></i> +5.2% from last month
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                        <span style="font-size: 0.875rem;">Available Credits</span>
+                        <span style="font-weight: 600;">2,700 tCO₂e</span>
+                    </div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">
+                        Across 3 verified projects
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="/industry/marketplace" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-store"></i>
+                        Browse Marketplace
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add any dashboard-specific JavaScript here
+    console.log('Industry dashboard loaded');
+});
+</script>
+{% endblock %}

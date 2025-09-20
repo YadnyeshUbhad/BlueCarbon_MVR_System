@@ -1,0 +1,429 @@
+{% extends 'industry_base.html' %}
+{% set active = 'footprint' %}
+{% set title = 'Carbon Footprint Tracker - BlueCarbon' %}
+{% set header = 'Carbon Footprint Tracker' %}
+{% set subheader = 'Track your emissions reduction and offsetting progress' %}
+
+{% block header_actions %}
+<div style="display: flex; gap: 0.75rem; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: {{ '#f0fdf4' if offset_data.offset_percentage >= 50 else '#fffbeb' }}; border-radius: 8px; border: 1px solid {{ '#dcfce7' if offset_data.offset_percentage >= 50 else '#fde68a' }};">
+        <i class="fas fa-{{ 'check-circle' if offset_data.offset_percentage >= 50 else 'exclamation-triangle' }}" style="color: {{ 'var(--success)' if offset_data.offset_percentage >= 50 else 'var(--warning)' }};"></i>
+        <span style="font-size: 0.875rem; color: {{ '#166534' if offset_data.offset_percentage >= 50 else '#92400e' }};">{{ offset_data.offset_percentage }}% Offset</span>
+    </div>
+    <button class="btn btn-primary" onclick="updateEmissions()">
+        <i class="fas fa-calculator"></i>
+        Update Emissions
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Main Progress Section -->
+<div class="card" style="margin-bottom: 2rem; background: linear-gradient(135deg, #f0f9ff, #e0f2fe);">
+    <div class="card-body" style="padding: 3rem;">
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 3rem; align-items: center;">
+            <!-- Progress Circle -->
+            <div style="text-align: center;">
+                <div style="position: relative; display: inline-block;">
+                    <svg width="200" height="200" style="transform: rotate(-90deg);">
+                        <!-- Background circle -->
+                        <circle cx="100" cy="100" r="80" stroke="#e2e8f0" stroke-width="20" fill="none"></circle>
+                        <!-- Progress circle -->
+                        <circle cx="100" cy="100" r="80" 
+                                stroke="{{ 'var(--success)' if offset_data.offset_percentage >= 80 else 'var(--warning)' if offset_data.offset_percentage >= 50 else 'var(--danger)' }}" 
+                                stroke-width="20" 
+                                fill="none" 
+                                stroke-dasharray="{{ 502.4 }}"
+                                stroke-dashoffset="{{ 502.4 - (502.4 * offset_data.offset_percentage / 100) }}"
+                                stroke-linecap="round"
+                                style="transition: stroke-dashoffset 1s ease-in-out;">
+                        </circle>
+                    </svg>
+                    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center;">
+                        <div style="font-size: 3rem; font-weight: bold; color: var(--dark);">{{ offset_data.offset_percentage }}%</div>
+                        <div style="font-size: 1rem; color: var(--text-muted);">Carbon Offset</div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 2rem;">
+                    <div style="font-size: 1.25rem; font-weight: 600; color: var(--dark); margin-bottom: 0.5rem;">
+                        {{ "{:,}".format(offset_data.credits_retired) }} / {{ "{:,}".format(offset_data.annual_emissions) }} tCO₂e
+                    </div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">Credits Retired / Annual Emissions</div>
+                </div>
+            </div>
+            
+            <!-- Status and Goals -->
+            <div>
+                <h2 style="margin-bottom: 1.5rem; color: var(--dark);">Your Offset Progress</h2>
+                
+                <div style="margin-bottom: 2rem;">
+                    {% if offset_data.offset_percentage >= 100 %}
+                    <div style="padding: 1.5rem; background: #f0fdf4; border-radius: 12px; border-left: 4px solid var(--success);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                            <i class="fas fa-trophy" style="font-size: 2rem; color: var(--success);"></i>
+                            <div>
+                                <h3 style="margin: 0; color: #166534;">🎉 Carbon Neutral Achieved!</h3>
+                                <p style="margin: 0; color: #166534;">You've offset 100% of your annual emissions!</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif offset_data.offset_percentage >= 80 %}
+                    <div style="padding: 1.5rem; background: #f0fdf4; border-radius: 12px; border-left: 4px solid var(--success);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                            <i class="fas fa-star" style="font-size: 2rem; color: var(--success);"></i>
+                            <div>
+                                <h3 style="margin: 0; color: #166534;">Excellent Progress!</h3>
+                                <p style="margin: 0; color: #166534;">You're on track for carbon neutrality!</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% elif offset_data.offset_percentage >= 50 %}
+                    <div style="padding: 1.5rem; background: #fffbeb; border-radius: 12px; border-left: 4px solid var(--warning);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                            <i class="fas fa-chart-line" style="font-size: 2rem; color: var(--warning);"></i>
+                            <div>
+                                <h3 style="margin: 0; color: #92400e;">Good Progress!</h3>
+                                <p style="margin: 0; color: #92400e;">Halfway to your carbon neutrality goal!</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div style="padding: 1.5rem; background: #fef2f2; border-radius: 12px; border-left: 4px solid var(--danger);">
+                        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                            <i class="fas fa-exclamation-circle" style="font-size: 2rem; color: var(--danger);"></i>
+                            <div>
+                                <h3 style="margin: 0; color: #991b1b;">More Action Needed</h3>
+                                <p style="margin: 0; color: #991b1b;">Consider purchasing more carbon credits to increase your offset.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Quick Stats -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px; border: 1px solid var(--border);">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--danger);">{{ "{:,}".format(offset_data.remaining_emissions) }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Remaining Emissions (tCO₂e)</div>
+                    </div>
+                    <div style="text-align: center; padding: 1rem; background: white; border-radius: 8px; border: 1px solid var(--border);">
+                        <div style="font-size: 1.5rem; font-weight: bold; color: var(--success);">{{ "{:,}".format(offset_data.credits_retired) }}</div>
+                        <div style="font-size: 0.875rem; color: var(--text-muted);">Credits Retired (tCO₂e)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Breakdown -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Emissions Breakdown -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-industry"></i> Annual Emissions Breakdown</h3>
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-weight: 600;">Total Annual Emissions</span>
+                    <span style="font-size: 1.5rem; font-weight: bold; color: var(--danger);">{{ "{:,}".format(offset_data.annual_emissions) }} tCO₂e</span>
+                </div>
+                
+                <!-- Mock breakdown by source -->
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Manufacturing Operations</span>
+                        <span>{{ "{:,}".format((offset_data.annual_emissions * 0.6)|round|int) }} tCO₂e (60%)</span>
+                    </div>
+                    <div class="progress" style="margin-bottom: 0.75rem;">
+                        <div class="progress-bar" style="width: 60%; background: #dc2626;"></div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Energy Consumption</span>
+                        <span>{{ "{:,}".format((offset_data.annual_emissions * 0.25)|round|int) }} tCO₂e (25%)</span>
+                    </div>
+                    <div class="progress" style="margin-bottom: 0.75rem;">
+                        <div class="progress-bar" style="width: 25%; background: #ea580c;"></div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                        <span>Transportation</span>
+                        <span>{{ "{:,}".format((offset_data.annual_emissions * 0.15)|round|int) }} tCO₂e (15%)</span>
+                    </div>
+                    <div class="progress" style="margin-bottom: 0.75rem;">
+                        <div class="progress-bar" style="width: 15%; background: #f59e0b;"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%;" onclick="updateEmissions()">
+                <i class="fas fa-edit"></i>
+                Update Emissions Data
+            </button>
+        </div>
+    </div>
+    
+    <!-- Offset Progress -->
+    <div class="card">
+        <div class="card-header">
+            <h3><i class="fas fa-leaf"></i> Offset Progress</h3>
+        </div>
+        <div class="card-body">
+            <div style="margin-bottom: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <span style="font-weight: 600;">Credits Retired</span>
+                    <span style="font-size: 1.5rem; font-weight: bold; color: var(--success);">{{ "{:,}".format(offset_data.credits_retired) }} tCO₂e</span>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Overall Progress</div>
+                    <div class="progress" style="height: 12px;">
+                        <div class="progress-bar" style="width: {{ offset_data.offset_percentage }}%; background: {{ 'var(--success)' if offset_data.offset_percentage >= 50 else 'var(--warning)' }};"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-muted);">
+                        <span>0%</span>
+                        <span>{{ offset_data.offset_percentage }}%</span>
+                        <span>100%</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 1rem; font-size: 1rem;">Next Steps to Carbon Neutrality</h4>
+                {% if offset_data.remaining_emissions > 0 %}
+                <div style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--info);">
+                    <div style="margin-bottom: 0.5rem;">
+                        <strong>Credits needed:</strong> {{ "{:,}".format(offset_data.remaining_emissions) }} tCO₂e
+                    </div>
+                    <div style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem;">
+                        Estimated cost: ₹{{ "{:,}".format((offset_data.remaining_emissions * 250)|round|int) }} - ₹{{ "{:,}".format((offset_data.remaining_emissions * 300)|round|int) }}
+                    </div>
+                    <a href="/industry/marketplace" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-shopping-cart"></i>
+                        Shop Credits Now
+                    </a>
+                </div>
+                {% else %}
+                <div style="text-align: center; padding: 1.5rem; background: #f0fdf4; border-radius: 8px; border: 1px solid #dcfce7;">
+                    <i class="fas fa-check-circle" style="font-size: 2rem; color: var(--success); margin-bottom: 0.5rem;"></i>
+                    <div style="font-weight: 600; color: #166534;">Carbon Neutral Status Achieved!</div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sustainability Goals Timeline -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h3><i class="fas fa-target"></i> Sustainability Goals Timeline</h3>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem;">
+            <!-- 2024 -->
+            <div style="text-align: center; position: relative;">
+                <div style="width: 60px; height: 60px; margin: 0 auto 1rem; background: {{ 'var(--success)' if offset_data.offset_percentage >= 25 else 'var(--border)' }}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.25rem;">
+                    {% if offset_data.offset_percentage >= 25 %}
+                    <i class="fas fa-check"></i>
+                    {% else %}
+                    25%
+                    {% endif %}
+                </div>
+                <h4 style="margin-bottom: 0.5rem;">2024 Target</h4>
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">25% Emission Reduction</p>
+                <span class="badge {{ 'badge-success' if offset_data.offset_percentage >= 25 else 'badge-warning' }}">
+                    {{ 'Achieved' if offset_data.offset_percentage >= 25 else 'In Progress' }}
+                </span>
+            </div>
+            
+            <!-- 2025 -->
+            <div style="text-align: center;">
+                <div style="width: 60px; height: 60px; margin: 0 auto 1rem; background: {{ 'var(--success)' if offset_data.offset_percentage >= 50 else 'var(--warning)' if offset_data.offset_percentage >= 25 else 'var(--border)' }}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.25rem;">
+                    {% if offset_data.offset_percentage >= 50 %}
+                    <i class="fas fa-check"></i>
+                    {% else %}
+                    50%
+                    {% endif %}
+                </div>
+                <h4 style="margin-bottom: 0.5rem;">2025 Target</h4>
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">50% Carbon Neutral</p>
+                <span class="badge {{ 'badge-success' if offset_data.offset_percentage >= 50 else 'badge-warning' if offset_data.offset_percentage >= 25 else 'badge-info' }}">
+                    {{ 'Achieved' if offset_data.offset_percentage >= 50 else 'In Progress' if offset_data.offset_percentage >= 25 else 'Upcoming' }}
+                </span>
+            </div>
+            
+            <!-- 2027 -->
+            <div style="text-align: center;">
+                <div style="width: 60px; height: 60px; margin: 0 auto 1rem; background: {{ 'var(--success)' if offset_data.offset_percentage >= 80 else 'var(--warning)' if offset_data.offset_percentage >= 50 else 'var(--border)' }}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.25rem;">
+                    {% if offset_data.offset_percentage >= 80 %}
+                    <i class="fas fa-check"></i>
+                    {% else %}
+                    80%
+                    {% endif %}
+                </div>
+                <h4 style="margin-bottom: 0.5rem;">2027 Target</h4>
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">80% Carbon Neutral</p>
+                <span class="badge {{ 'badge-success' if offset_data.offset_percentage >= 80 else 'badge-warning' if offset_data.offset_percentage >= 50 else 'badge-info' }}">
+                    {{ 'Achieved' if offset_data.offset_percentage >= 80 else 'In Progress' if offset_data.offset_percentage >= 50 else 'Upcoming' }}
+                </span>
+            </div>
+            
+            <!-- 2030 -->
+            <div style="text-align: center;">
+                <div style="width: 60px; height: 60px; margin: 0 auto 1rem; background: {{ 'var(--success)' if offset_data.offset_percentage >= 100 else 'var(--warning)' if offset_data.offset_percentage >= 80 else 'var(--border)' }}; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1rem;">
+                    {% if offset_data.offset_percentage >= 100 %}
+                    <i class="fas fa-trophy"></i>
+                    {% else %}
+                    NET<br>ZERO
+                    {% endif %}
+                </div>
+                <h4 style="margin-bottom: 0.5rem;">2030 Goal</h4>
+                <p style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 1rem;">Net Zero Emissions</p>
+                <span class="badge {{ 'badge-success' if offset_data.offset_percentage >= 100 else 'badge-warning' if offset_data.offset_percentage >= 80 else 'badge-info' }}">
+                    {{ 'Achieved' if offset_data.offset_percentage >= 100 else 'In Progress' if offset_data.offset_percentage >= 80 else 'Upcoming' }}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-lightbulb"></i> Recommendations</h3>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; gap: 1.5rem;">
+            {% if offset_data.offset_percentage < 30 %}
+            <div style="display: flex; gap: 1rem; padding: 1.5rem; background: #fef2f2; border-radius: 8px; border-left: 4px solid var(--danger);">
+                <i class="fas fa-exclamation-triangle" style="color: var(--danger); margin-top: 0.25rem;"></i>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">Immediate Action Required</h4>
+                    <p style="margin: 0; color: #991b1b; font-size: 0.875rem;">Your offset percentage is below 30%. Consider purchasing additional carbon credits to improve your environmental impact and meet sustainability goals.</p>
+                    <a href="/industry/marketplace" class="btn btn-primary" style="margin-top: 1rem;">
+                        Buy Carbon Credits
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div style="display: flex; gap: 1rem; padding: 1.5rem; background: #f0f9ff; border-radius: 8px; border-left: 4px solid var(--info);">
+                <i class="fas fa-chart-line" style="color: var(--info); margin-top: 0.25rem;"></i>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #1e40af;">Track Your Progress</h4>
+                    <p style="margin: 0; color: #1e40af; font-size: 0.875rem;">Regular monitoring helps you stay on track. Update your emissions data quarterly and retire credits as needed to maintain your offset goals.</p>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; padding: 1.5rem; background: #f0fdf4; border-radius: 8px; border-left: 4px solid var(--success);">
+                <i class="fas fa-leaf" style="color: var(--success); margin-top: 0.25rem;"></i>
+                <div>
+                    <h4 style="margin: 0 0 0.5rem 0; color: #166534;">Blue Carbon Benefits</h4>
+                    <p style="margin: 0; color: #166534; font-size: 0.875rem;">Blue carbon projects offer additional co-benefits including biodiversity conservation, coastal protection, and community support. Consider diversifying your carbon credit portfolio.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Emissions Modal -->
+<div id="emissionsModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-calculator"></i> Update Annual Emissions</h3>
+            <span class="close" onclick="closeEmissionsModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="emissionsForm">
+                <div class="form-group">
+                    <label class="form-label">Current Annual Emissions (tCO₂e)</label>
+                    <input type="number" id="annualEmissions" class="form-control" value="{{ offset_data.annual_emissions }}" min="0" step="0.1">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">
+                        Include all direct and indirect emissions from your operations
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 2rem;">
+                    <h4 style="margin-bottom: 1rem;">Breakdown by Source (Optional)</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Manufacturing Operations (%)</label>
+                        <input type="number" class="form-control" value="60" min="0" max="100" id="manufacturing">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Energy Consumption (%)</label>
+                        <input type="number" class="form-control" value="25" min="0" max="100" id="energy">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Transportation (%)</label>
+                        <input type="number" class="form-control" value="15" min="0" max="100" id="transportation">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeEmissionsModal()" style="flex: 1;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        <i class="fas fa-save"></i>
+                        Update Emissions
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function updateEmissions() {
+    document.getElementById('emissionsModal').style.display = 'flex';
+}
+
+function closeEmissionsModal() {
+    document.getElementById('emissionsModal').style.display = 'none';
+}
+
+document.getElementById('emissionsForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const newEmissions = parseFloat(document.getElementById('annualEmissions').value);
+    
+    if (newEmissions <= 0) {
+        showNotification('Please enter a valid emissions value', 'error');
+        return;
+    }
+    
+    // In a real implementation, this would update via API
+    showNotification('Emissions data updated successfully!', 'success');
+    closeEmissionsModal();
+    
+    // For demo, we'll just show a message
+    setTimeout(() => {
+        showNotification('Page will refresh with new calculations...', 'info');
+    }, 1000);
+});
+
+// Initialize animations
+document.addEventListener('DOMContentLoaded', function() {
+    // Animate progress bars
+    const progressBars = document.querySelectorAll('.progress-bar');
+    progressBars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+            bar.style.width = width;
+        }, 500);
+    });
+    
+    console.log('Footprint tracker loaded');
+});
+</script>
+{% endblock %}

@@ -1,0 +1,8 @@
+// Example for any tsconfig.json
+{
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    // ...other options...
+  }
+}

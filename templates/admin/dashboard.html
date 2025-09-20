@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% set active='dashboard' %}
+{% set title='NCCR Admin Dashboard - BlueCarbon' %}
+{% set header='NCCR Admin Dashboard' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Welcome Header -->
+    <div class="card" style="background: linear-gradient(135deg, #1e40af, #3b82f6); color: white; padding: 24px;">
+        <div style="display: flex; justify-content: between; align-items: center;">
+            <div>
+                <h2 style="margin: 0; font-size: 28px;">Welcome to NCCR Admin Panel</h2>
+                <p style="margin: 8px 0 0 0; opacity: 0.9;">National Committee on Climate Resilience - Monitoring & Verification System</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 14px; opacity: 0.8;">Last Updated</div>
+                <div style="font-weight: bold;">{{ now.strftime('%d %b %Y, %H:%M') if now else 'Just now' }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Statistics Cards -->
+    <div>
+        <h3 style="margin: 0 0 16px 0; color: #1f2937; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-chart-bar"></i>
+            Project Overview
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 16px;">
+            <div class="card" style="text-align: center; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-left: 4px solid #0ea5e9;">
+                <div style="font-size: 32px; font-weight: bold; color: #0ea5e9; margin-bottom: 8px;">
+                    {{ stats.projects.total }}
+                </div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">Total Projects Registered</div>
+                <div style="display: flex; justify-content: center; gap: 8px; font-size: 12px;">
+                    <span style="color: #16a34a;">{{ stats.projects.verified }} Verified</span>
+                    <span style="color: #ea580c;">{{ stats.projects.pending_verification }} Pending</span>
+                </div>
+            </div>
+            
+            <div class="card" style="text-align: center; background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 4px solid #f59e0b;">
+                <div style="font-size: 32px; font-weight: bold; color: #d97706; margin-bottom: 8px;">
+                    {{ stats.projects.pending_verification }}
+                </div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">Projects Pending Verification</div>
+                <div style="font-size: 12px; color: #92400e;">
+                    Requires immediate attention
+                </div>
+            </div>
+            
+            <div class="card" style="text-align: center; background: linear-gradient(135deg, #d1fae5, #a7f3d0); border-left: 4px solid #10b981;">
+                <div style="font-size: 32px; font-weight: bold; color: #059669; margin-bottom: 8px;">
+                    {{ "{:,}".format(stats.projects.credits_generated) }}
+                </div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">Total Credits Generated (tCO₂e)</div>
+                <div style="font-size: 12px; color: #065f46;">
+                    {{ "{:,}".format(stats.projects.credits_verified) }} Verified & Issued
+                </div>
+            </div>
+            
+            <div class="card" style="text-align: center; background: linear-gradient(135deg, #ede9fe, #ddd6fe); border-left: 4px solid #8b5cf6;">
+                <div style="font-size: 32px; font-weight: bold; color: #7c3aed; margin-bottom: 8px;">
+                    {{ "{:,}".format(stats.projects.credits_verified) }}
+                </div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">Credits Verified & Issued</div>
+                <div style="font-size: 12px; color: #5b21b6;">
+                    Ready for marketplace
+                </div>
+            </div>
+            
+            <div class="card" style="text-align: center; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-left: 4px solid #22c55e;">
+                <div style="font-size: 32px; font-weight: bold; color: #16a34a; margin-bottom: 8px;">
+                    ₹{{ "{:,}".format(stats.projects.revenue_distributed) }}
+                </div>
+                <div style="color: #6b7280; font-size: 14px; margin-bottom: 4px;">Total Revenue Distributed</div>
+                <div style="font-size: 12px; color: #15803d;">
+                    To NGOs and Communities
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NGO and Industry Statistics -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- NGO Statistics -->
+        <div>
+            <h3 style="margin: 0 0 16px 0; color: #1f2937; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-users"></i>
+                NGO Management
+            </h3>
+            <div style="display: grid; gap: 12px;">
+                <div class="card" style="display: flex; justify-content: between; align-items: center; padding: 16px;">
+                    <div>
+                        <div style="font-size: 18px; font-weight: bold; color: #1f2937;">{{ stats.ngos.total }}</div>
+                        <div style="font-size: 14px; color: #6b7280;">Total NGOs Registered</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="display: flex; gap: 8px; font-size: 12px;">
+                            <span class="badge success">{{ stats.ngos.verified }} Verified</span>
+                            <span class="badge warning">{{ stats.ngos.pending }} Pending</span>
+                            <span class="badge secondary">{{ stats.ngos.blacklisted }} Blacklisted</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                    <div class="card" style="text-align: center; padding: 12px; background: #f0fdf4;">
+                        <div style="font-size: 20px; font-weight: bold; color: #16a34a;">{{ stats.ngos.verified }}</div>
+                        <div style="font-size: 12px; color: #15803d;">Verified</div>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 12px; background: #fffbeb;">
+                        <div style="font-size: 20px; font-weight: bold; color: #d97706;">{{ stats.ngos.pending }}</div>
+                        <div style="font-size: 12px; color: #92400e;">Pending</div>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 12px; background: #fef2f2;">
+                        <div style="font-size: 20px; font-weight: bold; color: #dc2626;">{{ stats.ngos.blacklisted }}</div>
+                        <div style="font-size: 12px; color: #991b1b;">Blacklisted</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Industry Statistics -->
+        <div>
+            <h3 style="margin: 0 0 16px 0; color: #1f2937; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-industry"></i>
+                Industry Management
+            </h3>
+            <div style="display: grid; gap: 12px;">
+                <div class="card" style="display: flex; justify-content: between; align-items: center; padding: 16px;">
+                    <div>
+                        <div style="font-size: 18px; font-weight: bold; color: #1f2937;">{{ stats.industries.total }}</div>
+                        <div style="font-size: 14px; color: #6b7280;">Total Industries Registered</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 14px; font-weight: bold; color: #059669;">{{ stats.industries.verified }} Verified Buyers</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <div class="card" style="text-align: center; padding: 12px; background: #f0f9ff;">
+                        <div style="font-size: 20px; font-weight: bold; color: #0ea5e9;">{{ "{:,}".format(stats.industries.credits_purchased) }}</div>
+                        <div style="font-size: 12px; color: #0284c7;">Credits Purchased</div>
+                    </div>
+                    <div class="card" style="text-align: center; padding: 12px; background: #ecfdf5;">
+                        <div style="font-size: 20px; font-weight: bold; color: #16a34a;">₹{{ "{:,}".format(stats.industries.revenue_generated) }}</div>
+                        <div style="font-size: 12px; color: #15803d;">Revenue Generated</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions and Recent Activity -->
+    <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px;">
+        <!-- Quick Actions -->
+        <div class="card">
+            <h3 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-bolt"></i>
+                Quick Actions
+            </h3>
+            <div style="display: grid; gap: 12px;">
+                <a href="/admin/projects?status=Pending Review" class="btn" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-clock"></i>
+                    Review Pending Projects ({{ stats.projects.pending_verification }})
+                </a>
+                <a href="/admin/ngos?status=Pending" class="btn secondary" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-user-check"></i>
+                    Verify NGOs ({{ stats.ngos.pending }})
+                </a>
+                <a href="/admin/industries?status=Pending" class="btn outline" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-building"></i>
+                    Review Industries ({{ stats.industries.pending }})
+                </a>
+                <a href="/admin/revenue" class="btn primary" style="text-decoration: none; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-line"></i>
+                    Revenue Tracking
+                </a>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="card">
+            <h3 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-history"></i>
+                Recent Activities
+            </h3>
+            <div style="display: grid; gap: 12px;">
+                {% for activity in activities %}
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: {% if activity.type == 'success' %}#f0fdf4{% elif activity.type == 'warning' %}#fffbeb{% elif activity.type == 'info' %}#f0f9ff{% else %}#f9fafb{% endif %}; border-radius: 8px; border-left: 4px solid {% if activity.type == 'success' %}#10b981{% elif activity.type == 'warning' %}#f59e0b{% elif activity.type == 'info' %}#3b82f6{% else %}#6b7280{% endif %};">
+                    <div style="width: 8px; height: 8px; border-radius: 50%; background: {% if activity.type == 'success' %}#10b981{% elif activity.type == 'warning' %}#f59e0b{% elif activity.type == 'info' %}#3b82f6{% else %}#6b7280{% endif %};"></div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; margin-bottom: 2px;">{{ activity.title }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">{{ activity.time }}</div>
+                    </div>
+                    <i class="fas fa-{% if activity.type == 'success' %}check-circle{% elif activity.type == 'warning' %}exclamation-triangle{% elif activity.type == 'info' %}info-circle{% else %}clock{% endif %}" 
+                       style="color: {% if activity.type == 'success' %}#10b981{% elif activity.type == 'warning' %}#f59e0b{% elif activity.type == 'info' %}#3b82f6{% else %}#6b7280{% endif %};"></i>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="card">
+        <h3 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-server"></i>
+            System Status
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></div>
+                <div>
+                    <div style="font-weight: 500;">Blockchain Network</div>
+                    <div style="font-size: 12px; color: #6b7280;">Operational</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></div>
+                <div>
+                    <div style="font-weight: 500;">Verification System</div>
+                    <div style="font-size: 12px; color: #6b7280;">Online</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #f59e0b;"></div>
+                <div>
+                    <div style="font-weight: 500;">Satellite Data Sync</div>
+                    <div style="font-size: 12px; color: #6b7280;">Updating</div>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <div style="width: 12px; height: 12px; border-radius: 50%; background: #10b981;"></div>
+                <div>
+                    <div style="font-weight: 500;">Payment Gateway</div>
+                    <div style="font-size: 12px; color: #6b7280;">Active</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-refresh dashboard data every 30 seconds
+setInterval(function() {
+    // In a real application, you would fetch updated data here
+    console.log('Dashboard data refreshed at:', new Date().toLocaleString());
+}, 30000);
+
+// Add click analytics
+document.querySelectorAll('.btn').forEach(button => {
+    button.addEventListener('click', function() {
+        console.log('Admin action:', this.textContent.trim());
+    });
+});
+</script>
+
+{% endblock %}

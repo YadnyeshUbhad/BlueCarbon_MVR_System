@@ -1,0 +1,168 @@
+{% extends 'admin_base.html' %}
+{% set active='revenue' %}
+{% set title='Revenue Tracking - NCCR Admin' %}
+{% set header='Revenue Tracking & Analytics' %}
+
+{% block content %}
+<div class="admin-header">
+    <h2 style="margin: 0; color: #1f2937;">Revenue Tracking & Analytics</h2>
+    <div class="admin-actions">
+        <a href="/admin/export/revenue" class="btn secondary">
+            <i class="fas fa-download"></i> Export Data
+        </a>
+        <button onclick="refreshRevenueData()" class="btn primary">
+            <i class="fas fa-sync-alt"></i> Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Revenue Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--success);">₹{{ "{:,}".format(stats.total_revenue) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-chart-line"></i> Total Revenue Generated
+        </div>
+        <div class="stat-subtitle">From {{ stats.completed_transactions }} completed transactions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--warning);">₹{{ "{:,}".format(stats.pending_revenue) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-clock"></i> Pending Revenue
+        </div>
+        <div class="stat-subtitle">{{ (transactions|selectattr("status", "equalto", "Pending")|list|length) }} pending transactions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--danger);">₹{{ "{:,}".format(stats.failed_revenue) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-times-circle"></i> Failed Revenue
+        </div>
+        <div class="stat-subtitle">{{ (transactions|selectattr("status", "equalto", "Failed")|list|length) }} failed transactions</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--primary);">{{ stats.success_rate }}%</div>
+        <div class="stat-label">
+            <i class="fas fa-percentage"></i> Success Rate
+        </div>
+        <div class="stat-subtitle">{{ stats.completed_transactions }} / {{ stats.total_transactions }} transactions</div>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="card" style="margin-bottom: 20px;">
+    <form method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <i class="fas fa-search" style="color: #6b7280;"></i>
+            <input name="search" placeholder="Search project, buyer, or transaction ID" 
+                   value="{{ search }}" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; min-width: 300px;">
+        </div>
+        
+        <select name="status" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <option value="">All Status</option>
+            <option value="Completed" {{ 'selected' if status_filter == 'Completed' }}>Completed</option>
+            <option value="Pending" {{ 'selected' if status_filter == 'Pending' }}>Pending</option>
+            <option value="Processing" {{ 'selected' if status_filter == 'Processing' }}>Processing</option>
+            <option value="Failed" {{ 'selected' if status_filter == 'Failed' }}>Failed</option>
+        </select>
+        
+        <button type="submit" class="btn primary">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+        
+        <a href="/admin/revenue" class="btn outline">
+            <i class="fas fa-times"></i> Clear
+        </a>
+    </form>
+</div>
+
+<!-- Revenue Transactions Table -->
+<div class="card">
+    <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-exchange-alt"></i>
+        Transaction History
+    </h3>
+    
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Project Details</th>
+                    <th>Buyer Information</th>
+                    <th>Transaction Details</th>
+                    <th>Revenue</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>
+                        <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 12px;">
+                            {{ transaction.id }}
+                        </code>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">{{ transaction.project_name }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">{{ transaction.project_id }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">NGO: {{ transaction.ngo_name }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500; color: #1f2937;">{{ transaction.buyer_name }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">{{ transaction.buyer_id }}</div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 4px;">
+                            <span style="font-weight: 600; color: var(--primary);">{{ transaction.credits_sold }}</span>
+                            <span style="font-size: 12px; color: #6b7280;"> tCO₂e</span>
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            @ ₹{{ transaction.price_per_credit }} per credit
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: var(--success); font-size: 16px;">
+                            ₹{{ "{:,}".format(transaction.total_value) }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">
+                            {{ transaction.transaction_date.strftime('%d %b %Y') if transaction.transaction_date.__class__.__name__ == 'datetime' else transaction.transaction_date }}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            {{ transaction.transaction_date.strftime('%I:%M %p') if transaction.transaction_date.__class__.__name__ == 'datetime' else '' }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {{ 'success' if transaction.status == 'Completed' else 'warning' if transaction.status == 'Processing' else 'info' if transaction.status == 'Pending' else 'danger' }}">
+                            {{ transaction.status }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if transactions|length == 0 %}
+    <div style="text-align: center; padding: 40px; color: #6b7280;">
+        <i class="fas fa-chart-line" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+        <p>No transactions found matching your criteria.</p>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function refreshRevenueData() {
+    window.location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+    // You can add AJAX calls here to update specific parts of the page
+    // For now, we'll just show a subtle indicator that data is being refreshed
+    console.log('Revenue data refreshed');
+}, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% set active='analytics' %}
+{% set title='Analytics - BlueCarbon' %}
+{% block content %}
+
+<div style="display: grid; gap: 24px;">
+    <!-- Environmental Impact Metrics -->
+    <div class="card">
+        <h3 style="margin-top: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-leaf" style="color: var(--success);"></i>
+            Environmental Impact
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, #22c55e, #16a34a); border-radius: 12px; color: white;">
+                <div style="font-size: 28px; font-weight: bold;">{{ data.environmental_impact.total_co2_sequestered }}</div>
+                <div>tCO₂e Sequestered</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 12px; color: white;">
+                <div style="font-size: 28px; font-weight: bold;">{{ "{:,}".format(data.environmental_impact.trees_equivalent) }}</div>
+                <div>Trees Equivalent</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 12px; color: white;">
+                <div style="font-size: 28px; font-weight: bold;">{{ data.environmental_impact.cars_offset }}</div>
+                <div>Cars Offset/Year</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: linear-gradient(135deg, #8b5cf6, #7c3aed); border-radius: 12px; color: white;">
+                <div style="font-size: 28px; font-weight: bold;">{{ data.environmental_impact.energy_savings }}</div>
+                <div>MWh Clean Energy</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Performance Metrics -->
+    <div class="card">
+        <h3 style="margin-top: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-chart-line" style="color: var(--primary);"></i>
+            Project Performance
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Success Rate</span>
+                    <span>{{ data.project_metrics.success_rate }}%</span>
+                </div>
+                <div style="width: 100%; background: #e5e7eb; border-radius: 8px; height: 8px;">
+                    <div style="width: {{ data.project_metrics.success_rate }}%; background: var(--success); border-radius: 8px; height: 8px;"></div>
+                </div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Community Engagement</span>
+                    <span>{{ data.project_metrics.community_engagement }}/5</span>
+                </div>
+                <div style="width: 100%; background: #e5e7eb; border-radius: 8px; height: 8px;">
+                    <div style="width: {{ (data.project_metrics.community_engagement / 5 * 100) }}%; background: var(--accent); border-radius: 8px; height: 8px;"></div>
+                </div>
+            </div>
+            <div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Biodiversity Index</span>
+                    <span>{{ data.project_metrics.biodiversity_index }}/10</span>
+                </div>
+                <div style="width: 100%; background: #e5e7eb; border-radius: 8px; height: 8px;">
+                    <div style="width: {{ (data.project_metrics.biodiversity_index / 10 * 100) }}%; background: var(--highlight); border-radius: 8px; height: 8px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Geographic Distribution -->
+    <div class="card">
+        <h3 style="margin-top: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-map-marked-alt" style="color: var(--accent);"></i>
+            Geographic Distribution
+        </h3>
+        <div style="display: grid; gap: 12px;">
+            {% for region in data.geographic_distribution %}
+            <div style="display: flex; justify-content: between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 500;">{{ region.region }}</div>
+                    <div style="font-size: 14px; color: #6B7280;">{{ region.projects }} projects</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-weight: bold; color: var(--primary);">{{ region.credits }} credits</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Real-time Insights -->
+    <div class="card">
+        <h3 style="margin-top: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-brain" style="color: var(--highlight);"></i>
+            AI-Powered Insights
+            <button class="btn outline" onclick="loadSmartInsights()" style="margin-left: auto;">
+                <i class="fas fa-sync-alt"></i> Refresh Insights
+            </button>
+        </h3>
+        <div id="smartInsights" style="display: grid; gap: 16px;">
+            <div style="text-align: center; padding: 20px; color: #6B7280;">
+                <i class="fas fa-spinner fa-spin"></i> Loading AI insights...
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Alerts -->
+    <div class="card">
+        <h3 style="margin-top: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-bell" style="color: var(--warning);"></i>
+            Real-time Alerts
+            <span id="alertBadge" class="badge" style="background: var(--error); margin-left: 8px;">3</span>
+        </h3>
+        <div id="alertsContainer" style="display: grid; gap: 12px;">
+            <div style="text-align: center; padding: 20px; color: #6B7280;">
+                <i class="fas fa-spinner fa-spin"></i> Loading alerts...
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadSmartInsights();
+    loadAlerts();
+    
+    // Auto-refresh alerts every 30 seconds
+    setInterval(loadAlerts, 30000);
+});
+
+function loadSmartInsights() {
+    const container = document.getElementById('smartInsights');
+    container.innerHTML = '<div style="text-align: center; padding: 20px; color: #6B7280;"><i class="fas fa-spinner fa-spin"></i> Loading AI insights...</div>';
+    
+    fetch('/ngo/smart_insights')
+        .then(response => response.json())
+        .then(data => {
+            let insightsHTML = '';
+            
+            data.performance_insights.forEach(insight => {
+                const confidenceColor = insight.confidence >= 0.8 ? 'var(--success)' : insight.confidence >= 0.6 ? 'var(--warning)' : 'var(--error)';
+                
+                insightsHTML += `
+                    <div style="border-left: 4px solid ${confidenceColor}; padding: 16px; background: #f9fafb; border-radius: 0 8px 8px 0;">
+                        <div style="display: flex; justify-content: between; align-items: start; gap: 12px;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; color: var(--primary); margin-bottom: 4px;">${insight.category}</div>
+                                <div style="margin-bottom: 8px;">${insight.insight}</div>
+                                <div style="font-size: 14px; color: var(--success); font-weight: 500;">${insight.potential_impact}</div>
+                            </div>
+                            <div style="text-align: center; min-width: 60px;">
+                                <div style="font-size: 12px; color: #6B7280;">Confidence</div>
+                                <div style="font-weight: bold; color: ${confidenceColor};">${Math.round(insight.confidence * 100)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            // Add predictive analytics
+            insightsHTML += `
+                <div style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); padding: 16px; border-radius: 8px; border: 1px solid #0ea5e9;">
+                    <h4 style="margin: 0 0 12px 0; color: var(--primary);">
+                        <i class="fas fa-crystal-ball"></i> Predictive Analytics
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px;">
+                        <div>
+                            <div style="font-size: 14px; color: #6B7280;">Next Quarter</div>
+                            <div style="font-weight: bold;">${data.predictive_analytics.next_quarter_credits} credits</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; color: #6B7280;">Revenue Forecast</div>
+                            <div style="font-weight: bold;">₹${data.predictive_analytics.revenue_forecast.toLocaleString()}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; color: #6B7280;">Market Trend</div>
+                            <div style="font-weight: bold; color: var(--success);">↗️ ${data.predictive_analytics.market_demand_trend}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 14px; color: #6B7280;">Optimal Price</div>
+                            <div style="font-weight: bold;">₹${data.predictive_analytics.optimal_pricing}/credit</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.innerHTML = insightsHTML;
+        })
+        .catch(error => {
+            console.error('Error loading insights:', error);
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--error);">Failed to load insights</div>';
+        });
+}
+
+function loadAlerts() {
+    const container = document.getElementById('alertsContainer');
+    const badge = document.getElementById('alertBadge');
+    
+    fetch('/ngo/alerts')
+        .then(response => response.json())
+        .then(data => {
+            badge.textContent = data.alerts.length;
+            
+            let alertsHTML = '';
+            
+            data.alerts.forEach(alert => {
+                const alertColors = {
+                    'success': 'var(--success)',
+                    'info': 'var(--primary)',
+                    'warning': 'var(--warning)',
+                    'error': 'var(--error)'
+                };
+                
+                const alertIcons = {
+                    'success': 'check-circle',
+                    'info': 'info-circle',
+                    'warning': 'exclamation-triangle',
+                    'error': 'exclamation-circle'
+                };
+                
+                const priorityBadges = {
+                    'high': 'var(--error)',
+                    'medium': 'var(--warning)',
+                    'low': 'var(--primary)'
+                };
+                
+                alertsHTML += `
+                    <div style="display: flex; align-items: start; gap: 12px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px;">
+                        <i class="fas fa-${alertIcons[alert.type]}" style="color: ${alertColors[alert.type]}; margin-top: 2px;"></i>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 500; margin-bottom: 4px;">${alert.title}</div>
+                            <div style="font-size: 14px; color: #6B7280; margin-bottom: 8px;">${alert.message}</div>
+                            <div style="display: flex; justify-content: between; align-items: center;">
+                                <span style="font-size: 12px; color: #9CA3AF;">${new Date(alert.timestamp).toLocaleString()}</span>
+                                <span class="badge" style="background: ${priorityBadges[alert.priority]};">${alert.priority.toUpperCase()}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = alertsHTML || '<div style="text-align: center; padding: 20px; color: #6B7280;">No alerts at this time</div>';
+        })
+        .catch(error => {
+            console.error('Error loading alerts:', error);
+            container.innerHTML = '<div style="text-align: center; padding: 20px; color: var(--error);">Failed to load alerts</div>';
+        });
+}
+</script>
+
+{% endblock %}

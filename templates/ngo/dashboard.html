@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% set active='dashboard' %}
+{% set title='NGO Dashboard - BlueCarbon' %}
+{% set header='Dashboard Overview' %}
+{% block content %}
+<div class="cards">
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-seedling"></i>
+            Total Projects
+        </div>
+        <div class="stat-value">{{ stats.total_projects }}</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            +{{ stats.projects_change }}% from last month
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-check-circle"></i>
+            Approved by NCCR
+        </div>
+        <div class="stat-value">{{ stats.approved_projects }}</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            +{{ stats.approved_change }}% approval rate
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-coins"></i>
+            Total Credits Earned (tCO₂e)
+        </div>
+        <div class="stat-value highlight-text" style="color: var(--highlight);">{{ stats.credits_earned }}</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            +{{ stats.credits_change }}% this quarter
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-clock"></i>
+            Pending Verifications
+        </div>
+        <div class="stat-value" style="color: var(--warning);">{{ stats.pending_verifications }}</div>
+        <div class="stat-change">
+            <i class="fas fa-info-circle"></i>
+            Avg. verification time: {{ stats.avg_verification_time }} days
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-times-circle"></i>
+            Applications Reversed
+        </div>
+        <div class="stat-value" style="color: var(--danger);">{{ stats.reversed_applications }}</div>
+        <div class="stat-change negative">
+            <i class="fas fa-arrow-down"></i>
+            -{{ stats.reversed_change }}% from last month
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-rupee-sign"></i>
+            Revenue Generated
+        </div>
+        <div class="stat-value highlight-text" style="color: var(--highlight);">₹{{ "{:,}".format(stats.revenue_generated) }}</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            +{{ stats.revenue_change }}% this quarter
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-top: 24px;">
+    <div class="card">
+        <h3 style="margin-top: 0;">Recent Activity</h3>
+        <div style="space-y: 12px;">
+            {% for activity in recent_activities %}
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border);">
+                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--{{ activity.type }});"></div>
+                <div style="flex: 1;">
+                    <div style="font-weight: 500;">{{ activity.title }}</div>
+                    <div style="font-size: 12px; color: #6B7280;">{{ activity.time }}</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3 style="margin-top: 0;">Quick Actions</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <a href="/ngo/projects/new" class="btn">
+                <i class="fas fa-plus"></i>
+                Register New Project
+            </a>
+            <a href="/ngo/projects" class="btn secondary">
+                <i class="fas fa-seedling"></i>
+                View All Projects
+            </a>
+            <a href="/ngo/credits" class="btn outline">
+                <i class="fas fa-coins"></i>
+                Manage Credits
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+

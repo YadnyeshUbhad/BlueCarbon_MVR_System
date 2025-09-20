@@ -1,0 +1,461 @@
+{% extends 'industry_base.html' %}
+{% set active = 'credits' %}
+{% set title = 'My Carbon Credits - BlueCarbon' %}
+{% set header = 'My Carbon Credits' %}
+{% set subheader = 'Track and manage your purchased carbon credits' %}
+
+{% block header_actions %}
+<div style="display: flex; gap: 0.75rem; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: #f0fdf4; border-radius: 8px; border: 1px solid #dcfce7;">
+        <i class="fas fa-leaf" style="color: var(--success);"></i>
+        <span style="font-size: 0.875rem; color: #166534;">{{ "{:,}".format(stats.credits_active) }} Active Credits</span>
+    </div>
+    <a href="/industry/marketplace" class="btn btn-primary">
+        <i class="fas fa-plus"></i>
+        Buy More Credits
+    </a>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Credits Overview Cards -->
+<div class="stats-grid" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
+    <div class="stat-card" style="border-top: 4px solid var(--primary);">
+        <div class="stat-value" style="color: var(--primary);">{{ "{:,}".format(stats.credits_purchased) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-shopping-cart"></i>
+            Total Credits Purchased
+        </div>
+        <div class="stat-change">
+            Across {{ purchases|length }} transactions
+        </div>
+    </div>
+    
+    <div class="stat-card" style="border-top: 4px solid var(--success);">
+        <div class="stat-value" style="color: var(--success);">{{ "{:,}".format(stats.credits_active) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-check-circle"></i>
+            Active Credits
+        </div>
+        <div class="stat-change">
+            Available for offsetting
+        </div>
+    </div>
+    
+    <div class="stat-card" style="border-top: 4px solid var(--warning);">
+        <div class="stat-value" style="color: var(--warning);">{{ "{:,}".format(stats.credits_retired) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-recycle"></i>
+            Retired Credits
+        </div>
+        <div class="stat-change">
+            Used for offsetting
+        </div>
+    </div>
+    
+    <div class="stat-card" style="border-top: 4px solid var(--info);">
+        <div class="stat-value" style="color: var(--info);">₹{{ "{:,}".format(stats.total_spent) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-rupee-sign"></i>
+            Total Investment
+        </div>
+        <div class="stat-change">
+            Supporting blue carbon projects
+        </div>
+    </div>
+</div>
+
+<!-- Filter and Search -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: center;">
+            <div style="position: relative;">
+                <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" id="searchInput" placeholder="Search by transaction ID, project name..." 
+                       style="width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid var(--border); border-radius: 8px;"
+                       oninput="filterCredits()">
+            </div>
+            
+            <select id="statusFilter" style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" onchange="filterCredits()">
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Retired">Retired</option>
+            </select>
+            
+            <select id="sortBy" style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;" onchange="sortCredits()">
+                <option value="date_desc">Latest First</option>
+                <option value="date_asc">Oldest First</option>
+                <option value="amount_desc">Highest Amount</option>
+                <option value="amount_asc">Lowest Amount</option>
+            </select>
+            
+            <button class="btn btn-outline" onclick="exportCredits()">
+                <i class="fas fa-download"></i>
+                Export
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Credits Table -->
+<div class="card">
+    <div class="card-header">
+        <h3><i class="fas fa-list"></i> Purchased Credits Table</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+        <div class="table-responsive">
+            <table id="creditsTable">
+                <thead>
+                    <tr>
+                        <th>Transaction ID</th>
+                        <th>Project Name</th>
+                        <th>Credits Purchased</th>
+                        <th>Price per Credit</th>
+                        <th>Total Paid (₹)</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Blockchain</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="creditsTableBody">
+                    {% for purchase in purchases %}
+                    <tr class="credit-row" data-search="{{ purchase.transaction_id|lower }} {{ purchase.project_name|lower }}" data-status="{{ purchase.status }}">
+                        <td>
+                            <div style="display: flex; flex-direction: column;">
+                                <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-bottom: 4px;">
+                                    {{ purchase.transaction_id }}
+                                </code>
+                                <span style="font-size: 10px; color: var(--text-muted);">Token: {{ purchase.token_id }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div>
+                                <div style="font-weight: 600; color: var(--dark); margin-bottom: 4px;">{{ purchase.project_name }}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">ID: {{ purchase.project_id }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="text-align: center;">
+                                <div style="font-size: 1.25rem; font-weight: bold; color: var(--success);">{{ purchase.credits_purchased }}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">tCO₂e</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 600; color: var(--primary);">₹{{ purchase.price_per_credit }}</div>
+                        </td>
+                        <td>
+                            <div style="font-size: 1.125rem; font-weight: bold; color: var(--dark);">₹{{ "{:,}".format(purchase.total_paid) }}</div>
+                        </td>
+                        <td>
+                            <div>
+                                <div style="font-weight: 500;">{{ purchase.purchase_date.strftime('%d %b %Y') }}</div>
+                                <div style="font-size: 12px; color: var(--text-muted);">{{ purchase.purchase_date.strftime('%I:%M %p') }}</div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; align-items: flex-start;">
+                                <span class="badge {{ 'badge-success' if purchase.status == 'Active' else 'badge-warning' }}">
+                                    {{ purchase.status }}
+                                </span>
+                                {% if purchase.retirement_date %}
+                                <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">
+                                    Retired: {{ purchase.retirement_date.strftime('%d %b %Y') }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td>
+                            <div style="text-align: center;">
+                                <button class="btn btn-outline" style="font-size: 12px; padding: 4px 8px;" onclick="viewBlockchain('{{ purchase.blockchain_hash }}')">
+                                    <i class="fas fa-link"></i>
+                                    View Token
+                                </button>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                {% if purchase.status == 'Active' %}
+                                <button class="btn btn-warning" style="font-size: 12px; padding: 4px 8px;" onclick="retireCredits('{{ purchase.transaction_id }}')">
+                                    <i class="fas fa-recycle"></i>
+                                    Retire
+                                </button>
+                                {% endif %}
+                                <button class="btn btn-outline" style="font-size: 12px; padding: 4px 8px;" onclick="downloadCertificate('{{ purchase.transaction_id }}')">
+                                    <i class="fas fa-certificate"></i>
+                                    Certificate
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if purchases|length == 0 %}
+        <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+            <i class="fas fa-leaf" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.3;"></i>
+            <h3 style="margin-bottom: 1rem; color: var(--text-muted);">No Credits Purchased Yet</h3>
+            <p style="margin-bottom: 2rem;">Start your sustainability journey by purchasing verified blue carbon credits.</p>
+            <a href="/industry/marketplace" class="btn btn-primary">
+                <i class="fas fa-shopping-cart"></i>
+                Browse Marketplace
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Retirement Modal -->
+<div id="retirementModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-recycle"></i> Retire Carbon Credits</h3>
+            <span class="close" onclick="closeRetirementModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="retirementModalContent">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Certificate Modal -->
+<div id="certificateModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-certificate"></i> Carbon Credit Certificate</h3>
+            <span class="close" onclick="closeCertificateModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="certificateContent">
+                <!-- Certificate will be generated here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const purchases = {{ purchases | tojson }};
+let filteredPurchases = [...purchases];
+
+function filterCredits() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    const rows = document.querySelectorAll('.credit-row');
+    
+    rows.forEach(row => {
+        const searchData = row.dataset.search;
+        const statusData = row.dataset.status;
+        
+        const matchesSearch = !searchTerm || searchData.includes(searchTerm);
+        const matchesStatus = !statusFilter || statusData === statusFilter;
+        
+        if (matchesSearch && matchesStatus) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function sortCredits() {
+    const sortBy = document.getElementById('sortBy').value;
+    const tbody = document.getElementById('creditsTableBody');
+    const rows = Array.from(tbody.querySelectorAll('.credit-row'));
+    
+    rows.sort((a, b) => {
+        const aData = purchases.find(p => p.transaction_id === a.querySelector('code').textContent.trim());
+        const bData = purchases.find(p => p.transaction_id === b.querySelector('code').textContent.trim());
+        
+        switch(sortBy) {
+            case 'date_desc':
+                return new Date(bData.purchase_date) - new Date(aData.purchase_date);
+            case 'date_asc':
+                return new Date(aData.purchase_date) - new Date(bData.purchase_date);
+            case 'amount_desc':
+                return bData.total_paid - aData.total_paid;
+            case 'amount_asc':
+                return aData.total_paid - bData.total_paid;
+            default:
+                return 0;
+        }
+    });
+    
+    tbody.innerHTML = '';
+    rows.forEach(row => tbody.appendChild(row));
+}
+
+function retireCredits(transactionId) {
+    const purchase = purchases.find(p => p.transaction_id === transactionId);
+    if (!purchase) return;
+    
+    const modalContent = `
+        <div style="margin-bottom: 2rem;">
+            <div style="padding: 1rem; background: #fffbeb; border-radius: 8px; border-left: 4px solid var(--warning); margin-bottom: 1.5rem;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                    <strong>Important: Credit Retirement</strong>
+                </div>
+                <p style="font-size: 0.875rem; margin: 0; color: #92400e;">
+                    Once retired, these credits cannot be traded or sold. They will be permanently removed from circulation for carbon offsetting.
+                </p>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="padding: 1rem; background: #f0fdf4; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Credits to Retire</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--success);">${purchase.credits_purchased}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">tCO₂e</div>
+                </div>
+                <div style="padding: 1rem; background: #f0f9ff; border-radius: 8px; text-align: center;">
+                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Project</div>
+                    <div style="font-weight: 600; color: var(--primary);">${purchase.project_name}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">${purchase.project_id}</div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Retirement Reason (Optional)</label>
+                <select id="retirementReason" class="form-control">
+                    <option value="voluntary">Voluntary Carbon Offsetting</option>
+                    <option value="compliance">Compliance Requirement</option>
+                    <option value="csr">Corporate Social Responsibility</option>
+                    <option value="neutrality">Carbon Neutrality Goal</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Additional Notes</label>
+                <textarea id="retirementNotes" class="form-control" rows="3" placeholder="Optional notes about this retirement..."></textarea>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+            <button type="button" class="btn btn-outline" onclick="closeRetirementModal()" style="flex: 1;">Cancel</button>
+            <button type="button" class="btn btn-warning" onclick="confirmRetirement('${transactionId}')" style="flex: 1;">
+                <i class="fas fa-recycle"></i> Retire Credits
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('retirementModalContent').innerHTML = modalContent;
+    document.getElementById('retirementModal').style.display = 'flex';
+}
+
+function confirmRetirement(transactionId) {
+    const reason = document.getElementById('retirementReason').value;
+    const notes = document.getElementById('retirementNotes').value;
+    
+    fetch(`/industry/credits/retire/${transactionId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `reason=${reason}&notes=${encodeURIComponent(notes)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            closeRetirementModal();
+            setTimeout(() => {
+                location.reload();
+            }, 1500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Retirement error:', error);
+        showNotification('Failed to retire credits. Please try again.', 'error');
+    });
+}
+
+function viewBlockchain(hash) {
+    // In a real implementation, this would link to a blockchain explorer
+    const explorerUrl = `https://explorer.example.com/tx/${hash}`;
+    showNotification('Opening blockchain explorer...', 'info');
+    
+    // For demo purposes, show the hash
+    setTimeout(() => {
+        alert(`Transaction Hash: ${hash}\n\nIn production, this would open the blockchain explorer.`);
+    }, 500);
+}
+
+function downloadCertificate(transactionId) {
+    const purchase = purchases.find(p => p.transaction_id === transactionId);
+    if (!purchase) return;
+    
+    const certificateHtml = `
+        <div style="border: 2px solid var(--primary); border-radius: 12px; padding: 2rem; background: white; text-align: center; max-width: 600px;">
+            <div style="margin-bottom: 2rem;">
+                <h2 style="color: var(--primary); margin-bottom: 0.5rem;">CARBON CREDIT CERTIFICATE</h2>
+                <div style="font-size: 0.875rem; color: var(--text-muted);">Blockchain Verified • Blue Carbon Initiative</div>
+            </div>
+            
+            <div style="margin-bottom: 2rem; padding: 1rem; background: #f0fdf4; border-radius: 8px;">
+                <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">This certifies that</div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: var(--dark); margin-bottom: 0.5rem;">${'{{ stats.company_name }}' || 'EcoTech Industries Ltd'}</div>
+                <div style="font-size: 0.875rem; color: var(--text-muted);">has purchased and ${purchase.status === 'Retired' ? 'retired' : 'owns'}</div>
+            </div>
+            
+            <div style="margin-bottom: 2rem;">
+                <div style="font-size: 3rem; font-weight: bold; color: var(--success); margin-bottom: 0.5rem;">${purchase.credits_purchased}</div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: var(--dark);">Verified Carbon Credits (tCO₂e)</div>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; text-align: left;">
+                <div><strong>Project:</strong><br>${purchase.project_name}</div>
+                <div><strong>Transaction ID:</strong><br><code style="font-size: 0.75rem;">${purchase.transaction_id}</code></div>
+                <div><strong>Purchase Date:</strong><br>${new Date(purchase.purchase_date).toLocaleDateString()}</div>
+                <div><strong>Token ID:</strong><br><code style="font-size: 0.75rem;">${purchase.token_id}</code></div>
+            </div>
+            
+            <div style="border-top: 1px solid var(--border); padding-top: 1rem; font-size: 0.75rem; color: var(--text-muted);">
+                <div>Blockchain Hash: <code style="font-size: 0.625rem;">${purchase.blockchain_hash}</code></div>
+                <div style="margin-top: 0.5rem;">Generated on ${new Date().toLocaleDateString()} • BlueCarbon Platform</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="btn btn-primary" onclick="printCertificate()">
+                <i class="fas fa-print"></i> Print Certificate
+            </button>
+            <button class="btn btn-outline" onclick="closeCertificateModal()" style="margin-left: 1rem;">
+                Close
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('certificateContent').innerHTML = certificateHtml;
+    document.getElementById('certificateModal').style.display = 'flex';
+}
+
+function printCertificate() {
+    window.print();
+}
+
+function exportCredits() {
+    // In a real implementation, this would generate a CSV/PDF export
+    showNotification('Export feature coming soon!', 'info');
+}
+
+function closeRetirementModal() {
+    document.getElementById('retirementModal').style.display = 'none';
+}
+
+function closeCertificateModal() {
+    document.getElementById('certificateModal').style.display = 'none';
+}
+
+// Initialize the page
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Credits page loaded with', purchases.length, 'purchases');
+});
+</script>
+{% endblock %}

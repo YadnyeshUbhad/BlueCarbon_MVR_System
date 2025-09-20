@@ -1,0 +1,393 @@
+{% extends 'admin_base.html' %}
+{% set active='ngos' %}
+{% set title='NGO Management - NCCR Admin' %}
+{% set header='NGO Registered' %}
+
+{% block content %}
+<div class="admin-header">
+    <h2 style="margin: 0; color: #1f2937;">NGO Registered</h2>
+    <div class="admin-actions">
+        <a href="/admin/export/ngos" class="btn secondary">
+            <i class="fas fa-download"></i> Export Data
+        </a>
+    </div>
+</div>
+
+<!-- NGO Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">
+            <i class="fas fa-users"></i> Total NGOs Registered
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--success);">{{ stats.verified }}</div>
+        <div class="stat-label">
+            <i class="fas fa-check-circle"></i> Verified NGOs
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--warning);">{{ stats.pending }}</div>
+        <div class="stat-label">
+            <i class="fas fa-clock"></i> Pending Verification
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--danger);">{{ stats.blacklisted }}</div>
+        <div class="stat-label">
+            <i class="fas fa-ban"></i> Blacklisted NGOs
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="card" style="margin-bottom: 20px;">
+    <form method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <i class="fas fa-search" style="color: #6b7280;"></i>
+            <input name="search" placeholder="Search NGO name, contact person, or NGO ID" 
+                   value="{{ search }}" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; min-width: 300px;">
+        </div>
+        
+        <select name="status" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <option value="">All Status</option>
+            <option value="Verified" {{ 'selected' if status_filter == 'Verified' }}>Verified</option>
+            <option value="Pending" {{ 'selected' if status_filter == 'Pending' }}>Pending</option>
+            <option value="Blacklisted" {{ 'selected' if status_filter == 'Blacklisted' }}>Blacklisted</option>
+        </select>
+        
+        <select name="sort" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <option value="credits_earned" {{ 'selected' if sort_by == 'credits_earned' }}>Sort by Credits Earned</option>
+            <option value="revenue" {{ 'selected' if sort_by == 'revenue' }}>Sort by Revenue</option>
+            <option value="projects" {{ 'selected' if sort_by == 'projects' }}>Sort by Projects</option>
+        </select>
+        
+        <button type="submit" class="btn primary">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+        
+        <a href="/admin/ngos" class="btn outline">
+            <i class="fas fa-times"></i> Clear
+        </a>
+    </form>
+</div>
+
+<!-- NGO Ranking Table -->
+<div class="card">
+    <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-trophy"></i>
+        NGO Ranking Table
+    </h3>
+    
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>NGO Details</th>
+                    <th>Contact Information</th>
+                    <th>Location</th>
+                    <th>Performance</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ngo in ngos %}
+                <tr>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 32px; height: 32px; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                {{ loop.index }}
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">{{ ngo.name }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">{{ ngo.id }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">Reg: {{ ngo.registration_number }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ ngo.contact_person }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            <i class="fas fa-phone"></i> {{ ngo.phone }}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            <i class="fas fa-envelope"></i> {{ ngo.email }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-map-pin" style="color: #ef4444;"></i>
+                            <div>
+                                <div style="font-weight: 500;">{{ ngo.district }}</div>
+                                <div style="font-size: 12px; color: #6b7280;">{{ ngo.state }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 4px;">
+                            <span style="font-size: 12px; color: #6b7280;">Projects:</span>
+                            <span style="font-weight: 600; color: var(--primary);">{{ ngo.projects_submitted }}</span>
+                        </div>
+                        <div style="margin-bottom: 4px;">
+                            <span style="font-size: 12px; color: #6b7280;">Credits:</span>
+                            <span style="font-weight: 600; color: var(--success);">{{ ngo.credits_earned }} tCO₂e</span>
+                        </div>
+                        <div>
+                            <span style="font-size: 12px; color: #6b7280;">Revenue:</span>
+                            <span style="font-weight: 600; color: var(--warning);">₹{{ "{:,}".format(ngo.total_revenue) }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {{ 'success' if ngo.status == 'Verified' else 'warning' if ngo.status == 'Pending' else 'danger' }}">
+                            {{ ngo.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="/admin/ngos/{{ ngo.id }}" class="btn small primary" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if ngo.status == 'Pending' %}
+                            <button onclick="verifyNGO('{{ ngo.id }}')" class="btn small success" title="Verify">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            {% endif %}
+                            {% if ngo.status != 'Blacklisted' %}
+                            <button onclick="blacklistNGO('{{ ngo.id }}')" class="btn small danger" title="Blacklist">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            {% endif %}
+                            <button onclick="editNGO('{{ ngo.id }}')" class="btn small outline" title="Edit Info">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if ngos|length == 0 %}
+    <div style="text-align: center; padding: 40px; color: #6b7280;">
+        <i class="fas fa-users" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+        <p>No NGOs found matching your criteria.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Action Modal -->
+<div id="actionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">NGO Action</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="actionForm">
+                <input type="hidden" id="ngoId" name="ngo_id">
+                <input type="hidden" id="actionType" name="action">
+                
+                <div id="reasonGroup" class="form-group" style="display: none;">
+                    <label for="reason">Reason:</label>
+                    <textarea id="reason" name="reason" rows="4" class="form-control" placeholder="Enter reason for this action..."></textarea>
+                </div>
+                
+                <div id="editGroup" style="display: none;">
+                    <div class="form-group">
+                        <label for="contact_person">Contact Person:</label>
+                        <input type="text" id="contact_person" name="contact_person" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone:</label>
+                        <input type="text" id="phone" name="phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" onclick="closeModal()" class="btn secondary">Cancel</button>
+                    <button type="submit" class="btn primary" id="confirmBtn">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function verifyNGO(ngoId) {
+    showActionModal(ngoId, 'verify', 'Verify NGO', 'Verify NGO');
+}
+
+function blacklistNGO(ngoId) {
+    document.getElementById('reasonGroup').style.display = 'block';
+    showActionModal(ngoId, 'blacklist', 'Blacklist NGO', 'Blacklist NGO');
+}
+
+function editNGO(ngoId) {
+    document.getElementById('editGroup').style.display = 'block';
+    showActionModal(ngoId, 'edit', 'Edit NGO Information', 'Update Information');
+}
+
+function showActionModal(ngoId, action, title, confirmText) {
+    document.getElementById('ngoId').value = ngoId;
+    document.getElementById('actionType').value = action;
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('confirmBtn').textContent = confirmText;
+    document.getElementById('actionModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('actionModal').style.display = 'none';
+    document.getElementById('actionForm').reset();
+    document.getElementById('reasonGroup').style.display = 'none';
+    document.getElementById('editGroup').style.display = 'none';
+}
+
+// Handle form submission
+document.getElementById('actionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const ngoId = formData.get('ngo_id');
+    
+    fetch(`/admin/ngos/${ngoId}/action`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+        closeModal();
+    })
+    .catch(error => {
+        showNotification('An error occurred. Please try again.', 'error');
+        closeModal();
+    });
+});
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('actionModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+</script>
+
+<style>
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: var(--white);
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.close {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.btn.small {
+    padding: 6px 10px;
+    font-size: 12px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    max-width: 400px;
+}
+
+.notification.success {
+    background: var(--success);
+}
+
+.notification.error {
+    background: var(--danger);
+}
+</style>
+{% endblock %}

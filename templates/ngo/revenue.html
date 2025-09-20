@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% set active='revenue' %}
+{% set title='Revenue - BlueCarbon' %}
+{% block content %}
+<div class="cards" style="margin-bottom:12px;">
+    <div class="card"><div class="stat-label">Total Revenue (₹)</div><div class="stat-value" style="color:#B45309">{{ summary.total_revenue }}</div></div>
+    <div class="card"><div class="stat-label">Pending Transfer (₹)</div><div class="stat-value">{{ summary.pending_transfer }}</div></div>
+    <div class="card"><div class="stat-label">Distributed (₹)</div><div class="stat-value">{{ summary.distributed }}</div></div>
+    <div class="card"><div class="stat-label">Credits Sold (tCO₂e)</div><div class="stat-value">{{ summary.credits_sold }}</div></div>
+    <div class="card"><div class="stat-label">Avg Price / Credit (₹)</div><div class="stat-value">{{ summary.avg_price }}</div></div>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+    <h4>Payout Details</h4>
+    <div>Wallet / Bank: <span class="badge success">Configured</span></div>
+    <div>Status of last payout: <b id="lastPayoutStatus">₹50,000 transferred on 10 Sept 2025</b></div>
+    <div style="margin-top:12px; display: flex; gap: 12px; align-items: center;">
+        <input type="number" id="payoutAmount" placeholder="Enter amount" style="padding: 8px; border: 1px solid #ccc; border-radius: 4px; flex: 1; max-width: 200px;" />
+        <button class="btn" onclick="requestPayout()" id="payoutBtn">
+            <i class="fas fa-money-bill-wave"></i>
+            Request Payout
+        </button>
+        <button class="btn secondary" onclick="showPayoutHistory()">
+            <i class="fas fa-history"></i>
+            Payout History
+        </button>
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Transaction ID</th>
+            <th>Project</th>
+            <th>Credits Sold</th>
+            <th>Price / Credit (₹)</th>
+            <th>Total Revenue (₹)</th>
+            <th>Buyer</th>
+            <th>Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody id="transactionsTableBody">
+        {% if transactions|length == 0 %}
+        <tr><td colspan="8">Loading transaction data...</td></tr>
+        {% else %}
+        {% for t in transactions %}
+        <tr>
+            <td><code>{{ t.id }}</code></td>
+            <td>{{ t.project }}</td>
+            <td>{{ t.credits }} tCO₂e</td>
+            <td>₹{{ t.price }}</td>
+            <td><strong>₹{{ "{:,}".format(t.total) }}</strong></td>
+            <td>{{ t.buyer }}</td>
+            <td>{{ t.date.strftime('%d %b %Y') if t.date.__class__.__name__ == 'datetime' else t.date }}</td>
+            <td><span class="badge {{ 'success' if t.status == 'Completed' else 'warning' if t.status == 'Processing' else 'secondary' }}">{{ t.status }}</span></td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </tbody>
+    </table>
+
+<!-- Payout History Modal -->
+<div id="payoutHistoryModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5);">
+    <div style="position: relative; margin: 5% auto; padding: 20px; width: 80%; max-width: 600px; background: white; border-radius: 12px; max-height: 80vh; overflow-y: auto;">
+        <span onclick="closePayoutHistoryModal()" style="position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer;">&times;</span>
+        <h3>Payout History</h3>
+        <div id="payoutHistoryContent">
+            <p>Loading payout history...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced JavaScript for revenue functionality -->
+<script>
+let revenueUpdateInterval;
+
+document.addEventListener('DOMContentLoaded', function() {
+    startRevenueRealTimeUpdates();
+    
+    // Add enter key support for payout amount
+    const payoutInput = document.getElementById('payoutAmount');
+    if (payoutInput) {
+        payoutInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                requestPayout();
+            }
+        });
+    }
+});
+
+function startRevenueRealTimeUpdates() {
+    revenueUpdateInterval = setInterval(updateRevenueData, 7000); // Update every 7 seconds
+    updateRevenueData(); // Initial update
+}
+
+function updateRevenueData() {
+    fetch('/ngo/revenue/realtime')
+        .then(response => response.json())
+        .then(data => {
+            // Update revenue stats if available
+            if (data.total_revenue !== undefined) {
+                // Update summary cards with animation
+                updateRevenueStats(data);
+                
+                // Update recent transactions
+                if (data.recent_transactions && data.recent_transactions.length > 0) {
+                    updateRecentTransactions(data.recent_transactions);
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating revenue data:', error);
+        });
+}
+
+function updateRevenueStats(data) {
+    // Find and update revenue summary elements
+    const summaryCards = document.querySelectorAll('.stat-value');
+    if (summaryCards.length >= 5) {
+        // Assuming the order matches the template
+        animateValueChange(summaryCards[0], data.total_revenue.toLocaleString());
+    }
+}
+
+function updateRecentTransactions(transactions) {
+    // Add visual indication of new transactions
+    transactions.forEach((transaction, index) => {
+        setTimeout(() => {
+            showNotification(`New transaction: ₹${transaction.total.toLocaleString()} from ${transaction.project}`, 'success');
+        }, index * 1000);
+    });
+}
+
+function animateValueChange(element, newValue) {
+    if (element && element.textContent !== newValue) {
+        element.style.transform = 'scale(1.05)';
+        element.style.transition = 'transform 0.3s ease';
+        
+        setTimeout(() => {
+            element.textContent = newValue;
+            element.style.transform = 'scale(1)';
+        }, 150);
+    }
+}
+
+function requestPayout() {
+    const amountInput = document.getElementById('payoutAmount');
+    const amount = amountInput.value;
+    const payoutBtn = document.getElementById('payoutBtn');
+    
+    if (!amount || amount <= 0) {
+        showNotification('Please enter a valid payout amount', 'error');
+        amountInput.focus();
+        return;
+    }
+    
+    // Disable button and show loading
+    const originalText = payoutBtn.innerHTML;
+    payoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    payoutBtn.disabled = true;
+    
+    // Create form data
+    const formData = new FormData();
+    formData.append('amount', amount);
+    formData.append('payment_method', 'bank'); // Default to bank
+    
+    fetch('/ngo/revenue/request_payout', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            amountInput.value = '';
+            
+            // Update last payout status
+            const statusElement = document.getElementById('lastPayoutStatus');
+            if (statusElement) {
+                statusElement.innerHTML = `₹${parseFloat(amount).toLocaleString()} payout requested - Processing`;
+            }
+        } else {
+            showNotification(data.message || 'Payout request failed', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Payout request error:', error);
+        showNotification('Payout request failed. Please try again.', 'error');
+    })
+    .finally(() => {
+        // Reset button
+        payoutBtn.innerHTML = originalText;
+        payoutBtn.disabled = false;
+    });
+}
+
+function showPayoutHistory() {
+    document.getElementById('payoutHistoryModal').style.display = 'block';
+    
+    // Mock payout history data
+    const historyContent = document.getElementById('payoutHistoryContent');
+    historyContent.innerHTML = `
+        <div style="margin-bottom: 16px;">
+            <div style="display: flex; justify-content: between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+                <div>
+                    <strong>₹50,000</strong>
+                    <div style="font-size: 12px; color: #6B7280;">Transferred on 10 Sept 2024</div>
+                </div>
+                <span class="badge success">Completed</span>
+            </div>
+            <div style="display: flex; justify-content: between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+                <div>
+                    <strong>₹35,000</strong>
+                    <div style="font-size: 12px; color: #6B7280;">Transferred on 25 Aug 2024</div>
+                </div>
+                <span class="badge success">Completed</span>
+            </div>
+            <div style="display: flex; justify-content: between; align-items: center; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 8px;">
+                <div>
+                    <strong>₹75,000</strong>
+                    <div style="font-size: 12px; color: #6B7280;">Transferred on 15 Aug 2024</div>
+                </div>
+                <span class="badge success">Completed</span>
+            </div>
+        </div>
+        <div style="text-align: center; color: #6B7280;">Total payouts: ₹1,60,000</div>
+    `;
+}
+
+function closePayoutHistoryModal() {
+    document.getElementById('payoutHistoryModal').style.display = 'none';
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = 'var(--success)';
+        notification.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+    } else {
+        notification.style.background = 'var(--error)';
+        notification.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+    }
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 4000);
+}
+
+// Clean up interval when page is unloaded
+window.addEventListener('beforeunload', function() {
+    if (revenueUpdateInterval) {
+        clearInterval(revenueUpdateInterval);
+    }
+});
+</script>
+{% endblock %}
+
+

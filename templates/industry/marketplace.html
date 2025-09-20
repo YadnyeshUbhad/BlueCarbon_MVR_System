@@ -1,0 +1,443 @@
+{% extends 'industry_base.html' %}
+{% set active = 'marketplace' %}
+{% set title = 'Carbon Credits Marketplace - BlueCarbon' %}
+{% set header = 'Carbon Credits Marketplace' %}
+{% set subheader = 'Discover and purchase verified blue carbon credits' %}
+
+{% block header_actions %}
+<div style="display: flex; gap: 0.75rem; align-items: center;">
+    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: #f0fdf4; border-radius: 8px; border: 1px solid #dcfce7;">
+        <i class="fas fa-leaf" style="color: var(--success);"></i>
+        <span style="font-size: 0.875rem; color: #166534;">2,700 tCO₂e Available</span>
+    </div>
+    <button class="btn btn-outline" onclick="filterProjects()">
+        <i class="fas fa-filter"></i>
+        Filters
+    </button>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Search and Filter Bar -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: 1fr auto auto auto; gap: 1rem; align-items: center;">
+            <div style="position: relative;">
+                <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                <input type="text" placeholder="Search projects by name, location, or NGO..." 
+                       style="width: 100%; padding: 0.75rem 0.75rem 0.75rem 2.5rem; border: 1px solid var(--border); border-radius: 8px;">
+            </div>
+            
+            <select style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;">
+                <option value="">All Ecosystems</option>
+                <option value="mangrove">Mangrove</option>
+                <option value="seagrass">Seagrass</option>
+                <option value="wetlands">Coastal Wetlands</option>
+            </select>
+            
+            <select style="padding: 0.75rem; border: 1px solid var(--border); border-radius: 8px;">
+                <option value="">Price Range</option>
+                <option value="low">₹200 - ₹250</option>
+                <option value="medium">₹251 - ₹300</option>
+                <option value="high">₹301+</option>
+            </select>
+            
+            <button class="btn btn-primary">
+                <i class="fas fa-search"></i>
+                Search
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Projects Grid -->
+<div style="display: grid; gap: 2rem;">
+    {% for project in projects %}
+    <div class="card" style="overflow: hidden; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+        <div style="display: grid; grid-template-columns: 300px 1fr auto; gap: 0;">
+            <!-- Project Image -->
+            <div style="position: relative; background: linear-gradient(135deg, #0ea5e9, #3b82f6); display: flex; align-items: center; justify-content: center;">
+                <div style="text-align: center; color: white; padding: 2rem;">
+                    <i class="fas fa-{{ 'tree' if project.ecosystem == 'Mangrove' else 'water' if project.ecosystem == 'Seagrass' else 'mountain' }}" style="font-size: 4rem; margin-bottom: 1rem; opacity: 0.8;"></i>
+                    <div style="font-weight: 600; font-size: 1.125rem;">{{ project.ecosystem }} Ecosystem</div>
+                    <div style="font-size: 0.875rem; opacity: 0.9;">{{ project.location }}</div>
+                </div>
+                <!-- Verification Badge -->
+                <div style="position: absolute; top: 1rem; right: 1rem; background: rgba(255,255,255,0.9); padding: 0.5rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; color: var(--success);">
+                    <i class="fas fa-check-circle"></i> {{ project.verification }}
+                </div>
+            </div>
+            
+            <!-- Project Details -->
+            <div style="padding: 2rem;">
+                <div style="margin-bottom: 1rem;">
+                    <h3 style="margin: 0 0 0.5rem 0; color: var(--dark); font-size: 1.5rem;">{{ project.name }}</h3>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; color: var(--text-muted); font-size: 0.875rem;">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>{{ project.location }}</span>
+                        <span>•</span>
+                        <span>By {{ project.ngo }}</span>
+                    </div>
+                </div>
+                
+                <!-- Key Metrics -->
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Available Credits</div>
+                        <div style="font-size: 1.25rem; font-weight: bold; color: var(--success);">{{ "{:,}".format(project.available_credits) }} tCO₂e</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Price per Credit</div>
+                        <div style="font-size: 1.25rem; font-weight: bold; color: var(--primary);">₹{{ project.price_per_credit }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.25rem;">Project Start</div>
+                        <div style="font-size: 1rem; font-weight: 600; color: var(--dark);">{{ project.project_start }}</div>
+                    </div>
+                </div>
+                
+                <!-- Co-benefits -->
+                <div style="margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">Co-benefits</div>
+                    <div style="display: flex; flex-wrap: gap: 0.5rem;">
+                        {% for benefit in project.co_benefits %}
+                        <span style="padding: 0.25rem 0.75rem; background: #e0f2fe; color: #0277bd; border-radius: 9999px; font-size: 0.75rem; font-weight: 500;">
+                            {{ benefit }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- SDG Goals -->
+                <div style="margin-bottom: 1rem;">
+                    <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; margin-bottom: 0.5rem;">UN SDG Goals</div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        {% for goal in project.sdg_goals %}
+                        <div style="width: 30px; height: 30px; background: var(--success); color: white; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold;">
+                            {{ goal }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Methodology -->
+                <div style="font-size: 0.875rem; color: var(--text-muted); padding: 0.75rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--info);">
+                    <strong>Methodology:</strong> {{ project.methodology }}
+                </div>
+            </div>
+            
+            <!-- Action Panel -->
+            <div style="padding: 2rem; background: #f8fafc; border-left: 1px solid var(--border); display: flex; flex-direction: column; justify-content: center; min-width: 250px;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Total Value for 100 credits</div>
+                    <div style="font-size: 2rem; font-weight: bold; color: var(--primary);">₹{{ "{:,}".format(project.price_per_credit * 100) }}</div>
+                    <div style="font-size: 0.75rem; color: var(--text-muted);">@ ₹{{ project.price_per_credit }} per credit</div>
+                </div>
+                
+                <!-- Quick Buy Options -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem;">
+                    <button class="btn btn-outline" style="font-size: 0.875rem; padding: 0.5rem;" onclick="quickBuy('{{ project.id }}', 50)">
+                        50 Credits
+                    </button>
+                    <button class="btn btn-outline" style="font-size: 0.875rem; padding: 0.5rem;" onclick="quickBuy('{{ project.id }}', 100)">
+                        100 Credits
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1.5rem;">
+                    <button class="btn btn-outline" style="font-size: 0.875rem; padding: 0.5rem;" onclick="quickBuy('{{ project.id }}', 250)">
+                        250 Credits
+                    </button>
+                    <button class="btn btn-outline" style="font-size: 0.875rem; padding: 0.5rem;" onclick="quickBuy('{{ project.id }}', 500)">
+                        500 Credits
+                    </button>
+                </div>
+                
+                <!-- Custom Amount -->
+                <button class="btn btn-primary" style="width: 100%; margin-bottom: 1rem;" onclick="openBuyModal('{{ project.id }}')">
+                    <i class="fas fa-shopping-cart"></i>
+                    Buy Custom Amount
+                </button>
+                
+                <!-- View Details -->
+                <button class="btn btn-outline" style="width: 100%;" onclick="viewProjectDetails('{{ project.id }}')">
+                    <i class="fas fa-eye"></i>
+                    View Full Details
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Buy Credits Modal -->
+<div id="buyModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-shopping-cart"></i> Purchase Carbon Credits</h3>
+            <span class="close" onclick="closeBuyModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="buyModalContent">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Details Modal -->
+<div id="detailsModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div class="modal-header">
+            <h3><i class="fas fa-info-circle"></i> Project Details</h3>
+            <span class="close" onclick="closeDetailsModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div id="detailsModalContent">
+                <!-- Dynamic content will be inserted here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentProject = null;
+const projects = {{ projects | tojson }};
+
+function quickBuy(projectId, credits) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    if (credits > project.available_credits) {
+        showNotification(`Only ${project.available_credits} credits available for this project`, 'warning');
+        return;
+    }
+    
+    const totalCost = credits * project.price_per_credit;
+    
+    if (confirm(`Purchase ${credits} credits from "${project.name}" for ₹${totalCost.toLocaleString()}?`)) {
+        purchaseCredits(projectId, credits, 'wallet');
+    }
+}
+
+function openBuyModal(projectId) {
+    currentProject = projects.find(p => p.id === projectId);
+    if (!currentProject) return;
+    
+    const modalContent = `
+        <div style="margin-bottom: 2rem;">
+            <h4 style="margin-bottom: 1rem; color: var(--dark);">${currentProject.name}</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                <div style="text-align: center; padding: 1rem; background: #f0fdf4; border-radius: 8px;">
+                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Available Credits</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--success);">${currentProject.available_credits.toLocaleString()}</div>
+                </div>
+                <div style="text-align: center; padding: 1rem; background: #f0f9ff; border-radius: 8px;">
+                    <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Price per Credit</div>
+                    <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">₹${currentProject.price_per_credit}</div>
+                </div>
+            </div>
+        </div>
+        
+        <form id="buyForm" onsubmit="handlePurchase(event)">
+            <div class="form-group">
+                <label class="form-label">Number of Credits</label>
+                <input type="number" id="creditsAmount" class="form-control" min="1" max="${currentProject.available_credits}" 
+                       placeholder="Enter number of credits" oninput="updateTotal()">
+            </div>
+            
+            <div id="costBreakdown" style="display: none; margin-bottom: 1.5rem; padding: 1rem; background: #f8fafc; border-radius: 8px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Credits:</span>
+                    <span id="creditsCount">0</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Price per Credit:</span>
+                    <span>₹${currentProject.price_per_credit}</span>
+                </div>
+                <hr style="margin: 0.5rem 0; border: none; border-top: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.125rem;">
+                    <span>Total Cost:</span>
+                    <span id="totalCost" style="color: var(--primary);">₹0</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Payment Method</label>
+                <select id="paymentMethod" class="form-control">
+                    <option value="wallet">Digital Wallet</option>
+                    <option value="upi">UPI</option>
+                    <option value="bank">Bank Transfer</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="button" class="btn btn-outline" onclick="closeBuyModal()" style="flex: 1;">Cancel</button>
+                <button type="submit" class="btn btn-primary" style="flex: 1;">
+                    <i class="fas fa-shopping-cart"></i> Purchase Credits
+                </button>
+            </div>
+        </form>
+    `;
+    
+    document.getElementById('buyModalContent').innerHTML = modalContent;
+    document.getElementById('buyModal').style.display = 'flex';
+}
+
+function updateTotal() {
+    const credits = parseInt(document.getElementById('creditsAmount').value) || 0;
+    const totalCost = credits * currentProject.price_per_credit;
+    
+    if (credits > 0) {
+        document.getElementById('costBreakdown').style.display = 'block';
+        document.getElementById('creditsCount').textContent = credits.toLocaleString();
+        document.getElementById('totalCost').textContent = `₹${totalCost.toLocaleString()}`;
+    } else {
+        document.getElementById('costBreakdown').style.display = 'none';
+    }
+}
+
+function handlePurchase(event) {
+    event.preventDefault();
+    
+    const credits = parseInt(document.getElementById('creditsAmount').value);
+    const paymentMethod = document.getElementById('paymentMethod').value;
+    
+    if (!credits || credits <= 0) {
+        showNotification('Please enter a valid number of credits', 'error');
+        return;
+    }
+    
+    if (credits > currentProject.available_credits) {
+        showNotification(`Only ${currentProject.available_credits} credits available`, 'error');
+        return;
+    }
+    
+    purchaseCredits(currentProject.id, credits, paymentMethod);
+}
+
+function purchaseCredits(projectId, credits, paymentMethod) {
+    // Show loading state
+    showNotification('Processing purchase...', 'info');
+    
+    fetch(`/industry/marketplace/buy/${projectId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `credits=${credits}&payment_method=${paymentMethod}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            closeBuyModal();
+            
+            // Update the project's available credits in the UI
+            const project = projects.find(p => p.id === projectId);
+            if (project) {
+                project.available_credits -= credits;
+            }
+            
+            // Optionally refresh the page or update the UI
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            showNotification(data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Purchase error:', error);
+        showNotification('Purchase failed. Please try again.', 'error');
+    });
+}
+
+function viewProjectDetails(projectId) {
+    const project = projects.find(p => p.id === projectId);
+    if (!project) return;
+    
+    const detailsContent = `
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: var(--dark); margin-bottom: 1rem;">${project.name}</h4>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                <div>
+                    <h5 style="margin-bottom: 1rem;">Project Information</h5>
+                    <div style="margin-bottom: 0.5rem;"><strong>Location:</strong> ${project.location}</div>
+                    <div style="margin-bottom: 0.5rem;"><strong>NGO Partner:</strong> ${project.ngo}</div>
+                    <div style="margin-bottom: 0.5rem;"><strong>Ecosystem:</strong> ${project.ecosystem}</div>
+                    <div style="margin-bottom: 0.5rem;"><strong>Verification:</strong> ${project.verification}</div>
+                    <div style="margin-bottom: 1rem;"><strong>Start Date:</strong> ${project.project_start}</div>
+                    
+                    <h5 style="margin-bottom: 1rem;">Methodology</h5>
+                    <p style="font-size: 0.875rem; color: var(--text-muted);">${project.methodology}</p>
+                </div>
+                
+                <div>
+                    <h5 style="margin-bottom: 1rem;">Co-benefits</h5>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        ${project.co_benefits.map(benefit => `
+                            <div style="padding: 0.5rem; background: #f0fdf4; border-radius: 6px; border-left: 3px solid var(--success);">
+                                ${benefit}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <h5 style="margin-bottom: 1rem;">UN SDG Goals</h5>
+                    <div style="display: flex; flex-wrap: gap: 0.5rem;">
+                        ${project.sdg_goals.map(goal => `
+                            <div style="width: 40px; height: 40px; background: var(--success); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                ${goal}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; padding: 1rem; background: #f0f9ff; border-radius: 8px; border: 1px solid #dbeafe;">
+            <div style="margin-bottom: 1rem;">
+                <div style="font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Available Credits</div>
+                <div style="font-size: 2rem; font-weight: bold; color: var(--success);">${project.available_credits.toLocaleString()} tCO₂e</div>
+            </div>
+            <button class="btn btn-primary" onclick="openBuyModal('${project.id}'); closeDetailsModal();">
+                <i class="fas fa-shopping-cart"></i> Purchase Credits
+            </button>
+        </div>
+    `;
+    
+    document.getElementById('detailsModalContent').innerHTML = detailsContent;
+    document.getElementById('detailsModal').style.display = 'flex';
+}
+
+function closeBuyModal() {
+    document.getElementById('buyModal').style.display = 'none';
+    currentProject = null;
+}
+
+function closeDetailsModal() {
+    document.getElementById('detailsModal').style.display = 'none';
+}
+
+function filterProjects() {
+    // Implement filtering logic
+    showNotification('Filtering feature coming soon!', 'info');
+}
+
+// Add hover effects
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px)';
+            this.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '0 1px 3px rgba(0,0,0,0.1)';
+        });
+    });
+});
+</script>
+{% endblock %}

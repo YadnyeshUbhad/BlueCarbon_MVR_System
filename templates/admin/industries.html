@@ -1,0 +1,305 @@
+{% extends 'admin_base.html' %}
+{% set active='industries' %}
+{% set title='Industry Management - NCCR Admin' %}
+{% set header='Industry Management' %}
+
+{% block content %}
+<div class="admin-header">
+    <h2 style="margin: 0; color: #1f2937;">Industry Management</h2>
+    <div class="admin-actions">
+        <a href="/admin/export/industries" class="btn secondary">
+            <i class="fas fa-download"></i> Export Data
+        </a>
+    </div>
+</div>
+
+<!-- Industry Statistics Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-value">{{ stats.total }}</div>
+        <div class="stat-label">
+            <i class="fas fa-building"></i> Total Industries Registered
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--success);">{{ stats.verified }}</div>
+        <div class="stat-label">
+            <i class="fas fa-check-circle"></i> Verified Industries
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--warning);">{{ stats.pending }}</div>
+        <div class="stat-label">
+            <i class="fas fa-clock"></i> Pending Verification
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--primary);">{{ "{:,}".format(stats.total_credits_purchased) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-leaf"></i> Total Credits Purchased
+        </div>
+        <div class="stat-subtitle">tCO₂e</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-value" style="color: var(--success);">₹{{ "{:,}".format(stats.total_revenue_generated) }}</div>
+        <div class="stat-label">
+            <i class="fas fa-rupee-sign"></i> Total Revenue Generated
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="card" style="margin-bottom: 20px;">
+    <form method="get" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
+        <div style="display: flex; gap: 8px; align-items: center;">
+            <i class="fas fa-search" style="color: #6b7280;"></i>
+            <input name="search" placeholder="Search industry name, contact person, or industry ID" 
+                   value="{{ search }}" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; min-width: 300px;">
+        </div>
+        
+        <select name="status" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <option value="">All Status</option>
+            <option value="Verified" {{ 'selected' if status_filter == 'Verified' }}>Verified</option>
+            <option value="Pending" {{ 'selected' if status_filter == 'Pending' }}>Pending</option>
+        </select>
+        
+        <select name="sector" style="padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px;">
+            <option value="">All Sectors</option>
+            {% for sector in sectors %}
+            <option value="{{ sector }}" {{ 'selected' if sector_filter == sector }}>{{ sector }}</option>
+            {% endfor %}
+        </select>
+        
+        <button type="submit" class="btn primary">
+            <i class="fas fa-filter"></i> Filter
+        </button>
+        
+        <a href="/admin/industries" class="btn outline">
+            <i class="fas fa-times"></i> Clear
+        </a>
+    </form>
+</div>
+
+<!-- Industries Table -->
+<div class="card">
+    <h3 style="margin-top: 0; display: flex; align-items: center; gap: 8px;">
+        <i class="fas fa-building"></i>
+        Registered Industries
+    </h3>
+    
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Industry Details</th>
+                    <th>Contact Information</th>
+                    <th>Location & Sector</th>
+                    <th>Purchase Statistics</th>
+                    <th>Revenue Contribution</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for industry in industries %}
+                <tr>
+                    <td>
+                        <div style="font-weight: bold; color: #6b7280;">{{ loop.index }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: #1f2937; margin-bottom: 4px;">{{ industry.name }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">{{ industry.id }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">Reg: {{ industry.registration_number }}</div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 500;">{{ industry.contact_person }}</div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            <i class="fas fa-phone"></i> {{ industry.phone }}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            <i class="fas fa-envelope"></i> {{ industry.email }}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 4px;">
+                            <i class="fas fa-map-pin" style="color: #ef4444;"></i>
+                            <div>
+                                <div style="font-weight: 500;">{{ industry.city }}</div>
+                                <div style="font-size: 12px; color: #6b7280;">{{ industry.state }}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-industry" style="color: #3b82f6;"></i>
+                            <span style="font-size: 12px; padding: 2px 6px; background: #e0f2fe; color: #0277bd; border-radius: 4px;">
+                                {{ industry.sector }}
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="margin-bottom: 4px;">
+                            <span style="font-size: 12px; color: #6b7280;">Credits Purchased:</span>
+                            <div style="font-weight: 600; color: var(--primary);">{{ industry.credits_purchased }} tCO₂e</div>
+                        </div>
+                        <div style="margin-bottom: 4px;">
+                            <span style="font-size: 12px; color: #6b7280;">Transactions:</span>
+                            <div style="font-weight: 600; color: #6b7280;">{{ industry.purchase_history|length }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight: 600; color: var(--success); font-size: 16px;">
+                            ₹{{ "{:,}".format(industry.revenue_contributed) }}
+                        </div>
+                        <div style="font-size: 12px; color: #6b7280;">
+                            Registered: {{ industry.registration_date.strftime('%d %b %Y') if industry.registration_date.__class__.__name__ == 'datetime' else industry.registration_date }}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {{ 'success' if industry.status == 'Verified' else 'warning' }}">
+                            {{ industry.status }}
+                        </span>
+                        {% if industry.verification_date %}
+                        <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">
+                            Verified: {{ industry.verification_date.strftime('%d %b %Y') if industry.verification_date.__class__.__name__ == 'datetime' else industry.verification_date }}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 8px;">
+                            <a href="/admin/industries/{{ industry.id }}" class="btn small primary" title="View Details">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            {% if industry.status == 'Pending' %}
+                            <button onclick="verifyIndustry('{{ industry.id }}')" class="btn small success" title="Verify">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            {% endif %}
+                            <button onclick="editIndustry('{{ industry.id }}')" class="btn small outline" title="Edit Info">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    {% if industries|length == 0 %}
+    <div style="text-align: center; padding: 40px; color: #6b7280;">
+        <i class="fas fa-building" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+        <p>No industries found matching your criteria.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Action Modal -->
+<div id="actionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Industry Action</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="actionForm">
+                <input type="hidden" id="industryId" name="industry_id">
+                <input type="hidden" id="actionType" name="action">
+                
+                <div id="reasonGroup" class="form-group" style="display: none;">
+                    <label for="reason">Reason:</label>
+                    <textarea id="reason" name="reason" rows="4" class="form-control" placeholder="Enter reason for this action..."></textarea>
+                </div>
+                
+                <div id="editGroup" style="display: none;">
+                    <div class="form-group">
+                        <label for="contactPerson">Contact Person:</label>
+                        <input type="text" id="contactPerson" name="contact_person" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone:</label>
+                        <input type="text" id="phone" name="phone" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" class="form-control">
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn outline" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn primary" id="submitBtn">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentIndustryId = null;
+
+function verifyIndustry(industryId) {
+    currentIndustryId = industryId;
+    document.getElementById('modalTitle').textContent = 'Verify Industry';
+    document.getElementById('industryId').value = industryId;
+    document.getElementById('actionType').value = 'verify';
+    document.getElementById('reasonGroup').style.display = 'none';
+    document.getElementById('editGroup').style.display = 'none';
+    document.getElementById('submitBtn').textContent = 'Verify';
+    document.getElementById('submitBtn').className = 'btn success';
+    document.getElementById('actionModal').style.display = 'block';
+}
+
+function editIndustry(industryId) {
+    currentIndustryId = industryId;
+    document.getElementById('modalTitle').textContent = 'Edit Industry Information';
+    document.getElementById('industryId').value = industryId;
+    document.getElementById('actionType').value = 'edit';
+    document.getElementById('reasonGroup').style.display = 'none';
+    document.getElementById('editGroup').style.display = 'block';
+    document.getElementById('submitBtn').textContent = 'Update';
+    document.getElementById('submitBtn').className = 'btn primary';
+    document.getElementById('actionModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('actionModal').style.display = 'none';
+    document.getElementById('actionForm').reset();
+    currentIndustryId = null;
+}
+
+document.getElementById('actionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const action = formData.get('action');
+    
+    fetch(`/admin/industries/${currentIndustryId}/action`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Action failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+    
+    closeModal();
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('actionModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+</script>
+{% endblock %}

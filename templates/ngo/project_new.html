@@ -1,0 +1,1008 @@
+{% extends 'base.html' %}
+{% set active='new_project' %}
+{% set title='Register New Project - BlueCarbon' %}
+{% block content %}
+<h3>Register New Project</h3>
+<form method="post" action="{{ url_for('ngo.submit_project') }}" enctype="multipart/form-data" class="card" style="display:grid;gap:12px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <label>
+            <div>Project Name</div>
+            <input name="name" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" />
+        </label>
+        <label>
+            <div>Ecosystem Type</div>
+            <select name="ecosystem" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px">
+                <option>Mangrove</option>
+                <option>Seagrass</option>
+                <option>Seaweed</option>
+                <option>Coastal Wetlands</option>
+            </select>
+        </label>
+        <label style="grid-column: span 2;">
+            <div>Description</div>
+            <textarea name="description" rows="3" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px"></textarea>
+        </label>
+        <label>
+            <div>Start Date</div>
+            <input type="date" name="start_date" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" />
+        </label>
+        <label>
+            <div>Project Area (ha)</div>
+            <input type="number" name="area" step="0.01" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" />
+        </label>
+        <label>
+            <div>Village / Panchayat / District</div>
+            <input name="admin_area" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" />
+        </label>
+        <label style="grid-column: span 2;">
+            <div>Species List</div>
+            <input id="speciesInput" name="species" placeholder="Comma separated (auto-filled from AI analysis)" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" />
+        </label>
+        <label>
+            <div>Number of Trees</div>
+            <input type="number" id="numberOfTrees" name="number_of_trees" min="1" placeholder="e.g. 1000" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" required />
+        </label>
+        <label>
+            <div>Estimated Seedlings / Area</div>
+            <input type="number" name="seedlings" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" />
+        </label>
+        <label>
+            <div>Estimated Carbon Credits</div>
+            <input id="carbonCreditsInput" type="number" name="carbon_credits" placeholder="Auto-calculated from images" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" readonly />
+        </label>
+        <label>
+            <div>GPS Location (Latitude, Longitude)</div>
+            <input id="locationInput" name="location" placeholder="Auto-extracted from geo-tagged images" style="width:100%;padding:10px;border:1px solid #E5E7EB;border-radius:8px" readonly />
+        </label>
+        
+        <!-- Tree Measurement Section -->
+        <div style="grid-column: span 2; background: #f8fafc; padding: 16px; border-radius: 8px; border: 2px solid #e2e8f0; margin-top: 12px;">
+            <h4 style="margin: 0 0 12px 0; color: #1e40af; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-tree"></i>
+                Tree Data Input (For Accurate Carbon Calculation)
+            </h4>
+            <p style="margin: 0 0 16px 0; font-size: 14px; color: #64748b;">Choose one method: Upload CSV/Excel file with tree data OR manually enter average measurements. Carbon credits will be calculated as: Number of Trees × Average Tree Carbon Sequestration</p>
+            
+            <!-- File Upload Option -->
+            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border: 1px solid #f59e0b; margin-bottom: 16px;">
+                <h5 style="margin: 0 0 12px 0; color: #92400e; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-upload"></i>
+                    Option 1: Upload Tree Data File
+                </h5>
+                <p style="margin: 0 0 12px 0; font-size: 13px; color: #78350f;">
+                    Upload a CSV or Excel file containing individual tree measurements. 
+                    Required columns: <strong>height</strong>, <strong>dbh</strong> (diameter). 
+                    Optional: <strong>age</strong>, <strong>species</strong>
+                </p>
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                    <input type="file" id="treeDataFile" accept=".csv,.xlsx,.xls" style="flex: 1; padding: 8px; border: 1px solid #d97706; border-radius: 6px; background: white;">
+                    <button type="button" class="btn secondary" onclick="processTreeDataFile()" id="processFileBtn" disabled>
+                        <i class="fas fa-cogs"></i>
+                        Process File
+                    </button>
+                </div>
+                <div id="fileProcessingResult" style="margin-top: 12px;"></div>
+                
+                <!-- Sample format help -->
+                <details style="margin-top: 12px;">
+                    <summary style="color: #92400e; cursor: pointer; font-size: 13px;">
+                        <i class="fas fa-info-circle"></i> Expected file format (click to expand)
+                    </summary>
+                    <div style="margin-top: 8px; padding: 12px; background: white; border-radius: 6px; font-family: monospace; font-size: 12px;">
+                        <strong>CSV/Excel columns (case insensitive):</strong><br>
+                        • <strong>height</strong> - Tree height in meters or centimeters<br>
+                        • <strong>dbh</strong> or <strong>diameter</strong> - Diameter at breast height in meters or centimeters<br>
+                        • <strong>age</strong> (optional) - Tree age in years<br>
+                        • <strong>species</strong> (optional) - Tree species name<br><br>
+                        <strong>Example:</strong><br>
+                        height,dbh,age,species<br>
+                        8.5,0.35,15,Mangrove<br>
+                        9.2,0.42,18,Rhizophora<br>
+                        7.1,0.28,12,Avicennia
+                    </div>
+                </details>
+            </div>
+            
+            <div style="text-align: center; color: #6b7280; font-weight: 500; margin: 16px 0;">
+                ── OR ──
+            </div>
+            
+            <!-- Manual Input Option -->
+            <div style="background: #f0f9ff; padding: 16px; border-radius: 8px; border: 1px solid #3b82f6;">
+                <h5 style="margin: 0 0 12px 0; color: #1e40af; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-keyboard"></i>
+                    Option 2: Manual Average Measurements
+                </h5>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+                <label>
+                    <div>Average Tree Height (meters)</div>
+                    <input type="number" id="treeHeight" name="tree_height" step="0.1" placeholder="e.g. 8.5" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px" />
+                </label>
+                <label>
+                    <div>Average DBH - Diameter at Breast Height (meters)</div>
+                    <input type="number" id="treeDBH" name="tree_dbh" step="0.01" placeholder="e.g. 0.35" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px" />
+                </label>
+                <label>
+                    <div>Average Tree Age (years, optional)</div>
+                    <input type="number" id="treeAge" name="tree_age" step="1" placeholder="e.g. 15" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px" />
+                </label>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                <label>
+                    <div>Tree Species</div>
+                    <select id="treeSpecies" name="tree_species" style="width:100%;padding:8px;border:1px solid #cbd5e1;border-radius:6px">
+                        <option value="">Auto-detect from image</option>
+                        <option value="Rhizophora">Rhizophora (Mangrove)</option>
+                        <option value="Avicennia">Avicennia (Mangrove)</option>
+                        <option value="Neem">Neem</option>
+                        <option value="Banyan">Banyan</option>
+                        <option value="Teak">Teak</option>
+                        <option value="Casuarina">Casuarina</option>
+                        <option value="Coconut Palm">Coconut Palm</option>
+                        <option value="Eucalyptus">Eucalyptus</option>
+                    </select>
+                </label>
+                <div style="display: flex; align-items: end;">
+                    <button type="button" class="btn secondary" onclick="calculateTreeCarbon()" style="width: 100%;">
+                        <i class="fas fa-calculator"></i>
+                        Calculate Carbon Absorption
+                    </button>
+                </div>
+            </div>
+            
+            <div id="carbonCalculationResult" style="margin-top: 12px;"></div>
+            </div> <!-- End manual input section -->
+        </div>
+        <label style="grid-column: span 2;">
+            <div>Baseline Condition Upload</div>
+            <input type="file" name="baseline" />
+        </label>
+        <label style="grid-column: span 2;">
+            <div>Media Upload (geo-tagged photos)</div>
+            <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                <input type="file" id="mediaInput" name="media" multiple accept="image/*" style="flex: 1;" />
+                <button type="button" class="btn secondary" onclick="openCamera()">
+                    <i class="fas fa-camera"></i>
+                    Capture Photo
+                </button>
+                <button type="button" class="btn outline" onclick="analyzeImages()">
+                    <i class="fas fa-magic"></i>
+                    Analyze Images
+                </button>
+            </div>
+            <div id="imageAnalysisResults" style="margin-top: 12px;"></div>
+            <div id="uploadedImages" style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px;"></div>
+        </label>
+    </div>
+    <div>
+        <button class="btn" type="submit" id="submitBtn">Submit Project</button>
+    </div>
+</form>
+
+<!-- Camera Modal -->
+<div id="cameraModal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9);">
+    <div style="position: relative; margin: 2% auto; width: 90%; max-width: 800px; text-align: center;">
+        <span onclick="closeCamera()" style="position: absolute; top: 10px; right: 15px; color: white; font-size: 28px; cursor: pointer;">&times;</span>
+        <h3 style="color: white; margin-bottom: 20px;">Capture Geo-tagged Photo</h3>
+        
+        <video id="cameraVideo" autoplay style="width: 100%; max-width: 600px; border-radius: 12px; margin-bottom: 20px;"></video>
+        
+        <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;">
+            <button class="btn" onclick="capturePhoto()">
+                <i class="fas fa-camera"></i>
+                Capture Photo
+            </button>
+            <button class="btn secondary" onclick="closeCamera()">
+                <i class="fas fa-times"></i>
+                Cancel
+            </button>
+        </div>
+        
+        <div id="locationStatus" style="color: white; font-size: 14px;">Getting location...</div>
+        
+        <canvas id="captureCanvas" style="display: none;"></canvas>
+    </div>
+</div>
+
+<!-- Enhanced JavaScript for AI-powered project registration -->
+<script>
+let currentStream = null;
+let currentLocation = null;
+let analysisResults = [];
+
+// Get user's location on page load
+document.addEventListener('DOMContentLoaded', function() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                currentLocation = {
+                    latitude: position.coords.latitude,
+                    longitude: position.coords.longitude
+                };
+                console.log('Location obtained:', currentLocation);
+            },
+            function(error) {
+                console.warn('Location access denied:', error.message);
+            }
+        );
+    }
+    
+    // Handle file input changes
+    const mediaInput = document.getElementById('mediaInput');
+    if (mediaInput) {
+        mediaInput.addEventListener('change', handleFileSelection);
+    }
+    
+    // Handle tree data file selection
+    const treeDataFileInput = document.getElementById('treeDataFile');
+    if (treeDataFileInput) {
+        treeDataFileInput.addEventListener('change', handleTreeDataFileSelection);
+    }
+    
+    // Handle form submission
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', handleFormSubmission);
+    }
+});
+
+function handleFileSelection(event) {
+    const files = event.target.files;
+    if (files.length > 0) {
+        displayUploadedImages(files);
+        showNotification(`${files.length} image(s) selected. Click 'Analyze Images' to process them.`, 'info');
+    }
+}
+
+function handleTreeDataFileSelection(event) {
+    const file = event.target.files[0];
+    const processBtn = document.getElementById('processFileBtn');
+    const resultDiv = document.getElementById('fileProcessingResult');
+    
+    if (file) {
+        // Check file type
+        const allowedTypes = ['.csv', '.xlsx', '.xls'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (allowedTypes.includes(fileExtension)) {
+            processBtn.disabled = false;
+            resultDiv.innerHTML = `
+                <div style="background: #e0f2fe; padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #0369a1;">
+                    <i class="fas fa-file"></i> File selected: <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB)
+                </div>
+            `;
+            showNotification(`Tree data file selected: ${file.name}`, 'info');
+        } else {
+            processBtn.disabled = true;
+            resultDiv.innerHTML = `
+                <div style="background: #fef2f2; padding: 8px 12px; border-radius: 6px; font-size: 13px; color: #dc2626;">
+                    <i class="fas fa-exclamation-triangle"></i> Unsupported file type. Please select a CSV or Excel file.
+                </div>
+            `;
+            showNotification('Please select a CSV or Excel file', 'error');
+        }
+    } else {
+        processBtn.disabled = true;
+        resultDiv.innerHTML = '';
+    }
+}
+
+function processTreeDataFile() {
+    const fileInput = document.getElementById('treeDataFile');
+    const file = fileInput.files[0];
+    const resultDiv = document.getElementById('fileProcessingResult');
+    const processBtn = document.getElementById('processFileBtn');
+    
+    if (!file) {
+        showNotification('Please select a file first', 'error');
+        return;
+    }
+    
+    // Show loading state
+    processBtn.disabled = true;
+    processBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+    resultDiv.innerHTML = `
+        <div style="background: #f3f4f6; padding: 12px; border-radius: 6px; text-align: center; color: #6b7280;">
+            <i class="fas fa-spinner fa-spin"></i> Processing ${file.name}...
+        </div>
+    `;
+    
+    // Create FormData and upload
+    const formData = new FormData();
+    formData.append('tree_data_file', file);
+    
+    fetch('/ngo/upload/tree_data', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        processBtn.innerHTML = '<i class="fas fa-cogs"></i> Process File';
+        
+        if (data.success) {
+            const stats = data.statistics;
+            
+            // Auto-fill form fields
+            document.getElementById('numberOfTrees').value = stats.total_trees;
+            
+            if (stats.avg_height) {
+                document.getElementById('treeHeight').value = stats.avg_height;
+            }
+            
+            if (stats.avg_dbh) {
+                document.getElementById('treeDBH').value = stats.avg_dbh;
+            }
+            
+            if (stats.avg_age) {
+                document.getElementById('treeAge').value = stats.avg_age;
+            }
+            
+            // Auto-fill species if available
+            if (stats.species_list && stats.species_list.length > 0) {
+                document.getElementById('speciesInput').value = stats.species_list.join(', ');
+                
+                // Set the first species in the dropdown if it matches
+                const firstSpecies = stats.species_list[0];
+                const speciesSelect = document.getElementById('treeSpecies');
+                for (let option of speciesSelect.options) {
+                    if (option.value.toLowerCase().includes(firstSpecies.toLowerCase()) || 
+                        firstSpecies.toLowerCase().includes(option.value.toLowerCase())) {
+                        speciesSelect.value = option.value;
+                        break;
+                    }
+                }
+            }
+            
+            // Display success result
+            let resultHtml = `
+                <div style="background: #f0fdf4; border: 1px solid #22c55e; padding: 16px; border-radius: 8px;">
+                    <h6 style="margin: 0 0 12px 0; color: #15803d;">
+                        <i class="fas fa-check-circle"></i> Tree Data Processed Successfully
+                    </h6>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
+                        <div>
+                            <div style="color: #6b7280;">Total Trees:</div>
+                            <div style="font-weight: 600; color: #15803d;">${stats.total_trees}</div>
+                        </div>
+            `;
+            
+            if (stats.avg_height) {
+                resultHtml += `
+                        <div>
+                            <div style="color: #6b7280;">Average Height:</div>
+                            <div style="font-weight: 600; color: #15803d;">${stats.avg_height} m</div>
+                        </div>
+                `;
+            }
+            
+            if (stats.avg_dbh) {
+                resultHtml += `
+                        <div>
+                            <div style="color: #6b7280;">Average DBH:</div>
+                            <div style="font-weight: 600; color: #15803d;">${stats.avg_dbh} m</div>
+                        </div>
+                `;
+            }
+            
+            if (stats.avg_age) {
+                resultHtml += `
+                        <div>
+                            <div style="color: #6b7280;">Average Age:</div>
+                            <div style="font-weight: 600; color: #15803d;">${stats.avg_age} years</div>
+                        </div>
+                `;
+            }
+            
+            resultHtml += `
+                    </div>
+            `;
+            
+            // Show data quality info
+            if (stats.data_quality) {
+                resultHtml += `
+                    <div style="margin-top: 12px; padding: 8px; background: #e0f2fe; border-radius: 6px; font-size: 12px; color: #0369a1;">
+                        <i class="fas fa-info-circle"></i> <strong>Data Quality:</strong>
+                `;
+                
+                if (stats.data_quality.height_converted_cm_to_m) {
+                    resultHtml += '<br>• Height values converted from cm to meters';
+                }
+                if (stats.data_quality.dbh_converted_cm_to_m) {
+                    resultHtml += '<br>• DBH values converted from cm to meters';
+                }
+                
+                resultHtml += `</div>`;
+            }
+            
+            resultHtml += `</div>`;
+            resultDiv.innerHTML = resultHtml;
+            
+            // Trigger carbon calculation if we have the required data
+            if (stats.avg_height && stats.avg_dbh) {
+                setTimeout(() => {
+                    calculateTreeCarbon();
+                }, 500);
+            }
+            
+            showNotification(`Successfully processed ${stats.total_trees} tree records!`, 'success');
+        } else {
+            resultDiv.innerHTML = `
+                <div style="background: #fef2f2; border: 1px solid #ef4444; padding: 12px; border-radius: 6px; color: #dc2626;">
+                    <i class="fas fa-exclamation-triangle"></i> <strong>Processing Failed:</strong><br>
+                    ${data.error}
+                </div>
+            `;
+            showNotification(`File processing failed: ${data.error}`, 'error');
+        }
+        
+        processBtn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error processing tree data file:', error);
+        processBtn.innerHTML = '<i class="fas fa-cogs"></i> Process File';
+        processBtn.disabled = false;
+        
+        resultDiv.innerHTML = `
+            <div style="background: #fef2f2; border: 1px solid #ef4444; padding: 12px; border-radius: 6px; color: #dc2626;">
+                <i class="fas fa-exclamation-triangle"></i> <strong>Error:</strong> Failed to process file. Please try again.
+            </div>
+        `;
+        showNotification('Failed to process file. Please try again.', 'error');
+    });
+}
+
+function displayUploadedImages(files) {
+    const container = document.getElementById('uploadedImages');
+    container.innerHTML = '';
+    
+    Array.from(files).forEach((file, index) => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imgDiv = document.createElement('div');
+            imgDiv.style.cssText = `
+                position: relative;
+                display: inline-block;
+                margin: 4px;
+                border: 2px solid #e5e7eb;
+                border-radius: 8px;
+                overflow: hidden;
+            `;
+            
+            imgDiv.innerHTML = `
+                <img src="${e.target.result}" style="width: 120px; height: 120px; object-fit: cover;" />
+                <div style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px;">
+                    ${index + 1}
+                </div>
+            `;
+            
+            container.appendChild(imgDiv);
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+function analyzeImages() {
+    const mediaInput = document.getElementById('mediaInput');
+    const files = mediaInput.files;
+    
+    if (files.length === 0) {
+        showNotification('Please select images first', 'error');
+        return;
+    }
+    
+    const resultsContainer = document.getElementById('imageAnalysisResults');
+    resultsContainer.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fas fa-spinner fa-spin"></i> Analyzing images with AI...</div>';
+    
+    // Process each image
+    let processedCount = 0;
+    let totalCredits = 0;
+    let detectedSpecies = [];
+    let locations = [];
+    
+    Array.from(files).forEach((file, index) => {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        // Add tree measurements if provided
+        const height = document.getElementById('treeHeight').value;
+        const dbh = document.getElementById('treeDBH').value;
+        const age = document.getElementById('treeAge').value;
+        const species = document.getElementById('treeSpecies').value;
+        
+        if (height) formData.append('height', height);
+        if (dbh) formData.append('dbh', dbh);
+        if (age) formData.append('age', age);
+        if (species) formData.append('species', species);
+        
+        fetch('/ngo/upload/analyze', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            processedCount++;
+            
+            if (data.success) {
+                const analysis = data.analysis;
+                
+                if (analysis.species) {
+                    detectedSpecies.push(analysis.species);
+                    totalCredits += analysis.estimated_carbon_credits || 0;
+                }
+                
+                if (analysis.location && analysis.location.latitude) {
+                    locations.push(analysis.location);
+                }
+                
+                analysisResults.push({
+                    filename: file.name,
+                    calculation_method: analysis.calculation_method,
+                    ...analysis
+                });
+            } else {
+                console.warn(`Image ${index + 1} analysis failed:`, data.error);
+                // Show specific error for non-plant images
+                if (data.error && data.error.includes('Invalid image')) {
+                    showNotification(`❌ Image ${index + 1}: Only plant/tree images are accepted. Please select images containing vegetation.`, 'error');
+                } else if (data.error && data.error.includes('does not contain trees')) {
+                    showNotification(`Image ${index + 1}: ${data.error}`, 'error');
+                } else {
+                    showNotification(`Image ${index + 1}: Analysis failed - ${data.error}`, 'error');
+                }
+            }
+            
+            // Update UI when all images are processed
+            if (processedCount === files.length) {
+                updateAnalysisResults(detectedSpecies, totalCredits, locations);
+            }
+        })
+        .catch(error => {
+            console.error(`Error analyzing image ${index + 1}:`, error);
+            processedCount++;
+            
+            if (processedCount === files.length) {
+                updateAnalysisResults(detectedSpecies, totalCredits, locations);
+            }
+        });
+    });
+}
+
+function updateAnalysisResults(species, credits, locations) {
+    const resultsContainer = document.getElementById('imageAnalysisResults');
+    
+    if (species.length === 0 && credits === 0) {
+        resultsContainer.innerHTML = `
+            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; color: #dc2626;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Invalid images detected. Only tree images are supported for accurate carbon calculations.
+            </div>
+        `;
+        return;
+    }
+    
+    // Update form fields
+    const speciesInput = document.getElementById('speciesInput');
+    const creditsInput = document.getElementById('carbonCreditsInput');
+    const locationInput = document.getElementById('locationInput');
+    
+    if (species.length > 0) {
+        const uniqueSpecies = [...new Set(species)];
+        speciesInput.value = uniqueSpecies.join(', ');
+        speciesInput.style.background = '#f0f9ff';
+        speciesInput.style.borderColor = '#0ea5e9';
+    }
+    
+    if (credits > 0) {
+        creditsInput.value = Math.round(credits * 1000) / 1000;
+        creditsInput.style.background = '#f0fdf4';
+        creditsInput.style.borderColor = '#22c55e';
+    }
+    
+    if (locations.length > 0) {
+        const avgLat = locations.reduce((sum, loc) => sum + loc.latitude, 0) / locations.length;
+        const avgLon = locations.reduce((sum, loc) => sum + loc.longitude, 0) / locations.length;
+        locationInput.value = `${avgLat.toFixed(6)}, ${avgLon.toFixed(6)}`;
+        locationInput.style.background = '#fefce8';
+        locationInput.style.borderColor = '#eab308';
+    }
+    
+    // Check if any results used scientific calculations
+    const hasScientificCalc = analysisResults.some(r => r.calculation_method === 'scientific_allometric');
+    
+    // Display detailed results
+    resultsContainer.innerHTML = `
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 16px; border-radius: 8px;">
+            <h4 style="margin: 0 0 12px 0; color: #15803d;">
+                <i class="fas fa-check-circle"></i>
+                Tree Analysis Complete
+            </h4>
+            <div style="display: grid; gap: 12px;">
+                <div><strong>Tree Species Detected:</strong> ${species.length > 0 ? [...new Set(species)].join(', ') : 'None'}</div>
+                <div><strong>Total Carbon Sequestration:</strong> ${credits.toFixed(3)} tCO₂e</div>
+                <div><strong>Calculation Method:</strong> ${hasScientificCalc ? 'Scientific Allometric Formulas' : 'Image-based Estimation'}</div>
+                <div><strong>Images with GPS Data:</strong> ${locations.length}/${analysisResults.length}</div>
+                <div><strong>Status:</strong> 
+                    ${species.length > 0 
+                        ? '<span style="color: #15803d;">✓ Valid tree images processed</span>' 
+                        : '<span style="color: #dc2626;">⚠ No trees detected</span>'}
+                </div>
+            </div>
+            ${hasScientificCalc ? 
+                '<div style="margin-top: 12px; padding: 8px; background: #e0f2fe; border-radius: 6px; font-size: 13px;"><i class="fas fa-info-circle"></i> <strong>High Accuracy:</strong> Calculations based on tree measurements using peer-reviewed scientific formulas.</div>' : 
+                '<div style="margin-top: 12px; padding: 8px; background: #fef3c7; border-radius: 6px; font-size: 13px;"><i class="fas fa-info-circle"></i> <strong>Estimation:</strong> For precise results, provide tree measurements (height, DBH) in the measurement section above.</div>'
+            }
+        </div>
+    `;
+    
+    showNotification('Tree analysis completed! Form fields have been auto-populated.', 'success');
+}
+
+function calculateTreeCarbon() {
+    const height = document.getElementById('treeHeight').value;
+    const dbh = document.getElementById('treeDBH').value;
+    const age = document.getElementById('treeAge').value;
+    const species = document.getElementById('treeSpecies').value;
+    const numberOfTrees = document.getElementById('numberOfTrees').value;
+    const locationInput = document.getElementById('locationInput').value;
+    
+    // Validate required inputs
+    if (!height || !dbh) {
+        showNotification('Please provide average tree height and DBH (Diameter at Breast Height) for calculation.', 'error');
+        return;
+    }
+    
+    if (!numberOfTrees || numberOfTrees <= 0) {
+        showNotification('Please provide the number of trees in your project.', 'error');
+        return;
+    }
+    
+    // Parse location or use default
+    let latitude = 20.5937; // Default India latitude
+    let longitude = 78.9629; // Default India longitude
+    
+    if (locationInput) {
+        const coords = locationInput.split(',');
+        if (coords.length === 2) {
+            latitude = parseFloat(coords[0].trim());
+            longitude = parseFloat(coords[1].trim());
+        }
+    }
+    
+    const resultsContainer = document.getElementById('carbonCalculationResult');
+    resultsContainer.innerHTML = '<div style="text-align: center; padding: 16px;"><i class="fas fa-spinner fa-spin"></i> Calculating carbon sequestration...</div>';
+    
+    const calculationData = {
+        height: parseFloat(height),
+        dbh: parseFloat(dbh),
+        latitude: latitude,
+        longitude: longitude,
+        species: species || null,
+        age: age ? parseFloat(age) : null,
+        number_of_trees: parseInt(numberOfTrees)
+    };
+    
+    fetch('/ngo/calculate/tree_carbon', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(calculationData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const calc = data.calculation;
+            
+            // Update the carbon credits field with total project sequestration
+            document.getElementById('carbonCreditsInput').value = calc.carbon_sequestration.total_co2_sequestered_tonnes;
+            document.getElementById('carbonCreditsInput').style.background = '#f0fdf4';
+            document.getElementById('carbonCreditsInput').style.borderColor = '#22c55e';
+            
+            // Update species if detected
+            if (species) {
+                const speciesInput = document.getElementById('speciesInput');
+                if (!speciesInput.value) {
+                    speciesInput.value = species;
+                    speciesInput.style.background = '#f0f9ff';
+                    speciesInput.style.borderColor = '#0ea5e9';
+                }
+            }
+            
+            resultsContainer.innerHTML = `
+                <div style="background: #ecfdf5; border: 1px solid #10b981; padding: 16px; border-radius: 8px;">
+                    <h5 style="margin: 0 0 12px 0; color: #047857;"><i class="fas fa-leaf"></i> Carbon Sequestration Analysis</h5>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">TOTAL PROJECT CO₂ SEQUESTRATION</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #047857;">${calc.carbon_sequestration.total_co2_sequestered_tonnes} tonnes</div>
+                            <div style="font-size: 11px; color: #6b7280;">${calc.project_details.number_of_trees} trees × ${calc.project_details.per_tree_co2_sequestration} tonnes each</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">ANNUAL SEQUESTRATION</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #0891b2;">${calc.carbon_sequestration.annual_co2_sequestration_tonnes} tonnes/year</div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 12px; font-size: 13px;">
+                        <div>
+                            <div style="color: #6b7280;">Total Project Biomass:</div>
+                            <strong>${calc.biomass_analysis.total_project_biomass_kg} kg</strong>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280;">Total Carbon Content:</div>
+                            <strong>${calc.biomass_analysis.total_project_carbon_content_kg} kg</strong>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280;">Climate Factor:</div>
+                            <strong>${calc.carbon_sequestration.climate_adjustment_factor}x</strong>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f0f9ff; padding: 12px; border-radius: 6px; font-size: 13px;">
+                        <div style="color: #1e40af; font-weight: 500; margin-bottom: 8px;"><i class="fas fa-globe-americas"></i> Environmental Impact</div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                            <div>🚗 Equivalent to <strong>${calc.environmental_impact.equivalent_car_emissions_offset_days}</strong> days of car emissions</div>
+                            <div>💰 Economic value: <strong>$${calc.environmental_impact.economic_value_usd}</strong></div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 8px; font-size: 11px; color: #6b7280;">
+                        <i class="fas fa-info-circle"></i> Calculated using scientific allometric equations (Chave et al., 2014)
+                    </div>
+                </div>
+            `;
+            
+            showNotification('Carbon sequestration calculated successfully!', 'success');
+        } else {
+            resultsContainer.innerHTML = `
+                <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; color: #dc2626;">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Error calculating carbon sequestration: ${data.error}
+                </div>
+            `;
+            showNotification('Calculation failed. Please check your inputs.', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Carbon calculation error:', error);
+        resultsContainer.innerHTML = `
+            <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 12px; border-radius: 8px; color: #dc2626;">
+                <i class="fas fa-exclamation-triangle"></i>
+                Failed to calculate carbon sequestration. Please try again.
+            </div>
+        `;
+        showNotification('Calculation failed. Please try again.', 'error');
+    });
+}
+
+function openCamera() {
+    const modal = document.getElementById('cameraModal');
+    const video = document.getElementById('cameraVideo');
+    const locationStatus = document.getElementById('locationStatus');
+    
+    modal.style.display = 'block';
+    
+    // Get user media (camera)
+    navigator.mediaDevices.getUserMedia({ 
+        video: { 
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
+            facingMode: 'environment' // Use rear camera if available
+        } 
+    })
+    .then(function(stream) {
+        currentStream = stream;
+        video.srcObject = stream;
+        
+        // Update location status
+        if (currentLocation) {
+            locationStatus.innerHTML = `📍 Location: ${currentLocation.latitude.toFixed(6)}, ${currentLocation.longitude.toFixed(6)}`;
+        } else {
+            locationStatus.innerHTML = '⚠ Location access denied - GPS data will not be included';
+        }
+    })
+    .catch(function(error) {
+        console.error('Camera access error:', error);
+        showNotification('Camera access denied. Please allow camera permissions.', 'error');
+        closeCamera();
+    });
+}
+
+function capturePhoto() {
+    const video = document.getElementById('cameraVideo');
+    const canvas = document.getElementById('captureCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw video frame to canvas
+    ctx.drawImage(video, 0, 0);
+    
+    // Convert to blob
+    canvas.toBlob(function(blob) {
+        // Send to server for analysis
+        const imageData = canvas.toDataURL('image/jpeg');
+        
+        fetch('/ngo/camera/capture', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                image_data: imageData,
+                latitude: currentLocation ? currentLocation.latitude : null,
+                longitude: currentLocation ? currentLocation.longitude : null
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const analysis = data.analysis;
+                
+                // Add to analysis results
+                analysisResults.push({
+                    filename: data.filename,
+                    captured: true,
+                    ...analysis
+                });
+                
+                // Update form fields
+                if (analysis.species) {
+                    const speciesInput = document.getElementById('speciesInput');
+                    const currentSpecies = speciesInput.value.split(',').map(s => s.trim()).filter(s => s);
+                    if (!currentSpecies.includes(analysis.species)) {
+                        currentSpecies.push(analysis.species);
+                        speciesInput.value = currentSpecies.join(', ');
+                    }
+                }
+                
+                if (analysis.estimated_carbon_credits) {
+                    const creditsInput = document.getElementById('carbonCreditsInput');
+                    const currentCredits = parseFloat(creditsInput.value) || 0;
+                    creditsInput.value = (currentCredits + analysis.estimated_carbon_credits).toFixed(3);
+                }
+                
+                if (analysis.captured_location && analysis.captured_location.latitude) {
+                    const locationInput = document.getElementById('locationInput');
+                    locationInput.value = `${analysis.captured_location.latitude.toFixed(6)}, ${analysis.captured_location.longitude.toFixed(6)}`;
+                }
+                
+                // Enhanced success message with plant validation info
+                let successMsg = `✅ Plant photo captured successfully!\n`;
+                successMsg += `🌱 Species: ${analysis.species}\n`;
+                successMsg += `🏭 Carbon Credits: ${analysis.estimated_carbon_credits.toFixed(3)} tCO₂e\n`;
+                if (analysis.plant_coverage) {
+                    successMsg += `🍃 Plant Coverage: ${analysis.plant_coverage}`;
+                }
+                
+                showNotification(successMsg, 'success');
+            } else {
+                // Handle plant validation errors with detailed feedback
+                let errorMsg = data.error || 'Failed to analyze captured photo';
+                
+                if (data.error && data.error.includes('Invalid image')) {
+                    errorMsg = '❌ Invalid Image Detected\n\n';
+                    errorMsg += '📸 Only plant/tree images are accepted for carbon credit analysis.\n\n';
+                    errorMsg += 'Please capture an image containing:\n';
+                    errorMsg += '• 🌳 Trees or tree trunks\n';
+                    errorMsg += '• 🍃 Leaves and vegetation\n';
+                    errorMsg += '• 🌱 Saplings or plantings\n';
+                    errorMsg += '• 🌿 Mangroves or coastal plants\n\n';
+                    errorMsg += 'Avoid images of:\n';
+                    errorMsg += '• 🏢 Buildings or structures\n';
+                    errorMsg += '• 👤 People or animals\n';
+                    errorMsg += '• 🏠 Indoor scenes\n';
+                    errorMsg += '• 🌊 Water or sky only';
+                    
+                    // Show validation details if available
+                    if (data.validation_details && data.validation_details.plant_percentage !== undefined) {
+                        errorMsg += `\n\n🔍 Analysis Results:\n`;
+                        errorMsg += `Plant content: ${data.validation_details.plant_percentage}% (min 10% required)`;
+                    }
+                }
+                
+                showNotification(errorMsg, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Capture analysis error:', error);
+            showNotification('Failed to analyze captured photo', 'error');
+        });
+        
+        closeCamera();
+    }, 'image/jpeg', 0.8);
+}
+
+function closeCamera() {
+    const modal = document.getElementById('cameraModal');
+    const video = document.getElementById('cameraVideo');
+    
+    modal.style.display = 'none';
+    
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+    }
+    
+    video.srcObject = null;
+}
+
+function handleFormSubmission(event) {
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting Project...';
+    submitBtn.disabled = true;
+    
+    // Form validation
+    const speciesInput = document.getElementById('speciesInput');
+    const creditsInput = document.getElementById('carbonCreditsInput');
+    
+    if (!speciesInput.value.trim()) {
+        showNotification('Please analyze images to detect species first', 'error');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        event.preventDefault();
+        return;
+    }
+    
+    // Continue with form submission
+    showNotification('Project submitted with AI-powered analysis!', 'success');
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    const colors = {
+        'success': '#22c55e',
+        'error': '#ef4444',
+        'info': '#3b82f6',
+        'warning': '#f59e0b'
+    };
+    
+    const icons = {
+        'success': 'check-circle',
+        'error': 'exclamation-circle',
+        'info': 'info-circle',
+        'warning': 'exclamation-triangle'
+    };
+    
+    notification.style.background = colors[type] || colors.info;
+    notification.innerHTML = `<i class="fas fa-${icons[type] || icons.info}"></i> ${message}`;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// Clean up camera stream when page is unloaded
+window.addEventListener('beforeunload', function() {
+    if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+    }
+});
+</script>
+{% endblock %}
+
+

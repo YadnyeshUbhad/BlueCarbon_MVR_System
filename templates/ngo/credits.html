@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+{% set active='credits' %}
+{% set title='Credits - BlueCarbon' %}
+{% block content %}
+<div class="cards" style="margin-bottom:12px;">
+    <div class="card"><div class="stat-label">Total Credits</div><div class="stat-value" id="totalCredits">{{ stats.total_credits if stats else 0 }}</div></div>
+    <div class="card"><div class="stat-label">Verified</div><div class="stat-value" id="verifiedCredits">{{ stats.verified_credits if stats else 0 }}</div></div>
+    <div class="card"><div class="stat-label">Pending</div><div class="stat-value" id="pendingCredits">{{ stats.pending_credits if stats else 0 }}</div></div>
+    <div class="card"><div class="stat-label">Sold</div><div class="stat-value" id="soldCredits">{{ stats.sold_credits if stats else 0 }}</div></div>
+    <div class="card"><div class="stat-label">Revenue (₹)</div><div class="stat-value" style="color:#B45309" id="totalRevenue">{{ "{:,}".format(stats.total_revenue) if stats else 0 }}</div></div>
+</div>
+
+<div class="card" style="margin-bottom:12px;">
+    <form method="get" style="display:flex;gap:8px;flex-wrap:wrap;">
+        <input name="q" placeholder="Search Project / Token ID" style="padding:10px;border:1px solid #E5E7EB;border-radius:8px" />
+        <select name="year" style="padding:10px;border:1px solid #E5E7EB;border-radius:8px">
+            <option value="">Year</option>
+            {% for y in range(2020, 2031) %}
+            <option>{{ y }}</option>
+            {% endfor %}
+        </select>
+        <select name="status" style="padding:10px;border:1px solid #E5E7EB;border-radius:8px">
+            <option value="">Status</option>
+            <option>Available</option>
+            <option>Sold</option>
+            <option>Retired</option>
+        </select>
+        <button class="btn" type="submit">Filter</button>
+        <button class="btn secondary" type="button" onclick="exportCSV()">Export CSV</button>
+    </form>
+    </div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Vintage</th>
+            <th>Credits (tCO₂e)</th>
+            <th>Verification</th>
+            <th>Token ID</th>
+            <th>Status</th>
+            <th>Revenue (₹)</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="creditsTableBody">
+        {% if credits|length == 0 %}
+        <tr><td colspan="8">Loading credits data...</td></tr>
+        {% else %}
+        {% for c in credits %}
+        <tr>
+            <td>{{ c.project }}</td>
+            <td>{{ c.vintage }}</td>
+            <td>{{ c.amount }}</td>
+            <td><span class="badge {{ 'success' if c.verification == 'Verified' else 'warning' if c.verification == 'Pending' else 'secondary' }}">{{ c.verification }}</span></td>
+            <td><code>{{ c.token }}</code></td>
+            <td><span class="badge {{ 'success' if c.status == 'Available' else 'primary' if c.status == 'Sold' else 'secondary' }}">{{ c.status }}</span></td>
+            <td>₹{{ "{:,}".format(c.revenue) }}</td>
+            <td><a class="btn" href="https://explorer.example/tx/{{ c.token }}" target="_blank">View on Blockchain</a></td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </tbody>
+    </table>
+
+<!-- Add real-time updates and CSV export functionality -->
+<script>
+let updateInterval;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Start real-time updates
+    startRealTimeUpdates();
+    
+    // Handle filter form submission
+    const filterForm = document.querySelector('form');
+    if (filterForm) {
+        filterForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            applyFilters();
+        });
+    }
+});
+
+function startRealTimeUpdates() {
+    updateInterval = setInterval(updateCreditsData, 5000); // Update every 5 seconds
+    updateCreditsData(); // Initial update
+}
+
+function updateCreditsData() {
+    fetch('/ngo/credits/realtime')
+        .then(response => response.json())
+        .then(data => {
+            if (data.total_credits !== undefined) {
+                // Update stats cards if they exist
+                const totalElement = document.getElementById('totalCredits');
+                if (totalElement && data.latest_credits) {
+                    // Calculate updated stats
+                    let totalCredits = 0, verifiedCredits = 0, pendingCredits = 0, soldCredits = 0, totalRevenue = 0;
+                    
+                    data.latest_credits.forEach(credit => {
+                        totalCredits += credit.amount || 0;
+                        if (credit.verification === 'Verified') verifiedCredits += credit.amount || 0;
+                        if (credit.verification === 'Pending') pendingCredits += credit.amount || 0;
+                        if (credit.status === 'Sold') {
+                            soldCredits += credit.amount || 0;
+                            totalRevenue += credit.revenue || 0;
+                        }
+                    });
+                    
+                    // Update display with animation
+                    updateCounterWithAnimation('totalCredits', totalCredits);
+                    updateCounterWithAnimation('verifiedCredits', verifiedCredits);
+                    updateCounterWithAnimation('pendingCredits', pendingCredits);
+                    updateCounterWithAnimation('soldCredits', soldCredits);
+                    updateCounterWithAnimation('totalRevenue', totalRevenue.toLocaleString());
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error updating credits data:', error);
+        });
+}
+
+function updateCounterWithAnimation(elementId, newValue) {
+    const element = document.getElementById(elementId);
+    if (element) {
+        const currentValue = element.textContent.replace(/[^\d]/g, '');
+        if (currentValue !== String(newValue).replace(/[^\d]/g, '')) {
+            element.style.transform = 'scale(1.1)';
+            element.style.transition = 'transform 0.2s ease';
+            
+            setTimeout(() => {
+                element.textContent = newValue;
+                element.style.transform = 'scale(1)';
+            }, 100);
+        }
+    }
+}
+
+function exportCSV() {
+    const exportBtn = event.target;
+    const originalText = exportBtn.innerHTML;
+    
+    exportBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Exporting...';
+    exportBtn.disabled = true;
+    
+    // Get current filter parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const exportUrl = '/ngo/credits/export?' + urlParams.toString();
+    
+    // Create a temporary link and click it to download
+    const link = document.createElement('a');
+    link.href = exportUrl;
+    link.download = `credits_export_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // Reset button after a delay
+    setTimeout(() => {
+        exportBtn.innerHTML = originalText;
+        exportBtn.disabled = false;
+        showNotification('CSV export completed successfully!', 'success');
+    }, 1000);
+}
+
+function applyFilters() {
+    const form = document.querySelector('form');
+    const formData = new FormData(form);
+    const params = new URLSearchParams(formData);
+    
+    // Reload page with new filters
+    window.location.search = params.toString();
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = 'var(--success)';
+        notification.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+    } else {
+        notification.style.background = 'var(--error)';
+        notification.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+    }
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 4000);
+}
+
+// Clean up interval when page is unloaded
+window.addEventListener('beforeunload', function() {
+    if (updateInterval) {
+        clearInterval(updateInterval);
+    }
+});
+</script>
+{% endblock %}
+
+

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% set active='projects' %}
+{% set title='Projects - BlueCarbon' %}
+{% block content %}
+<div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
+    <h3>Recent Projects</h3>
+    <a class="btn" href="/ngo/projects/new">Register New Project</a>
+    </div>
+<table>
+    <thead>
+        <tr>
+            <th>Project</th>
+            <th>Location</th>
+            <th>Area (ha)</th>
+            <th>Status</th>
+            <th>Credits</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% if projects|length == 0 %}
+        <tr><td colspan="6">No projects yet.</td></tr>
+        {% else %}
+        {% for p in projects %}
+        <tr>
+            <td>{{ p.name }}</td>
+            <td>📍 {{ p.location }}</td>
+            <td>{{ p.area }}</td>
+            <td><span class="badge">{{ p.status }}</span></td>
+            <td>{{ p.credits }}</td>
+            <td><a class="btn secondary" href="/ngo/projects/{{ p.id }}">View Details</a></td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+    </tbody>
+    </table>
+{% endblock %}
+
+
