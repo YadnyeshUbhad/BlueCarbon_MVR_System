@@ -1,0 +1,693 @@
+{% extends 'admin_base.html' %}
+{% set active='approval_workflow' %}
+{% set title='Approval Workflow - Admin Portal' %}
+{% set header='Multi-layer Approval Workflow' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-tasks" style="color: #7c3aed;"></i>
+                Multi-layer Approval Workflow
+            </h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">AI auto-verification followed by manual admin/auditor approvals with blockchain logging</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="badge primary" style="padding: 8px 16px;">
+                <i class="fas fa-robot"></i> AI Engine: Active
+            </div>
+            <button onclick="bulkProcessWorkflows()" class="btn">
+                <i class="fas fa-cogs"></i> Bulk Process
+            </button>
+        </div>
+    </div>
+
+    <!-- Workflow Statistics -->
+    <div class="cards">
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-stream"></i>
+                Active Workflows
+            </div>
+            <div class="stat-value" style="color: var(--primary);">127</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +23 this week
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-robot"></i>
+                AI Auto-Approved
+            </div>
+            <div class="stat-value" style="color: var(--success);">89</div>
+            <div class="stat-change positive">
+                <i class="fas fa-percentage"></i>
+                70.1% rate
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-clock"></i>
+                Avg. Processing Time
+            </div>
+            <div class="stat-value" style="color: var(--info);">2.4h</div>
+            <div class="stat-change positive">
+                <i class="fas fa-bolt"></i>
+                -30% faster
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i>
+                SLA Breaches
+            </div>
+            <div class="stat-value" style="color: var(--warning);">5</div>
+            <div class="stat-change negative">
+                <i class="fas fa-alert-triangle"></i>
+                Requires attention
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow Pipeline Visualization -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-sitemap" style="color: var(--accent);"></i>
+                Approval Pipeline Overview
+            </h3>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                <!-- AI Verification Stage -->
+                <div style="background: #f0f9ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 16px; text-align: center; position: relative;">
+                    <div style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: var(--info); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">1</div>
+                    <i class="fas fa-robot" style="font-size: 24px; color: var(--info); margin-bottom: 8px;"></i>
+                    <h4 style="margin: 0 0 8px 0; color: #1e40af;">AI Verification</h4>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--info); margin-bottom: 4px;">34</div>
+                    <div style="font-size: 11px; color: #1e40af;">In Progress</div>
+                </div>
+                
+                <!-- Technical Review Stage -->
+                <div style="background: #fef3c7; border: 2px solid #f59e0b; border-radius: 12px; padding: 16px; text-align: center; position: relative;">
+                    <div style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">2</div>
+                    <i class="fas fa-search" style="font-size: 24px; color: var(--warning); margin-bottom: 8px;"></i>
+                    <h4 style="margin: 0 0 8px 0; color: #92400e;">Technical Review</h4>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--warning); margin-bottom: 4px;">18</div>
+                    <div style="font-size: 11px; color: #92400e;">Pending</div>
+                </div>
+                
+                <!-- Admin Approval Stage -->
+                <div style="background: #fef2f2; border: 2px solid #ef4444; border-radius: 12px; padding: 16px; text-align: center; position: relative;">
+                    <div style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: var(--danger); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">3</div>
+                    <i class="fas fa-user-shield" style="font-size: 24px; color: var(--danger); margin-bottom: 8px;"></i>
+                    <h4 style="margin: 0 0 8px 0; color: #991b1b;">Admin Approval</h4>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--danger); margin-bottom: 4px;">12</div>
+                    <div style="font-size: 11px; color: #991b1b;">Waiting</div>
+                </div>
+                
+                <!-- Auditor Verification Stage -->
+                <div style="background: #f3f4f6; border: 2px solid #6b7280; border-radius: 12px; padding: 16px; text-align: center; position: relative;">
+                    <div style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: var(--secondary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">4</div>
+                    <i class="fas fa-clipboard-check" style="font-size: 24px; color: var(--secondary); margin-bottom: 8px;"></i>
+                    <h4 style="margin: 0 0 8px 0; color: #4b5563;">Auditor Review</h4>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--secondary); margin-bottom: 4px;">7</div>
+                    <div style="font-size: 11px; color: #4b5563;">In Review</div>
+                </div>
+                
+                <!-- Blockchain Logging Stage -->
+                <div style="background: #f0fdf4; border: 2px solid #22c55e; border-radius: 12px; padding: 16px; text-align: center; position: relative;">
+                    <div style="position: absolute; top: -8px; right: -8px; width: 24px; height: 24px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;">5</div>
+                    <i class="fas fa-link" style="font-size: 24px; color: var(--success); margin-bottom: 8px;"></i>
+                    <h4 style="margin: 0 0 8px 0; color: #166534;">Blockchain Log</h4>
+                    <div style="font-size: 20px; font-weight: 700; color: var(--success); margin-bottom: 4px;">56</div>
+                    <div style="font-size: 11px; color: #166534;">Completed</div>
+                </div>
+            </div>
+            
+            <!-- Pipeline Flow Indicators -->
+            <div style="text-align: center; color: #6b7280; font-size: 12px;">
+                <i class="fas fa-arrow-right" style="margin: 0 8px;"></i>
+                <span>Automated AI Processing</span>
+                <i class="fas fa-arrow-right" style="margin: 0 8px;"></i>
+                <span>Human Review Stages</span>
+                <i class="fas fa-arrow-right" style="margin: 0 8px;"></i>
+                <span>Immutable Logging</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Workflows Queue -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Workflow Queue -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-list-alt" style="color: var(--primary);"></i>
+                        Active Workflow Queue
+                    </h3>
+                    <div style="display: flex; gap: 8px;">
+                        <select onchange="filterWorkflows(this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                            <option value="all">All Stages</option>
+                            <option value="ai_verification">AI Verification</option>
+                            <option value="technical_review">Technical Review</option>
+                            <option value="admin_approval">Admin Approval</option>
+                            <option value="auditor_verification">Auditor Review</option>
+                        </select>
+                        <button onclick="refreshWorkflows()" class="btn outline">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="padding: 20px; max-height: 600px; overflow-y: auto;">
+                <div id="workflowQueue" style="display: grid; gap: 16px;">
+                    <!-- AI Verification Workflow -->
+                    <div class="workflow-item" data-stage="ai_verification" style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; border-left: 4px solid var(--info);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span class="badge info" style="font-size: 11px;">AI VERIFICATION</span>
+                                    <span style="font-weight: 600; color: #1e40af;">Coastal Mangrove Restoration</span>
+                                </div>
+                                <div style="font-size: 12px; color: #1e40af; margin-bottom: 8px;">
+                                    Project #MRV-2024-0912 • Priority: High • SLA: 45min remaining
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 18px; font-weight: 700; color: var(--info);">92.3%</div>
+                                <div style="font-size: 11px; color: #1e40af;">AI Confidence</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px;">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-size: 12px; color: #6b7280;">AI Analysis Progress</span>
+                                <span style="font-size: 12px; color: #1e40af; font-weight: 600;">87%</span>
+                            </div>
+                            <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                                <div style="width: 87%; background: var(--info); border-radius: 4px; height: 100%; transition: width 0.3s ease;"></div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="viewWorkflowDetails('MRV-2024-0912')" class="btn outline" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-eye"></i> Details
+                            </button>
+                            <button onclick="prioritizeWorkflow('MRV-2024-0912')" class="btn secondary" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-arrow-up"></i> Priority
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Technical Review Workflow -->
+                    <div class="workflow-item" data-stage="technical_review" style="background: #fffbeb; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px; border-left: 4px solid var(--warning);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span class="badge warning" style="font-size: 11px;">TECHNICAL REVIEW</span>
+                                    <span style="font-weight: 600; color: #92400e;">Urban Forest Initiative</span>
+                                </div>
+                                <div style="font-size: 12px; color: #92400e; margin-bottom: 8px;">
+                                    Project #MRV-2024-0911 • Priority: Medium • SLA: 18h remaining
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 12px; color: #78350f;">Assigned to:</div>
+                                <div style="font-weight: 600; color: #92400e; font-size: 13px;">Dr. Sarah Tech</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px; font-size: 13px; color: #78350f;">
+                            <div style="margin-bottom: 4px;"><strong>AI Pre-screening:</strong> Passed (88.2% confidence)</div>
+                            <div><strong>Focus Areas:</strong> Environmental impact, technical feasibility, cost analysis</div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="viewWorkflowDetails('MRV-2024-0911')" class="btn" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-clipboard-check"></i> Review
+                            </button>
+                            <button onclick="reassignWorkflow('MRV-2024-0911')" class="btn outline" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-user-friends"></i> Reassign
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Admin Approval Workflow -->
+                    <div class="workflow-item" data-stage="admin_approval" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; border-left: 4px solid var(--danger);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span class="badge danger" style="font-size: 11px;">ADMIN APPROVAL</span>
+                                    <span style="font-weight: 600; color: #991b1b;">Large Scale Reforestation</span>
+                                </div>
+                                <div style="font-size: 12px; color: #991b1b; margin-bottom: 8px;">
+                                    Project #MRV-2024-0908 • Priority: High • SLA: 6h remaining
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 12px; color: #7f1d1d;">Budget:</div>
+                                <div style="font-weight: 600; color: #991b1b; font-size: 13px;">₹2.5M</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px; font-size: 13px; color: #7f1d1d;">
+                            <div style="margin-bottom: 4px;"><strong>Technical Review:</strong> Approved with conditions</div>
+                            <div><strong>Key Concerns:</strong> High budget allocation, extended timeline</div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="approveWorkflow('MRV-2024-0908')" class="btn success" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button onclick="requestRevision('MRV-2024-0908')" class="btn warning" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-edit"></i> Revise
+                            </button>
+                            <button onclick="rejectWorkflow('MRV-2024-0908')" class="btn danger" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Completed Workflow -->
+                    <div class="workflow-item" data-stage="completed" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; border-left: 4px solid var(--success);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                            <div>
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span class="badge success" style="font-size: 11px;">COMPLETED</span>
+                                    <span style="font-weight: 600; color: #166534;">Wetland Conservation Project</span>
+                                </div>
+                                <div style="font-size: 12px; color: #166534; margin-bottom: 8px;">
+                                    Project #MRV-2024-0905 • Completed: 2 hours ago
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <i class="fas fa-link" style="color: var(--success); font-size: 16px;"></i>
+                                <div style="font-size: 11px; color: #166534;">Blockchain Logged</div>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-bottom: 12px; font-size: 13px; color: #166534;">
+                            <div style="margin-bottom: 4px;"><strong>Total Processing Time:</strong> 1.8 hours</div>
+                            <div><strong>Approval Chain:</strong> AI → Technical → Admin → Blockchain</div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="viewCompletedWorkflow('MRV-2024-0905')" class="btn outline" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-certificate"></i> Certificate
+                            </button>
+                            <button onclick="viewBlockchainRecord('MRV-2024-0905')" class="btn secondary" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-link"></i> Blockchain
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Processing Status -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-robot" style="color: var(--accent);"></i>
+                    AI Processing Status
+                </h3>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div style="display: grid; gap: 16px; margin-bottom: 20px;">
+                    <div style="background: #f0f9ff; border-radius: 8px; padding: 16px;">
+                        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                            <div style="width: 40px; height: 40px; background: var(--info); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                <i class="fas fa-brain"></i>
+                            </div>
+                            <div>
+                                <div style="font-weight: 600; color: #1e40af;">AI Model v2.1.0</div>
+                                <div style="font-size: 12px; color: #2563eb;">Active & Learning</div>
+                            </div>
+                        </div>
+                        <div style="font-size: 13px; color: #1e40af;">
+                            <div style="margin-bottom: 4px;"><strong>Processing Rate:</strong> 2.3sec avg</div>
+                            <div style="margin-bottom: 4px;"><strong>Accuracy:</strong> 94.8%</div>
+                            <div><strong>Auto-Approval:</strong> 70.1%</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f0fdf4; border-radius: 8px; padding: 16px;">
+                        <h5 style="margin: 0 0 12px 0; color: #166534;">Recent AI Decisions</h5>
+                        <div style="display: grid; gap: 8px; font-size: 12px;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Auto-Approved</span>
+                                <span style="font-weight: 600; color: var(--success);">23</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Sent for Review</span>
+                                <span style="font-weight: 600; color: var(--warning);">15</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Rejected</span>
+                                <span style="font-weight: 600; color: var(--danger);">3</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Escalated</span>
+                                <span style="font-weight: 600; color: var(--info);">2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <button onclick="tuneAIModel()" class="btn outline" style="width: 100%;">
+                        <i class="fas fa-sliders-h"></i> Tune AI Model
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Workflow Analytics -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-chart-line" style="color: var(--accent);"></i>
+                Workflow Performance Analytics
+            </h3>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Processing Time Distribution</h4>
+                    <div style="display: grid; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">< 1 hour</span>
+                            <span style="font-weight: 600; color: var(--success);">67%</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 67%; background: var(--success); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">1-6 hours</span>
+                            <span style="font-weight: 600; color: var(--info);">28%</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 28%; background: var(--info); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">> 6 hours</span>
+                            <span style="font-weight: 600; color: var(--warning);">5%</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 5%; background: var(--warning); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Approval Success Rate</h4>
+                    <div style="height: 120px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed #d1d5db;">
+                        <div style="text-align: center; color: #6b7280;">
+                            <div style="font-size: 32px; font-weight: 700; color: var(--success); margin-bottom: 4px;">89.2%</div>
+                            <div style="font-size: 13px;">Overall Success Rate</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Stage Bottlenecks</h4>
+                    <div style="display: grid; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #fef2f2; border-radius: 6px;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                            <span style="font-size: 12px; color: #991b1b;">Admin Approval: 12 pending</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #fffbeb; border-radius: 6px;">
+                            <i class="fas fa-clock" style="color: var(--warning);"></i>
+                            <span style="font-size: 12px; color: #92400e;">Technical Review: 18 queued</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: #f0f9ff; border-radius: 6px;">
+                            <i class="fas fa-bolt" style="color: var(--info);"></i>
+                            <span style="font-size: 12px; color: #1e40af;">AI Processing: 34 active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Workflow Details Modal -->
+<div id="workflowModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="margin: 0; color: #1f2937;">Workflow Details</h3>
+            <button onclick="closeWorkflowModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <div id="workflowModalContent">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<script>
+function filterWorkflows(stage) {
+    const items = document.querySelectorAll('.workflow-item');
+    items.forEach(item => {
+        if (stage === 'all' || item.dataset.stage === stage) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function refreshWorkflows() {
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        // Simulate updating progress bars
+        const progressBars = document.querySelectorAll('.workflow-item[data-stage="ai_verification"] .w-full > div');
+        progressBars.forEach(bar => {
+            const currentWidth = parseInt(bar.style.width) || 0;
+            if (currentWidth < 100) {
+                bar.style.width = Math.min(100, currentWidth + 10) + '%';
+            }
+        });
+    }, 1500);
+}
+
+function viewWorkflowDetails(projectId) {
+    const modal = document.getElementById('workflowModal');
+    const content = document.getElementById('workflowModalContent');
+    
+    // Simulate loading workflow details
+    content.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+            <div>
+                <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Project Information</h4>
+                    <div style="display: grid; gap: 8px; font-size: 13px;">
+                        <div><strong>Project ID:</strong> ${projectId}</div>
+                        <div><strong>Type:</strong> Mangrove Restoration</div>
+                        <div><strong>Organization:</strong> Coastal Conservation Trust</div>
+                        <div><strong>Budget:</strong> ₹850,000</div>
+                        <div><strong>Duration:</strong> 24 months</div>
+                        <div><strong>Area:</strong> 150 hectares</div>
+                    </div>
+                </div>
+                
+                <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px;">
+                    <h4 style="margin: 0 0 12px 0; color: #1e40af;">Current Stage: AI Verification</h4>
+                    <div style="margin-bottom: 16px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span style="font-size: 12px;">AI Analysis Progress</span>
+                            <span style="font-size: 12px; font-weight: 600;">87%</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 8px;">
+                            <div style="width: 87%; background: var(--info); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                    </div>
+                    <div style="font-size: 13px; color: #1e40af;">
+                        <div style="margin-bottom: 4px;"><strong>Confidence Score:</strong> 92.3%</div>
+                        <div style="margin-bottom: 4px;"><strong>Processing Time:</strong> 1.2 minutes</div>
+                        <div><strong>Expected Decision:</strong> Auto-Approve (High Confidence)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div style="margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">AI Verification Results</h4>
+                    <div style="display: grid; gap: 8px; font-size: 13px;">
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f0fdf4; border-radius: 6px;">
+                            <span>Document Authenticity</span>
+                            <span style="font-weight: 600; color: var(--success);">95.2% ✓</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f0fdf4; border-radius: 6px;">
+                            <span>Location Verification</span>
+                            <span style="font-weight: 600; color: var(--success);">88.7% ✓</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f0fdf4; border-radius: 6px;">
+                            <span>Environmental Impact</span>
+                            <span style="font-weight: 600; color: var(--success);">91.4% ✓</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #fffbeb; border-radius: 6px;">
+                            <span>Compliance Check</span>
+                            <span style="font-weight: 600; color: var(--warning);">76.8% ⚠</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f0fdf4; border-radius: 6px;">
+                            <span>Financial Validation</span>
+                            <span style="font-weight: 600; color: var(--success);">89.1% ✓</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px; background: #f0fdf4; border-radius: 6px;">
+                            <span>Org. Credibility</span>
+                            <span style="font-weight: 600; color: var(--success);">94.5% ✓</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #f8fafc; border-radius: 8px; padding: 16px;">
+                    <h5 style="margin: 0 0 12px 0; color: #374151;">Workflow Timeline</h5>
+                    <div style="display: grid; gap: 8px; font-size: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></div>
+                            <span>Submitted: 2024-01-15 14:30</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: var(--info); border-radius: 50%;"></div>
+                            <span>AI Verification Started: 14:31</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: #d1d5db; border-radius: 50%;"></div>
+                            <span>Technical Review: Pending</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 8px; height: 8px; background: #d1d5db; border-radius: 50%;"></div>
+                            <span>Admin Approval: Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--border);">
+            <button onclick="exportWorkflowReport('${projectId}')" class="btn outline">
+                <i class="fas fa-download"></i> Export Report
+            </button>
+            <button onclick="overrideAI('${projectId}')" class="btn warning">
+                <i class="fas fa-hand-paper"></i> Override AI
+            </button>
+            <button onclick="escalateWorkflow('${projectId}')" class="btn danger">
+                <i class="fas fa-arrow-up"></i> Escalate
+            </button>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function closeWorkflowModal() {
+    document.getElementById('workflowModal').style.display = 'none';
+}
+
+function prioritizeWorkflow(projectId) {
+    alert(`Workflow ${projectId} has been moved to high priority queue.`);
+}
+
+function approveWorkflow(projectId) {
+    if (confirm(`Approve workflow ${projectId}? This will move it to the next stage.`)) {
+        alert(`Workflow ${projectId} approved. Moving to Auditor Verification stage.`);
+    }
+}
+
+function requestRevision(projectId) {
+    const reason = prompt('Reason for revision request:');
+    if (reason) {
+        alert(`Revision requested for ${projectId}. Reason: ${reason}`);
+    }
+}
+
+function rejectWorkflow(projectId) {
+    if (confirm(`Reject workflow ${projectId}? This action cannot be undone.`)) {
+        const reason = prompt('Reason for rejection:');
+        if (reason) {
+            alert(`Workflow ${projectId} rejected. Reason: ${reason}`);
+        }
+    }
+}
+
+function reassignWorkflow(projectId) {
+    alert(`Opening reassignment panel for workflow ${projectId}...`);
+}
+
+function bulkProcessWorkflows() {
+    alert('Bulk processing initiated. All AI-verified workflows will be processed automatically.');
+}
+
+function tuneAIModel() {
+    alert('Opening AI model tuning interface...');
+}
+
+function overrideAI(projectId) {
+    if (confirm(`Override AI decision for ${projectId}? This will require manual processing.`)) {
+        alert(`AI decision overridden for ${projectId}. Workflow moved to manual review.`);
+        closeWorkflowModal();
+    }
+}
+
+function escalateWorkflow(projectId) {
+    if (confirm(`Escalate workflow ${projectId}? This will flag it for senior admin review.`)) {
+        alert(`Workflow ${projectId} escalated to senior admin review with high priority.`);
+        closeWorkflowModal();
+    }
+}
+
+function exportWorkflowReport(projectId) {
+    alert(`Exporting detailed workflow report for ${projectId}...`);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('workflowModal');
+    if (event.target === modal) {
+        closeWorkflowModal();
+    }
+}
+
+// Simulate real-time progress updates
+setInterval(() => {
+    const progressBars = document.querySelectorAll('.workflow-item[data-stage="ai_verification"] .w-full > div');
+    progressBars.forEach(bar => {
+        const currentWidth = parseInt(bar.style.width) || 0;
+        if (currentWidth < 100 && Math.random() > 0.6) {
+            bar.style.width = Math.min(100, currentWidth + Math.floor(Math.random() * 20)) + '%';
+            
+            // Update percentage text
+            const percentSpan = bar.parentElement.previousElementSibling.querySelector('span:last-child');
+            if (percentSpan) {
+                percentSpan.textContent = bar.style.width.replace('%', '') + '%';
+            }
+        }
+    });
+}, 4000);
+</script>
+{% endblock %}

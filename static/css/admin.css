@@ -1,0 +1,37 @@
+/* Extracted styles from admin_base.html to avoid inline styles */
+
+.text-primary {
+    color: var(--primary);
+}
+
+.text-right {
+    text-align: right;
+}
+
+.admin-name {
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.admin-timestamp {
+    font-size: 12px;
+    color: #6B7280;
+}
+
+.alert {
+    margin-bottom: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+}
+
+.alert-success {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.alert-error {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+

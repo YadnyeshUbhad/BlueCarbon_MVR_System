@@ -1,0 +1,586 @@
+{% extends 'admin_base.html' %}
+{% set active='industry_applications' %}
+{% set title='Industry Applications - NCCR Admin' %}
+{% set header='Industry Applications' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header with Statistics -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937;">Industry Registration Applications</h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">Review and manage company registration applications</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="badge info" style="padding: 8px 16px;">
+                <i class="fas fa-clock"></i> {{ stats.pending }} Pending Review
+            </div>
+            <button onclick="refreshApplications()" class="btn outline small">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--primary);">{{ stats.total }}</div>
+            <div class="stat-label">
+                <i class="fas fa-building"></i> Total Applications
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--warning);">{{ stats.pending }}</div>
+            <div class="stat-label">
+                <i class="fas fa-clock"></i> Pending Review
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--success);">{{ stats.approved }}</div>
+            <div class="stat-label">
+                <i class="fas fa-check-circle"></i> Approved
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--danger);">{{ stats.rejected }}</div>
+            <div class="stat-label">
+                <i class="fas fa-times-circle"></i> Rejected
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0;">Filters & Search</h3>
+        </div>
+        <div style="padding: 20px;">
+            <form method="GET" style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 16px; align-items: end;">
+                <div>
+                    <label for="search" style="display: block; margin-bottom: 6px; font-weight: 500;">Search Applications</label>
+                    <input type="text" id="search" name="search" value="{{ search }}" 
+                           placeholder="Company name, contact person, or ID"
+                           style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                
+                <div>
+                    <label for="sector_filter" style="display: block; margin-bottom: 6px; font-weight: 500;">Industry Sector</label>
+                    <select id="sector_filter" name="sector" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="">All Sectors</option>
+                        {% for sector in sectors %}
+                        <option value="{{ sector }}" {{ 'selected' if sector_filter == sector }}>{{ sector|title }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="tab" style="display: block; margin-bottom: 6px; font-weight: 500;">Status Filter</label>
+                    <select id="tab" name="tab" style="width: 100%; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px;">
+                        <option value="pending" {{ 'selected' if tab == 'pending' }}>Pending Review</option>
+                        <option value="approved" {{ 'selected' if tab == 'approved' }}>Approved</option>
+                        <option value="rejected" {{ 'selected' if tab == 'rejected' }}>Rejected</option>
+                        <option value="all" {{ 'selected' if tab == 'all' }}>All Applications</option>
+                    </select>
+                </div>
+                
+                <button type="submit" class="btn">
+                    <i class="fas fa-search"></i> Filter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Applications List -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-list" style="color: var(--primary);"></i>
+                {{ 'Pending ' if tab == 'pending' else (tab|title + ' ' if tab != 'all' else '') }}Applications 
+                ({{ applications|length }})
+            </h3>
+            
+            {% if applications|length > 0 %}
+            <div style="display: flex; gap: 8px;">
+                <button onclick="exportApplications()" class="btn outline small">
+                    <i class="fas fa-download"></i> Export CSV
+                </button>
+                {% if tab == 'pending' %}
+                <button onclick="bulkAction('approve')" class="btn small success" title="Bulk Approve Selected">
+                    <i class="fas fa-check"></i> Bulk Approve
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        {% if tab == 'pending' %}
+                        <th width="40">
+                            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                        </th>
+                        {% endif %}
+                        <th>Company Details</th>
+                        <th>Industry & Size</th>
+                        <th>Contact Information</th>
+                        <th>Application Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for app in applications %}
+                    <tr>
+                        {% if tab == 'pending' %}
+                        <td>
+                            <input type="checkbox" class="app-checkbox" value="{{ app.id }}">
+                        </td>
+                        {% endif %}
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 40px; height: 40px; background: var(--primary); color: white; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                    {{ (app.company_name or app.name or 'Company')[0].upper() }}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1f2937;">{{ app.company_name or app.name or 'Unknown Company' }}</div>
+                                    <div style="font-size: 12px; color: #6b7280;">ID: {{ app.id }}</div>
+                                    {% if app.trading_name %}
+                                    <div style="font-size: 11px; color: #6b7280;">Trading: {{ app.trading_name }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">{{ (app.industry_type or app.sector or 'Unknown')|title }}</div>
+                            <div style="font-size: 12px; color: #6b7280;">{{ (app.company_size or 'Unknown')|title }}</div>
+                            {% if app.annual_emissions %}
+                            <div style="font-size: 11px; color: #6b7280;">
+                                <i class="fas fa-cloud"></i> {{ app.annual_emissions|round|int }} tCO2e/year
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">{{ app.contact_person or app.signatory_name or 'Unknown' }}</div>
+                            <div style="font-size: 12px; color: #6b7280;">{{ app.email or app.primary_email or 'No email' }}</div>
+                            {% if app.phone or app.primary_phone %}
+                            <div style="font-size: 11px; color: #6b7280;">
+                                <i class="fas fa-phone"></i> {{ app.phone or app.primary_phone }}
+                            </div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if app.application_date %}
+                            <div style="font-weight: 500;">{{ app.application_date.strftime('%d %b %Y') }}</div>
+                            <div style="font-size: 12px; color: #6b7280;">{{ app.application_date.strftime('%I:%M %p') }}</div>
+                            {% elif app.registration_date %}
+                            <div style="font-weight: 500;">{{ app.registration_date.strftime('%d %b %Y') }}</div>
+                            <div style="font-size: 12px; color: #6b7280;">{{ app.registration_date.strftime('%I:%M %p') }}</div>
+                            {% else %}
+                            <div style="color: #6b7280;">Unknown</div>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if app.status == 'Pending' %}
+                            <span class="badge warning">
+                                <i class="fas fa-clock"></i> Pending Review
+                            </span>
+                            {% elif app.status == 'Verified' %}
+                            <span class="badge success">
+                                <i class="fas fa-check-circle"></i> Approved
+                            </span>
+                            {% elif app.status == 'Under Review' %}
+                            <span class="badge info">
+                                <i class="fas fa-search"></i> Under Review
+                            </span>
+                            {% elif app.status == 'Blacklisted' %}
+                            <span class="badge danger">
+                                <i class="fas fa-times-circle"></i> Rejected
+                            </span>
+                            {% else %}
+                            <span class="badge secondary">{{ app.status }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 6px;">
+                                <a href="{{ url_for('admin.industry_application_details', app_id=app.id) }}" 
+                                   class="btn small outline" title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                
+                                {% if app.status == 'Pending' %}
+                                <button onclick="quickApprove('{{ app.id }}', '{{ app.company_name or app.name }}')" 
+                                        class="btn small success" title="Quick Approve">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button onclick="quickReject('{{ app.id }}', '{{ app.company_name or app.name }}')" 
+                                        class="btn small danger" title="Quick Reject">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                {% endif %}
+                                
+                                <div class="dropdown">
+                                    <button class="btn small secondary dropdown-toggle" data-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <div class="dropdown-menu">
+                                        <a href="{{ url_for('admin.industry_application_details', app_id=app.id) }}">
+                                            <i class="fas fa-file-alt"></i> Full Details
+                                        </a>
+                                        {% if app.status == 'Pending' %}
+                                        <a href="#" onclick="requestMoreInfo('{{ app.id }}', '{{ app.company_name or app.name }}')">
+                                            <i class="fas fa-question-circle"></i> Request Info
+                                        </a>
+                                        {% endif %}
+                                        <a href="#" onclick="exportSingle('{{ app.id }}')">
+                                            <i class="fas fa-download"></i> Export Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if applications|length == 0 %}
+        <div style="text-align: center; padding: 40px; color: #6b7280;">
+            <i class="fas fa-building" style="font-size: 48px; margin-bottom: 16px; opacity: 0.3;"></i>
+            <p>No {{ 'pending ' if tab == 'pending' else '' }}applications found.</p>
+            {% if search or sector_filter %}
+            <p style="font-size: 14px;">Try adjusting your search criteria or filters.</p>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Action Modals -->
+<div id="quickApproveModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Approve Application</h3>
+            <span class="close" onclick="closeModal('quickApproveModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to approve the application for <strong id="approveCompanyName"></strong>?</p>
+            <div class="form-group">
+                <label for="approveReason">Approval Notes (Optional)</label>
+                <textarea id="approveReason" placeholder="Add any notes about the approval..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn outline" onclick="closeModal('quickApproveModal')">Cancel</button>
+            <button type="button" class="btn success" onclick="confirmApprove()">
+                <i class="fas fa-check"></i> Approve Application
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="quickRejectModal" class="modal" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Reject Application</h3>
+            <span class="close" onclick="closeModal('quickRejectModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p>Are you sure you want to reject the application for <strong id="rejectCompanyName"></strong>?</p>
+            <div class="form-group">
+                <label for="rejectReason">Rejection Reason *</label>
+                <textarea id="rejectReason" placeholder="Please provide a reason for rejection..." required></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn outline" onclick="closeModal('quickRejectModal')">Cancel</button>
+            <button type="button" class="btn danger" onclick="confirmReject()">
+                <i class="fas fa-times"></i> Reject Application
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentAppId = null;
+
+function quickApprove(appId, companyName) {
+    currentAppId = appId;
+    document.getElementById('approveCompanyName').textContent = companyName;
+    document.getElementById('approveReason').value = '';
+    document.getElementById('quickApproveModal').style.display = 'block';
+}
+
+function quickReject(appId, companyName) {
+    currentAppId = appId;
+    document.getElementById('rejectCompanyName').textContent = companyName;
+    document.getElementById('rejectReason').value = '';
+    document.getElementById('quickRejectModal').style.display = 'block';
+}
+
+function confirmApprove() {
+    const reason = document.getElementById('approveReason').value;
+    
+    fetch(`/admin/industries/applications/${currentAppId}/action`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=approve&reason=${encodeURIComponent(reason)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+        closeModal('quickApproveModal');
+    })
+    .catch(error => {
+        showNotification('Error processing approval', 'error');
+        closeModal('quickApproveModal');
+    });
+}
+
+function confirmReject() {
+    const reason = document.getElementById('rejectReason').value;
+    
+    if (!reason.trim()) {
+        showNotification('Please provide a reason for rejection', 'warning');
+        return;
+    }
+    
+    fetch(`/admin/industries/applications/${currentAppId}/action`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=reject&reason=${encodeURIComponent(reason)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(data.message, 'error');
+        }
+        closeModal('quickRejectModal');
+    })
+    .catch(error => {
+        showNotification('Error processing rejection', 'error');
+        closeModal('quickRejectModal');
+    });
+}
+
+function requestMoreInfo(appId, companyName) {
+    const reason = prompt(`Request additional information from ${companyName}:`);
+    if (reason) {
+        fetch(`/admin/industries/applications/${appId}/action`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=request_info&reason=${encodeURIComponent(reason)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showNotification(data.message, 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showNotification(data.message, 'error');
+            }
+        })
+        .catch(error => {
+            showNotification('Error requesting information', 'error');
+        });
+    }
+}
+
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.querySelectorAll('.app-checkbox');
+    checkboxes.forEach(cb => cb.checked = checkbox.checked);
+}
+
+function bulkAction(action) {
+    const selectedApps = Array.from(document.querySelectorAll('.app-checkbox:checked')).map(cb => cb.value);
+    
+    if (selectedApps.length === 0) {
+        showNotification('Please select applications to process', 'warning');
+        return;
+    }
+    
+    if (confirm(`Are you sure you want to ${action} ${selectedApps.length} selected applications?`)) {
+        // In production, implement bulk action API
+        showNotification(`Bulk ${action} functionality would be implemented here`, 'info');
+    }
+}
+
+function refreshApplications() {
+    location.reload();
+}
+
+function exportApplications() {
+    const params = new URLSearchParams(window.location.search);
+    window.open(`/admin/export/industry_applications?${params.toString()}`, '_blank');
+}
+
+function exportSingle(appId) {
+    window.open(`/admin/export/industry_application/${appId}`, '_blank');
+}
+
+function closeModal(modalId) {
+    document.getElementById(modalId).style.display = 'none';
+    currentAppId = null;
+}
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 12px 20px;
+        border-radius: 8px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    if (type === 'success') {
+        notification.style.background = '#10b981';
+        notification.innerHTML = '<i class="fas fa-check-circle"></i> ' + message;
+    } else if (type === 'error') {
+        notification.style.background = '#ef4444';
+        notification.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + message;
+    } else if (type === 'warning') {
+        notification.style.background = '#f59e0b';
+        notification.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
+    } else if (type === 'info') {
+        notification.style.background = '#3b82f6';
+        notification.innerHTML = '<i class="fas fa-info-circle"></i> ' + message;
+    }
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 4000);
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+        currentAppId = null;
+    }
+}
+</script>
+
+<style>
+.modal {
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    position: relative;
+    margin: 5% auto;
+    padding: 0;
+    width: 90%;
+    max-width: 500px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-footer {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding: 20px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.close {
+    font-size: 24px;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.close:hover {
+    color: #374151;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    z-index: 100;
+    min-width: 150px;
+}
+
+.dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 8px 16px;
+    color: #374151;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.dropdown-menu a:hover {
+    background: #f9fafb;
+}
+
+.dropdown-menu a i {
+    margin-right: 8px;
+    width: 12px;
+}
+</style>
+{% endblock %}

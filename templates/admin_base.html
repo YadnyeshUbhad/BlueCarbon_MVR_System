@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/static/css/admin.css" rel="stylesheet">
     <style>
         :root {
             --primary: #0077B6;
@@ -61,10 +62,14 @@
             background: linear-gradient(180deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
             padding: 0;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
             height: 100vh;
+            width: 280px;
+            overflow-y: auto;
             transition: all 0.3s ease;
+            z-index: 100;
         }
         
         .admin-brand {
@@ -101,15 +106,16 @@
         .admin-nav a {
             text-decoration: none;
             color: rgba(255,255,255,0.8);
-            padding: 14px 16px;
-            border-radius: 12px;
+            padding: 10px 16px;
+            border-radius: 8px;
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             font-weight: 500;
-            margin-bottom: 4px;
+            margin-bottom: 2px;
             position: relative;
+            font-size: 13px;
         }
         
         .admin-nav a i {
@@ -143,14 +149,33 @@
         }
         
         .admin-nav .nav-section {
-            margin-top: 20px;
-            margin-bottom: 8px;
+            margin-top: 16px;
+            margin-bottom: 4px;
             padding: 0 16px;
-            font-size: 11px;
+            font-size: 10px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1px;
             color: rgba(255,255,255,0.5);
+        }
+        
+        /* Custom scrollbar for sidebar */
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .admin-sidebar::-webkit-scrollbar-track {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+        }
+        
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.3);
+            border-radius: 10px;
+        }
+        
+        .admin-sidebar::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.5);
         }
         
         .header {
@@ -466,6 +491,10 @@
                     <i class="fas fa-industry"></i>
                     Industries
                 </a>
+                <a href="/admin/industries/applications" class="{% if active=='industry_applications' %}active{% endif %}">
+                    <i class="fas fa-file-contract"></i>
+                    Industry Applications
+                </a>
                 
                 <div class="nav-section">Financial</div>
                 <a href="/admin/revenue" class="{% if active=='revenue' %}active{% endif %}">
@@ -473,21 +502,31 @@
                     Revenue Tracking
                 </a>
                 
+                <div class="nav-section">NCCR Analytics</div>
+                <a href="/admin/nccr-tools" class="{% if active=='nccr_tools' %}active{% endif %}">
+                    <i class="fas fa-analytics"></i>
+                    Advanced MRV Analytics
+                </a>
+                
                 <div class="nav-section">System</div>
+                <a href="/admin/admins" class="{% if active=='admins' %}active{% endif %}">
+                    <i class="fas fa-user-shield"></i>
+                    Admin Management
+                </a>
                 <a href="/admin/settings" class="{% if active=='settings' %}active{% endif %}">
                     <i class="fas fa-cog"></i>
                     System Settings
                 </a>
-                <a href="/admin/reports" class="{% if active=='reports' %}active{% endif %}">
-                    <i class="fas fa-file-alt"></i>
-                    Reports & Analytics
+                <a href="/admin/research/dashboard" class="{% if active=='research' %}active{% endif %}">
+                    <i class="fas fa-microscope"></i>
+                    Scientific Research
                 </a>
             </nav>
         </aside>
         
         <header class="header">
             <h1>
-                <i class="fas fa-shield-alt" style="color: var(--primary);"></i>
+                <i class="fas fa-shield-alt text-primary"></i>
                 {{ header or 'NCCR Admin Portal' }}
             </h1>
             <div class="admin-info">
@@ -495,10 +534,14 @@
                     <i class="fas fa-user-shield"></i>
                     Admin Access
                 </div>
-                <div style="text-align: right;">
-                    <div style="font-weight: 600; font-size: 14px;">NCCR Administrator</div>
-                    <div style="font-size: 12px; color: #6B7280;">{{ now.strftime('%d %b %Y, %H:%M') if now else 'Just now' }}</div>
+                <div class="text-right">
+                    <div class="admin-name">NCCR Administrator</div>
+                    <div class="admin-timestamp">{{ now().strftime('%d %b %Y, %H:%M') if now() else 'Just now' }}</div>
                 </div>
+                <a href="{{ url_for('admin.logout') }}" class="btn outline" style="margin-left: 16px;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </a>
             </div>
         </header>
         
@@ -506,7 +549,7 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}" style="margin-bottom: 20px; padding: 12px 20px; border-radius: 8px; background: {% if category=='error' %}#FEE2E2; color: #991B1B{% else %}#D1FAE5; color: #065F46{% endif %};">
+                    <div class="alert {% if category=='error' %}alert-error{% else %}alert-success{% endif %}">
                         {{ message }}
                     </div>
                     {% endfor %}

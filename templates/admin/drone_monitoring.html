@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% set active = 'drone' %}
+{% set header = 'Drone Analysis Dashboard' %}
+
+{% block content %}
+<div class="cards">
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-helicopter"></i>
+            Active Drone Missions
+        </div>
+        <div class="stat-value">{{ projects|length }}</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> Real-time monitoring
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-cube"></i>
+            3D Models Generated
+        </div>
+        <div class="stat-value">{{ (projects|length * 2) }}</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> LiDAR processed
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-tree"></i>
+            Biomass Calculated
+        </div>
+        <div class="stat-value">{{ ((projects|length) * 45)|int }}t</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> Carbon potential
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-map"></i>
+            Area Mapped
+        </div>
+        <div class="stat-value">{{ ((projects|length) * 8.5)|round(1) }}K</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i> hectares surveyed
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+    <div class="table-container">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-helicopter" style="color: var(--primary);"></i>
+                Active Drone Monitoring Projects
+            </h3>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Project ID</th>
+                    <th>Project Name</th>
+                    <th>Location</th>
+                    <th>Flight Status</th>
+                    <th>Quality Score</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in projects %}
+                <tr>
+                    <td><strong>{{ project.id }}</strong></td>
+                    <td>{{ project.name }}</td>
+                    <td>{{ project.location }}</td>
+                    <td>
+                        {% set flight_status = ['Scheduled', 'In-Flight', 'Processing', 'Completed'][loop.index0 % 4] %}
+                        {% if flight_status == 'Completed' %}
+                            <span class="badge success">{{ flight_status }}</span>
+                        {% elif flight_status == 'In-Flight' %}
+                            <span class="badge warning">{{ flight_status }}</span>
+                        {% elif flight_status == 'Processing' %}
+                            <span class="badge primary">{{ flight_status }}</span>
+                        {% else %}
+                            <span class="badge">{{ flight_status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span style="background: #D1FAE5; color: #065F46; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: 600;">
+                            {{ 85 + (loop.index0 % 13) }}%
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin.drone_project_detail', project_id=project.id) }}" class="btn" style="font-size: 12px; padding: 6px 12px;">
+                            <i class="fas fa-eye"></i> View Analysis
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="card">
+        <h4 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-chart-pie" style="color: var(--secondary);"></i>
+            Analysis Summary
+        </h4>
+        
+        <div style="space-y: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">Imagery Analysis</div>
+                    <div style="font-size: 12px; color: #666;">RGB + NIR Processing</div>
+                </div>
+                <div style="color: var(--primary); font-weight: 700;">98%</div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">LiDAR Processing</div>
+                    <div style="font-size: 12px; color: #666;">3D Point Clouds</div>
+                </div>
+                <div style="color: var(--secondary); font-weight: 700;">95%</div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">Change Detection</div>
+                    <div style="font-size: 12px; color: #666;">Temporal Analysis</div>
+                </div>
+                <div style="color: var(--accent); font-weight: 700;">92%</div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8f9fa; border-radius: 8px; margin-bottom: 10px;">
+                <div>
+                    <div style="font-weight: 600; font-size: 14px;">Biomass Estimation</div>
+                    <div style="font-size: 12px; color: #666;">Allometric Models</div>
+                </div>
+                <div style="color: var(--highlight); font-weight: 700; background: rgba(255, 214, 10, 0.2); padding: 4px 8px; border-radius: 4px;">89%</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <button class="btn secondary" style="width: 100%; font-size: 14px;">
+                <i class="fas fa-download"></i> Export Analysis Data
+            </button>
+        </div>
+    </div>
+</div>
+
+<div style="margin-top: 24px;">
+    <div class="card">
+        <h4 style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-cogs" style="color: var(--primary);"></i>
+            Flight Operations & Equipment
+        </h4>
+        
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
+            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border-radius: 12px;">
+                <div style="font-size: 28px; color: var(--primary); margin-bottom: 8px;">
+                    <i class="fas fa-helicopter"></i>
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--primary);">DJI M300</div>
+                <div style="font-size: 12px; color: #666;">Primary Survey Drone</div>
+                <div style="font-size: 12px; color: #666; margin-top: 4px;">Status: Active</div>
+            </div>
+            
+            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #f0fdf4, #dcfce7); border-radius: 12px;">
+                <div style="font-size: 28px; color: var(--secondary); margin-bottom: 8px;">
+                    <i class="fas fa-camera"></i>
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--secondary);">RGB+NIR</div>
+                <div style="font-size: 12px; color: #666;">Multispectral Camera</div>
+                <div style="font-size: 12px; color: #666; margin-top: 4px;">Resolution: 20MP</div>
+            </div>
+            
+            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #f0fdfa, #ccfbf1); border-radius: 12px;">
+                <div style="font-size: 28px; color: var(--accent); margin-bottom: 8px;">
+                    <i class="fas fa-radar"></i>
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: var(--accent);">LiDAR</div>
+                <div style="font-size: 12px; color: #666;">VLP-16 Scanner</div>
+                <div style="font-size: 12px; color: #666; margin-top: 4px;">Range: 100m</div>
+            </div>
+            
+            <div style="text-align: center; padding: 15px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border-radius: 12px;">
+                <div style="font-size: 28px; color: var(--highlight); margin-bottom: 8px;">
+                    <i class="fas fa-satellite-dish"></i>
+                </div>
+                <div style="font-size: 20px; font-weight: 700; color: #d97706;">RTK GPS</div>
+                <div style="font-size: 12px; color: #666;">Precision Navigation</div>
+                <div style="font-size: 12px; color: #666; margin-top: 4px;">Accuracy: ±2cm</div>
+            </div>
+        </div>
+        
+        <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+            <h5 style="margin: 0 0 10px 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-route" style="color: var(--primary);"></i>
+                Next Scheduled Flights
+            </h5>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; font-size: 12px;">
+                <div>
+                    <strong>Tomorrow 09:00</strong><br>
+                    PROJ1005 - Sundarbans Survey<br>
+                    <span style="color: var(--primary);">Flight Duration: 45min</span>
+                </div>
+                <div>
+                    <strong>Tomorrow 14:30</strong><br>
+                    PROJ1008 - Mumbai Coast<br>
+                    <span style="color: var(--secondary);">Flight Duration: 60min</span>
+                </div>
+                <div>
+                    <strong>Day after 11:00</strong><br>
+                    PROJ1012 - Kerala Backwaters<br>
+                    <span style="color: var(--accent);">Flight Duration: 30min</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Auto-refresh drone status every 15 seconds
+    setInterval(function() {
+        // In production, this would fetch real drone status data
+        console.log('Refreshing drone status...');
+    }, 15000);
+</script>
+{% endblock %}

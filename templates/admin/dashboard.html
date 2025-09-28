@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'admin_base.html' %}
 {% set active='dashboard' %}
 {% set title='NCCR Admin Dashboard - BlueCarbon' %}
 {% set header='NCCR Admin Dashboard' %}
@@ -14,7 +14,7 @@
             </div>
             <div style="text-align: right;">
                 <div style="font-size: 14px; opacity: 0.8;">Last Updated</div>
-                <div style="font-weight: bold;">{{ now.strftime('%d %b %Y, %H:%M') if now else 'Just now' }}</div>
+                <div style="font-weight: bold;">{{ now().strftime('%d %b %Y, %H:%M') if now() else 'Just now' }}</div>
             </div>
         </div>
     </div>

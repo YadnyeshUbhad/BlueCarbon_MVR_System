@@ -1,0 +1,420 @@
+{% extends "admin_base.html" %}
+{% set active = 'industries' %}
+{% set header = 'Industry Details' %}
+
+<!-- DEBUG: This is the ADMIN Industry Details template -->
+<!-- Template: {{ template_debug }} -->
+<!-- Base Template: admin_base.html -->
+<!-- Current User Role: Admin -->
+
+{% block content %}
+<div class="card" style="margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-industry" style="color: var(--primary);"></i>
+            {{ industry.name }}
+        </h2>
+        <div>
+            {% if industry.status == 'Verified' %}
+                <span class="badge success">
+                    <i class="fas fa-check-circle"></i> Verified
+                </span>
+            {% elif industry.status == 'Pending' %}
+                <span class="badge warning">
+                    <i class="fas fa-clock"></i> Pending Verification
+                </span>
+            {% else %}
+                <span class="badge danger">
+                    <i class="fas fa-ban"></i> {{ industry.status }}
+                </span>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+            <div class="stat-label">Credits Purchased</div>
+            <div class="stat-value" style="font-size: 24px;">{{ "{:,}".format(industry.credits_purchased) }}</div>
+        </div>
+        <div>
+            <div class="stat-label">Revenue Contributed</div>
+            <div class="stat-value" style="font-size: 24px;">₹{{ "{:,}".format(industry.revenue_contributed) }}</div>
+        </div>
+        <div>
+            <div class="stat-label">Sector</div>
+            <div class="stat-value" style="font-size: 18px;">{{ industry.sector }}</div>
+        </div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <div class="card">
+        <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+            Company Details
+        </h3>
+        
+        <div style="display: grid; gap: 15px;">
+            <div>
+                <strong>Industry ID:</strong> {{ industry.id }}
+            </div>
+            <div>
+                <strong>Registration Number:</strong> {{ industry.registration_number }}
+            </div>
+            <div>
+                <strong>Sector:</strong> {{ industry.sector }}
+            </div>
+            <div>
+                <strong>Contact Person:</strong> {{ industry.contact_person }}
+            </div>
+            <div>
+                <strong>Phone:</strong> {{ industry.phone }}
+            </div>
+            <div>
+                <strong>Email:</strong> {{ industry.email }}
+            </div>
+            <div>
+                <strong>Address:</strong> {{ industry.address }}
+            </div>
+            <div>
+                <strong>Location:</strong> {{ industry.city }}, {{ industry.state }}
+            </div>
+            <div>
+                <strong>Registration Date:</strong> 
+                {% if industry.registration_date %}
+                    {{ industry.registration_date.strftime('%d %b %Y') }}
+                {% else %}
+                    Not available
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-university" style="color: var(--secondary);"></i>
+            Financial Details
+        </h3>
+        
+        <div style="display: grid; gap: 15px;">
+            <div>
+                <strong>Bank Name:</strong> {{ industry.bank_name }}
+            </div>
+            <div>
+                <strong>Account Number:</strong> {{ industry.account_number }}
+            </div>
+            <div>
+                <strong>Wallet Address:</strong> 
+                <code style="word-break: break-all; font-size: 12px; background: #f3f4f6; padding: 4px 6px; border-radius: 4px;">
+                    {{ industry.wallet_address }}
+                </code>
+            </div>
+            <div>
+                <strong>Total Credits Purchased:</strong> {{ "{:,}".format(industry.credits_purchased) }}
+            </div>
+            <div>
+                <strong>Total Amount Spent:</strong> ₹{{ "{:,}".format(industry.revenue_contributed) }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if industry.purchase_history %}
+<div class="table-container" style="margin-top: 24px;">
+    <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+        <h3 style="margin: 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-shopping-cart" style="color: var(--secondary);"></i>
+            Purchase History
+        </h3>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Project</th>
+                <th>Credits</th>
+                <th>Price per Credit</th>
+                <th>Total Amount</th>
+                <th>Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for purchase in industry.purchase_history %}
+            <tr>
+                <td><strong>{{ purchase.transaction_id }}</strong></td>
+                <td>{{ purchase.project_name }}</td>
+                <td>{{ purchase.credits_bought }}</td>
+                <td>₹{{ purchase.price_per_credit }}</td>
+                <td>₹{{ "{:,}".format(purchase.total_amount) }}</td>
+                <td>{{ purchase.purchase_date.strftime('%d %b %Y') if purchase.purchase_date else 'N/A' }}</td>
+                <td>
+                    {% if purchase.status == 'Completed' %}
+                        <span class="badge success">{{ purchase.status }}</span>
+                    {% elif purchase.status == 'Pending' %}
+                        <span class="badge warning">{{ purchase.status }}</span>
+                    {% elif purchase.status == 'Processing' %}
+                        <span class="badge primary">{{ purchase.status }}</span>
+                    {% else %}
+                        <span class="badge">{{ purchase.status }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+
+<!-- Action Buttons -->
+<div class="card" style="margin-top: 24px;">
+    <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-tools" style="color: var(--primary);"></i>
+        Admin Actions
+    </h3>
+    
+    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        {% if industry.status == 'Pending' %}
+        <button onclick="verifyIndustry('{{ industry.id }}')" class="btn success">
+            <i class="fas fa-check"></i> Approve Industry
+        </button>
+        <button onclick="rejectIndustry('{{ industry.id }}')" class="btn danger">
+            <i class="fas fa-times"></i> Reject Industry
+        </button>
+        {% endif %}
+        
+        {% if industry.status != 'Blacklisted' %}
+        <button onclick="blacklistIndustry('{{ industry.id }}')" class="btn warning">
+            <i class="fas fa-ban"></i> Blacklist Industry
+        </button>
+        {% endif %}
+        
+        <button onclick="editIndustry('{{ industry.id }}')" class="btn outline">
+            <i class="fas fa-edit"></i> Edit Information
+        </button>
+        
+<a href="{{ url_for('admin.industries_management') }}" class="btn outline">
+            <i class="fas fa-arrow-left"></i> Back to Industries
+        </a>
+    </div>
+</div>
+
+<!-- Action Modal -->
+<div id="actionModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Industry Action</h3>
+            <span class="close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="actionForm">
+                <input type="hidden" id="industryId" name="industry_id" value="{{ industry.id }}">
+                <input type="hidden" id="actionType" name="action">
+                
+                <div id="reasonGroup" class="form-group" style="display: none;">
+                    <label for="reason">Reason:</label>
+                    <textarea id="reason" name="reason" rows="4" class="form-control" placeholder="Enter reason for this action..."></textarea>
+                </div>
+                
+                <div id="editGroup" style="display: none;">
+                    <div class="form-group">
+                        <label for="contact_person">Contact Person:</label>
+                        <input type="text" id="contact_person" name="contact_person" class="form-control" value="{{ industry.contact_person }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone:</label>
+                        <input type="text" id="phone" name="phone" class="form-control" value="{{ industry.phone }}">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="email" id="email" name="email" class="form-control" value="{{ industry.email }}">
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" onclick="closeModal()" class="btn secondary">Cancel</button>
+                    <button type="submit" class="btn primary" id="confirmBtn">Confirm</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentIndustryId = null;
+
+function verifyIndustry(industryId) {
+    currentIndustryId = industryId;
+    document.getElementById('modalTitle').textContent = 'Verify Industry';
+    document.getElementById('industryId').value = industryId;
+    document.getElementById('actionType').value = 'verify';
+    document.getElementById('reasonGroup').style.display = 'none';
+    document.getElementById('editGroup').style.display = 'none';
+    document.getElementById('confirmBtn').textContent = 'Verify';
+    document.getElementById('confirmBtn').className = 'btn success';
+    document.getElementById('actionModal').style.display = 'block';
+}
+
+function rejectIndustry(industryId) {
+    currentIndustryId = industryId;
+    document.getElementById('modalTitle').textContent = 'Reject Industry';
+    document.getElementById('industryId').value = industryId;
+    document.getElementById('actionType').value = 'reject';
+    document.getElementById('reasonGroup').style.display = 'block';
+    document.getElementById('editGroup').style.display = 'none';
+    document.getElementById('confirmBtn').textContent = 'Reject';
+    document.getElementById('confirmBtn').className = 'btn danger';
+    document.getElementById('actionModal').style.display = 'block';
+}
+
+function blacklistIndustry(industryId) {
+    currentIndustryId = industryId;
+    document.getElementById('modalTitle').textContent = 'Blacklist Industry';
+    document.getElementById('industryId').value = industryId;
+    document.getElementById('actionType').value = 'blacklist';
+    document.getElementById('reasonGroup').style.display = 'block';
+    document.getElementById('editGroup').style.display = 'none';
+    document.getElementById('confirmBtn').textContent = 'Blacklist';
+    document.getElementById('confirmBtn').className = 'btn warning';
+    document.getElementById('actionModal').style.display = 'block';
+}
+
+function editIndustry(industryId) {
+    currentIndustryId = industryId;
+    document.getElementById('modalTitle').textContent = 'Edit Industry Information';
+    document.getElementById('industryId').value = industryId;
+    document.getElementById('actionType').value = 'edit';
+    document.getElementById('reasonGroup').style.display = 'none';
+    document.getElementById('editGroup').style.display = 'block';
+    document.getElementById('confirmBtn').textContent = 'Update';
+    document.getElementById('confirmBtn').className = 'btn primary';
+    document.getElementById('actionModal').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('actionModal').style.display = 'none';
+    document.getElementById('actionForm').reset();
+    currentIndustryId = null;
+}
+
+document.getElementById('actionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const action = formData.get('action');
+    
+    fetch(`/admin/industries/${currentIndustryId}/action`, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification(data.message, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('Action failed: ' + data.message, 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('An error occurred. Please try again.', 'error');
+    });
+    
+    closeModal();
+});
+
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('actionModal');
+    if (event.target == modal) {
+        closeModal();
+    }
+}
+</script>
+
+<style>
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: var(--white);
+    margin: 10% auto;
+    padding: 0;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.close {
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #aaa;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    max-width: 400px;
+}
+
+.notification.success {
+    background: var(--success);
+}
+
+.notification.error {
+    background: var(--danger);
+}
+</style>
+{% endblock %}

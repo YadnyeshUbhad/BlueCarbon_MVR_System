@@ -1,0 +1,1023 @@
+{% extends 'admin_base.html' %}
+{% set active='dashboard' %}
+{% set title='Comprehensive Admin Dashboard - BlueCarbon MRV' %}
+{% set header='Comprehensive Admin Dashboard' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Critical Alerts Banner -->
+    <div id="alertsBanner" style="display: none; background: linear-gradient(45deg, #dc2626, #b91c1c); color: white; padding: 16px; border-radius: 12px; margin-bottom: 8px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 20px;"></i>
+            </div>
+            <div style="flex: 1;">
+                <div style="font-size: 18px; font-weight: 700; margin-bottom: 4px;">🚨 CRITICAL SECURITY ALERT</div>
+                <div style="font-size: 14px; opacity: 0.9;" id="criticalAlertText">Multiple fraud indicators detected across 3 active projects. Immediate administrative review required.</div>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button onclick="handleCriticalAlerts()" class="btn" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 8px 16px;">
+                    <i class="fas fa-shield-alt"></i> Handle Alerts
+                </button>
+                <button onclick="dismissBanner()" style="background: none; border: none; color: white; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Dashboard Header -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+        <!-- System Health Monitor -->
+        <div class="card" style="background: linear-gradient(135deg, #059669 0%, #047857 100%); color: white; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="padding: 24px; position: relative; z-index: 1;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-heartbeat" style="font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; opacity: 0.85;">System Health Score</div>
+                        <div style="font-size: 32px; font-weight: 700; line-height: 1;" id="systemHealthScore">97.3%</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px; opacity: 0.8;">
+                    <div>
+                        <div>API Uptime</div>
+                        <div style="font-weight: 600;" id="apiUptime">99.98%</div>
+                    </div>
+                    <div>
+                        <div>Response Time</div>
+                        <div style="font-weight: 600;" id="responseTime">234ms</div>
+                    </div>
+                    <div>
+                        <div>Active Sessions</div>
+                        <div style="font-weight: 600;" id="activeSessions">1,247</div>
+                    </div>
+                    <div>
+                        <div>Data Integrity</div>
+                        <div style="font-weight: 600;" id="dataIntegrity">100%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Project Pipeline Status -->
+        <div class="card" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="padding: 24px; position: relative; z-index: 1;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-project-diagram" style="font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; opacity: 0.85;">Active Projects</div>
+                        <div style="font-size: 32px; font-weight: 700; line-height: 1;" id="totalActiveProjects">142</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px; opacity: 0.8;">
+                    <div>
+                        <div>Approved</div>
+                        <div style="font-weight: 600;" id="approvedProjects">89</div>
+                    </div>
+                    <div>
+                        <div>Under Review</div>
+                        <div style="font-weight: 600;" id="reviewProjects">34</div>
+                    </div>
+                    <div>
+                        <div>AI Processing</div>
+                        <div style="font-weight: 600;" id="processingProjects">12</div>
+                    </div>
+                    <div>
+                        <div>Flagged</div>
+                        <div style="font-weight: 600; color: #fca5a5;" id="flaggedProjects">7</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fraud Detection & Security -->
+        <div class="card" style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); color: white; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="padding: 24px; position: relative; z-index: 1;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-shield-alt" style="font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; opacity: 0.85;">Security Threats</div>
+                        <div style="font-size: 32px; font-weight: 700; line-height: 1;" id="securityThreats">9</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px; opacity: 0.8;">
+                    <div>
+                        <div>Critical</div>
+                        <div style="font-weight: 600;" id="criticalThreats">2</div>
+                    </div>
+                    <div>
+                        <div>High Risk</div>
+                        <div style="font-weight: 600;" id="highRiskThreats">3</div>
+                    </div>
+                    <div>
+                        <div>Medium Risk</div>
+                        <div style="font-weight: 600;" id="mediumRiskThreats">4</div>
+                    </div>
+                    <div>
+                        <div>Resolved Today</div>
+                        <div style="font-weight: 600; color: #86efac;" id="resolvedThreats">15</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Overview -->
+        <div class="card" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; position: relative; overflow: hidden;">
+            <div style="position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: rgba(255,255,255,0.1); border-radius: 50%;"></div>
+            <div style="padding: 24px; position: relative; z-index: 1;">
+                <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+                    <div style="width: 56px; height: 56px; background: rgba(255,255,255,0.15); border-radius: 16px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-chart-line" style="font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <div style="font-size: 14px; opacity: 0.85;">Platform Revenue</div>
+                        <div style="font-size: 32px; font-weight: 700; line-height: 1;" id="platformRevenue">₹3.2Cr</div>
+                    </div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px; opacity: 0.8;">
+                    <div>
+                        <div>This Month</div>
+                        <div style="font-weight: 600;" id="monthlyRevenue">₹42L</div>
+                    </div>
+                    <div>
+                        <div>Growth</div>
+                        <div style="font-weight: 600;" id="revenueGrowth">+23.5%</div>
+                    </div>
+                    <div>
+                        <div>Transactions</div>
+                        <div style="font-weight: 600;" id="transactions">1,847</div>
+                    </div>
+                    <div>
+                        <div>Pending</div>
+                        <div style="font-weight: 600;" id="pendingTransactions">23</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Advanced Fraud Detection Dashboard -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+                <div>
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 12px;">
+                        <i class="fas fa-brain" style="color: #dc2626;"></i>
+                        AI-Powered Fraud Detection & Security Monitoring
+                    </h3>
+                    <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 14px;">Real-time anomaly detection, pattern analysis, and automated threat response</p>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <div class="badge" style="background: #dc2626; color: white; padding: 6px 12px; border-radius: 20px; font-size: 12px;">
+                        <i class="fas fa-eye"></i> Live Monitoring
+                    </div>
+                    <button onclick="refreshSecurityStatus()" class="btn outline">
+                        <i class="fas fa-sync-alt"></i> Refresh Status
+                    </button>
+                    <button onclick="generateSecurityReport()" class="btn">
+                        <i class="fas fa-file-shield"></i> Security Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 24px;">
+            <!-- Fraud Detection Overview -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 28px;">
+                <div style="text-align: center; padding: 20px; background: #fef2f2; border: 1px solid #fca5a5; border-radius: 12px;">
+                    <div style="font-size: 28px; font-weight: 700; color: #dc2626; margin-bottom: 8px;" id="fraudDetected">7</div>
+                    <div style="font-size: 13px; color: #7f1d1d; font-weight: 600;">Fraud Cases Detected</div>
+                    <div style="font-size: 11px; color: #991b1b; margin-top: 4px;">Last 24 hours</div>
+                </div>
+                <div style="text-align: center; padding: 20px; background: #fffbeb; border: 1px solid #fed7aa; border-radius: 12px;">
+                    <div style="font-size: 28px; font-weight: 700; color: #f59e0b; margin-bottom: 8px;" id="suspiciousActivities">23</div>
+                    <div style="font-size: 13px; color: #92400e; font-weight: 600;">Suspicious Activities</div>
+                    <div style="font-size: 11px; color: #a16207; margin-top: 4px;">Under investigation</div>
+                </div>
+                <div style="text-align: center; padding: 20px; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px;">
+                    <div style="font-size: 28px; font-weight: 700; color: #3b82f6; margin-bottom: 8px;" id="aiConfidenceScore">94.2%</div>
+                    <div style="font-size: 13px; color: #1e40af; font-weight: 600;">AI Confidence Score</div>
+                    <div style="font-size: 11px; color: #2563eb; margin-top: 4px;">Detection accuracy</div>
+                </div>
+                <div style="text-align: center; padding: 20px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;">
+                    <div style="font-size: 28px; font-weight: 700; color: #059669; margin-bottom: 8px;" id="preventedLosses">₹12.4L</div>
+                    <div style="font-size: 13px; color: #166534; font-weight: 600;">Prevented Losses</div>
+                    <div style="font-size: 11px; color: #16a34a; margin-top: 4px;">This month</div>
+                </div>
+            </div>
+
+            <!-- Live Security Alerts -->
+            <div style="margin-bottom: 28px;">
+                <h4 style="margin: 0 0 20px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-bell" style="color: #dc2626;"></i>
+                    Live Security Alerts
+                </h4>
+
+                <div id="liveAlertsContainer">
+                    <!-- Critical Security Alert -->
+                    <div class="security-alert critical" style="margin-bottom: 16px; border-left: 4px solid #dc2626; padding: 20px; background: linear-gradient(135deg, #fef2f2, #fde8e8); border-radius: 12px; box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 20px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                    <div style="width: 44px; height: 44px; background: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #7f1d1d; font-size: 16px;">Document Forgery Detected</div>
+                                        <div style="font-size: 12px; color: #991b1b; margin-top: 2px;">Project ID: BCM_2024_0156 | Industry Partner: TechCorp Industries</div>
+                                    </div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.6); padding: 16px; border-radius: 8px; margin-bottom: 16px;">
+                                    <div style="font-size: 14px; color: #7f1d1d; line-height: 1.6; margin-bottom: 12px;">
+                                        <strong>⚠️ CRITICAL ALERT:</strong> AI verification system detected multiple fraud indicators in environmental permit documentation:
+                                    </div>
+                                    <ul style="margin: 0; padding-left: 20px; color: #991b1b; font-size: 13px; line-height: 1.5;">
+                                        <li>Digital signature manipulation detected (Confidence: 96.7%)</li>
+                                        <li>Metadata inconsistencies suggesting document alteration</li>
+                                        <li>OCR patterns indicate text replacement in key sections</li>
+                                        <li>Geographic coordinates don't match satellite verification</li>
+                                    </ul>
+                                </div>
+                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button onclick="emergencyLockProject('BCM_2024_0156')" class="btn" style="background: #dc2626; color: white; padding: 8px 16px;">
+                                        <i class="fas fa-lock"></i> Emergency Lock Project
+                                    </button>
+                                    <button onclick="notifyAuthorities('BCM_2024_0156')" class="btn outline" style="border-color: #dc2626; color: #dc2626; padding: 8px 16px;">
+                                        <i class="fas fa-phone"></i> Notify Authorities
+                                    </button>
+                                    <button onclick="freezeTransactions('TechCorp_Industries')" class="btn outline" style="border-color: #dc2626; color: #dc2626; padding: 8px 16px;">
+                                        <i class="fas fa-freeze"></i> Freeze Transactions
+                                    </button>
+                                    <button onclick="generateForensicReport('BCM_2024_0156')" class="btn outline" style="padding: 8px 16px;">
+                                        <i class="fas fa-file-medical"></i> Forensic Report
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="text-align: right; font-size: 11px; color: #991b1b;">
+                                <div style="font-weight: 600; margin-bottom: 8px;">
+                                    <span class="badge" style="background: #dc2626; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px;">CRITICAL</span>
+                                </div>
+                                <div>Detected: 3 min ago</div>
+                                <div>Risk Score: 97.2%</div>
+                                <div style="margin-top: 8px;">
+                                    <div style="width: 60px; height: 60px; background: conic-gradient(#dc2626 97.2%, #e5e7eb 0); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <div style="width: 45px; height: 45px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #dc2626;">97%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Anomaly Alert -->
+                    <div class="security-alert warning" style="margin-bottom: 16px; border-left: 4px solid #f59e0b; padding: 20px; background: linear-gradient(135deg, #fffbeb, #fef3c7); border-radius: 12px; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.1);">
+                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 20px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                    <div style="width: 44px; height: 44px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #92400e; font-size: 16px;">Unusual Transaction Pattern</div>
+                                        <div style="font-size: 12px; color: #a16207; margin-top: 2px;">NGO ID: GREEN_EARTH_NGO | Multiple rapid withdrawals</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 14px; color: #92400e; line-height: 1.5; margin-bottom: 16px;">
+                                    <strong>FINANCIAL ANOMALY:</strong> Detection of irregular withdrawal pattern: 5 transactions totaling ₹8.7L within 2 hours, significantly above normal behavior baseline.
+                                </div>
+                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button onclick="investigateTransactions('GREEN_EARTH_NGO')" class="btn" style="background: #f59e0b; color: white; padding: 8px 16px;">
+                                        <i class="fas fa-search"></i> Investigate Transactions
+                                    </button>
+                                    <button onclick="tempSuspendAccount('GREEN_EARTH_NGO')" class="btn outline" style="border-color: #f59e0b; color: #f59e0b; padding: 8px 16px;">
+                                        <i class="fas fa-pause"></i> Temporary Suspension
+                                    </button>
+                                    <button onclick="requestVerification('GREEN_EARTH_NGO')" class="btn outline" style="padding: 8px 16px;">
+                                        <i class="fas fa-user-check"></i> Request Verification
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="text-align: right; font-size: 11px; color: #a16207;">
+                                <div style="font-weight: 600; margin-bottom: 8px;">
+                                    <span class="badge" style="background: #f59e0b; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px;">WARNING</span>
+                                </div>
+                                <div>Detected: 12 min ago</div>
+                                <div>Risk Score: 78.3%</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- System Intrusion Alert -->
+                    <div class="security-alert medium" style="margin-bottom: 16px; border-left: 4px solid #3b82f6; padding: 20px; background: linear-gradient(135deg, #f0f9ff, #dbeafe); border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: start; gap: 20px;">
+                            <div style="flex: 1;">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                    <div style="width: 44px; height: 44px; background: #3b82f6; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                        <i class="fas fa-shield-alt"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 700; color: #1e40af; font-size: 16px;">Multiple Failed Login Attempts</div>
+                                        <div style="font-size: 12px; color: #2563eb; margin-top: 2px;">IP: 192.168.1.xxx | Target: admin@bluecarbon-mrv.in</div>
+                                    </div>
+                                </div>
+                                <div style="font-size: 14px; color: #1e40af; line-height: 1.5; margin-bottom: 16px;">
+                                    <strong>SECURITY NOTICE:</strong> 15 failed login attempts detected from foreign IP address. Automatic IP blocking activated. Account security enhanced.
+                                </div>
+                                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                                    <button onclick="blockIP('192.168.1.xxx')" class="btn" style="background: #3b82f6; color: white; padding: 8px 16px;">
+                                        <i class="fas fa-ban"></i> Permanent IP Block
+                                    </button>
+                                    <button onclick="enhanceSecurity()" class="btn outline" style="border-color: #3b82f6; color: #3b82f6; padding: 8px 16px;">
+                                        <i class="fas fa-shield-alt"></i> Enhance Security
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="text-align: right; font-size: 11px; color: #2563eb;">
+                                <div style="font-weight: 600; margin-bottom: 8px;">
+                                    <span class="badge" style="background: #3b82f6; color: white; padding: 4px 8px; border-radius: 4px; font-size: 10px;">MEDIUM</span>
+                                </div>
+                                <div>Detected: 28 min ago</div>
+                                <div>Status: Auto-resolved</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced Analytics Section -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 28px;">
+                <!-- Fraud Pattern Analysis -->
+                <div>
+                    <h4 style="margin: 0 0 20px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-chart-pie" style="color: #3b82f6;"></i>
+                        Fraud Pattern Analysis
+                    </h4>
+                    
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px;">
+                        <!-- Fraud Types Distribution -->
+                        <div style="margin-bottom: 24px;">
+                            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px; font-weight: 600;">Most Common Fraud Types (Last 30 Days)</div>
+                            <div style="display: grid; gap: 12px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 12px; height: 12px; background: #dc2626; border-radius: 2px;"></div>
+                                        <span style="font-size: 13px;">Document Manipulation</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 80px; height: 6px; background: #e5e7eb; border-radius: 3px;">
+                                            <div style="width: 67%; height: 100%; background: #dc2626; border-radius: 3px;"></div>
+                                        </div>
+                                        <span style="font-size: 12px; font-weight: 600; color: #374151;">67%</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 2px;"></div>
+                                        <span style="font-size: 13px;">Financial Fraud</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 80px; height: 6px; background: #e5e7eb; border-radius: 3px;">
+                                            <div style="width: 23%; height: 100%; background: #f59e0b; border-radius: 3px;"></div>
+                                        </div>
+                                        <span style="font-size: 12px; font-weight: 600; color: #374151;">23%</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 2px;"></div>
+                                        <span style="font-size: 13px;">Identity Fraud</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 80px; height: 6px; background: #e5e7eb; border-radius: 3px;">
+                                            <div style="width: 10%; height: 100%; background: #3b82f6; border-radius: 3px;"></div>
+                                        </div>
+                                        <span style="font-size: 12px; font-weight: 600; color: #374151;">10%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Performance Metrics -->
+                        <div>
+                            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px; font-weight: 600;">AI Detection Performance</div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 12px;">
+                                <div style="text-align: center; padding: 12px; background: #f0fdf4; border-radius: 8px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: #059669;">94.2%</div>
+                                    <div style="color: #166534;">Accuracy Rate</div>
+                                </div>
+                                <div style="text-align: center; padding: 12px; background: #fef3c7; border-radius: 8px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: #d97706;">2.3s</div>
+                                    <div style="color: #92400e;">Avg Detection Time</div>
+                                </div>
+                                <div style="text-align: center; padding: 12px; background: #f0f9ff; border-radius: 8px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: #2563eb;">0.8%</div>
+                                    <div style="color: #1e40af;">False Positive Rate</div>
+                                </div>
+                                <div style="text-align: center; padding: 12px; background: #fef2f2; border-radius: 8px;">
+                                    <div style="font-size: 18px; font-weight: 700; color: #dc2626;">1,247</div>
+                                    <div style="color: #7f1d1d;">Cases Analyzed</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Performance & Logs -->
+                <div>
+                    <h4 style="margin: 0 0 20px 0; color: #374151; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-list-alt" style="color: #059669;"></i>
+                        System Performance & Activity Logs
+                    </h4>
+                    
+                    <div style="background: #f8fafc; border-radius: 12px; padding: 20px;">
+                        <!-- Recent Critical Actions -->
+                        <div style="margin-bottom: 24px;">
+                            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px; font-weight: 600;">Recent Critical Actions</div>
+                            <div style="display: grid; gap: 8px; max-height: 200px; overflow-y: auto;">
+                                <div style="display: flex; gap: 12px; align-items: start; padding: 8px; background: #fef2f2; border-radius: 6px;">
+                                    <div style="width: 6px; height: 6px; background: #dc2626; border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #7f1d1d; font-weight: 600;">Emergency project lock initiated</div>
+                                        <div style="font-size: 11px; color: #991b1b;">Project BCM_2024_0156 | 3 min ago</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 12px; align-items: start; padding: 8px; background: #fffbeb; border-radius: 6px;">
+                                    <div style="width: 6px; height: 6px; background: #f59e0b; border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #92400e; font-weight: 600;">Account suspension activated</div>
+                                        <div style="font-size: 11px; color: #a16207;">NGO GREEN_EARTH_NGO | 12 min ago</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 12px; align-items: start; padding: 8px; background: #f0fdf4; border-radius: 6px;">
+                                    <div style="width: 6px; height: 6px; background: #059669; border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #166534; font-weight: 600;">Blockchain hash verified successfully</div>
+                                        <div style="font-size: 11px; color: #16a34a;">Document ENV_PERMIT_045 | 25 min ago</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 12px; align-items: start; padding: 8px; background: #f0f9ff; border-radius: 6px;">
+                                    <div style="width: 6px; height: 6px; background: #3b82f6; border-radius: 50%; margin-top: 8px; flex-shrink: 0;"></div>
+                                    <div style="flex: 1;">
+                                        <div style="font-size: 12px; color: #1e40af; font-weight: 600;">IP address blocked automatically</div>
+                                        <div style="font-size: 11px; color: #2563eb;">192.168.1.xxx | 28 min ago</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
+                        <div>
+                            <div style="font-size: 13px; color: #6b7280; margin-bottom: 12px; font-weight: 600;">System Performance (Last Hour)</div>
+                            <div style="display: grid; gap: 8px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                                    <span>CPU Usage</span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 60px; height: 4px; background: #e5e7eb; border-radius: 2px;">
+                                            <div style="width: 34%; height: 100%; background: #059669; border-radius: 2px;"></div>
+                                        </div>
+                                        <span style="font-weight: 600; color: #059669;">34%</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                                    <span>Memory Usage</span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 60px; height: 4px; background: #e5e7eb; border-radius: 2px;">
+                                            <div style="width: 67%; height: 100%; background: #f59e0b; border-radius: 2px;"></div>
+                                        </div>
+                                        <span style="font-weight: 600; color: #f59e0b;">67%</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                                    <span>Network I/O</span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 60px; height: 4px; background: #e5e7eb; border-radius: 2px;">
+                                            <div style="width: 23%; height: 100%; background: #3b82f6; border-radius: 2px;"></div>
+                                        </div>
+                                        <span style="font-weight: 600; color: #3b82f6;">23%</span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+                                    <span>Database Queries</span>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 60px; height: 4px; background: #e5e7eb; border-radius: 2px;">
+                                            <div style="width: 89%; height: 100%; background: #dc2626; border-radius: 2px;"></div>
+                                        </div>
+                                        <span style="font-weight: 600; color: #dc2626;">89%</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Management & System Administration -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- User Management Panel -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-users-cog" style="color: #3b82f6;"></i>
+                    User Management & Access Control
+                </h3>
+            </div>
+            
+            <div style="padding: 20px;">
+                <!-- User Stats -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div style="text-align: center; padding: 16px; background: #f0f9ff; border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 700; color: #3b82f6;" id="totalUsers">1,247</div>
+                        <div style="font-size: 12px; color: #1e40af;">Total Users</div>
+                    </div>
+                    <div style="text-align: center; padding: 16px; background: #f0fdf4; border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 700; color: #059669;" id="activeUsers">892</div>
+                        <div style="font-size: 12px; color: #166534;">Active Users</div>
+                    </div>
+                    <div style="text-align: center; padding: 16px; background: #fffbeb; border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 700; color: #f59e0b;" id="pendingApprovals">34</div>
+                        <div style="font-size: 12px; color: #92400e;">Pending Approvals</div>
+                    </div>
+                    <div style="text-align: center; padding: 16px; background: #fef2f2; border-radius: 8px;">
+                        <div style="font-size: 20px; font-weight: 700; color: #dc2626;" id="suspendedUsers">12</div>
+                        <div style="font-size: 12px; color: #7f1d1d;">Suspended</div>
+                    </div>
+                </div>
+
+                <!-- Recent User Activity -->
+                <div style="background: #f8fafc; border-radius: 8px; padding: 16px;">
+                    <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 16px;">
+                        <h4 style="margin: 0; color: #374151;">Recent User Activity</h4>
+                        <button onclick="exportUserReport()" class="btn outline" style="padding: 6px 12px; font-size: 12px;">
+                            <i class="fas fa-download"></i> Export Report
+                        </button>
+                    </div>
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; font-size: 13px;">
+                            <thead style="background: #e5e7eb;">
+                                <tr>
+                                    <th style="padding: 8px; text-align: left; font-weight: 600;">User</th>
+                                    <th style="padding: 8px; text-align: left; font-weight: 600;">Type</th>
+                                    <th style="padding: 8px; text-align: left; font-weight: 600;">Last Activity</th>
+                                    <th style="padding: 8px; text-align: left; font-weight: 600;">Status</th>
+                                    <th style="padding: 8px; text-align: center; font-weight: 600;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom: 1px solid #f3f4f6;">
+                                    <td style="padding: 8px;">coastal_restoration_ngo</td>
+                                    <td style="padding: 8px;"><span class="badge" style="background: #3b82f6; color: white; padding: 2px 6px; border-radius: 4px;">NGO</span></td>
+                                    <td style="padding: 8px;">5 min ago</td>
+                                    <td style="padding: 8px;"><span class="badge success">Active</span></td>
+                                    <td style="padding: 8px; text-align: center;">
+                                        <button onclick="viewUserDetails('coastal_restoration_ngo')" class="btn outline" style="padding: 2px 8px; font-size: 11px;">View</button>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #f3f4f6;">
+                                    <td style="padding: 8px;">techcorp_industries</td>
+                                    <td style="padding: 8px;"><span class="badge" style="background: #f59e0b; color: white; padding: 2px 6px; border-radius: 4px;">Industry</span></td>
+                                    <td style="padding: 8px;">12 min ago</td>
+                                    <td style="padding: 8px;"><span class="badge danger">Suspended</span></td>
+                                    <td style="padding: 8px; text-align: center;">
+                                        <button onclick="reviewSuspension('techcorp_industries')" class="btn outline" style="padding: 2px 8px; font-size: 11px;">Review</button>
+                                    </td>
+                                </tr>
+                                <tr style="border-bottom: 1px solid #f3f4f6;">
+                                    <td style="padding: 8px;">green_earth_foundation</td>
+                                    <td style="padding: 8px;"><span class="badge" style="background: #059669; color: white; padding: 2px 6px; border-radius: 4px;">Auditor</span></td>
+                                    <td style="padding: 8px;">18 min ago</td>
+                                    <td style="padding: 8px;"><span class="badge warning">Pending</span></td>
+                                    <td style="padding: 8px; text-align: center;">
+                                        <button onclick="approveUser('green_earth_foundation')" class="btn" style="padding: 2px 8px; font-size: 11px;">Approve</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Administration -->
+        <div style="display: grid; gap: 24px;">
+            <!-- Quick Actions -->
+            <div class="card">
+                <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-cogs" style="color: #f59e0b;"></i>
+                        Quick Actions
+                    </h3>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <div style="display: grid; gap: 12px;">
+                        <button onclick="emergencyShutdown()" class="btn" style="background: #dc2626; color: white; width: 100%; justify-content: flex-start; padding: 12px;">
+                            <i class="fas fa-power-off"></i> Emergency Shutdown
+                        </button>
+                        <button onclick="backupSystem()" class="btn outline" style="width: 100%; justify-content: flex-start; padding: 12px;">
+                            <i class="fas fa-save"></i> System Backup
+                        </button>
+                        <button onclick="updateSecurityRules()" class="btn outline" style="width: 100%; justify-content: flex-start; padding: 12px;">
+                            <i class="fas fa-shield-alt"></i> Update Security Rules
+                        </button>
+                        <button onclick="maintainanceModeToggle()" class="btn outline" style="width: 100%; justify-content: flex-start; padding: 12px;">
+                            <i class="fas fa-tools"></i> Maintenance Mode
+                        </button>
+                        <button onclick="broadcastMessage()" class="btn outline" style="width: 100%; justify-content: flex-start; padding: 12px;">
+                            <i class="fas fa-bullhorn"></i> Broadcast Message
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="card">
+                <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-server" style="color: #059669;"></i>
+                        System Status
+                    </h3>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <div style="display: grid; gap: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-size: 13px; color: #374151;">Web Server</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; background: #059669; border-radius: 50%;"></div>
+                                <span style="font-size: 12px; color: #059669; font-weight: 600;">Online</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-size: 13px; color: #374151;">Database</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; background: #059669; border-radius: 50%;"></div>
+                                <span style="font-size: 12px; color: #059669; font-weight: 600;">Connected</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-size: 13px; color: #374151;">AI Services</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; background: #f59e0b; border-radius: 50%;"></div>
+                                <span style="font-size: 12px; color: #f59e0b; font-weight: 600;">Degraded</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                            <span style="font-size: 13px; color: #374151;">Blockchain</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; background: #059669; border-radius: 50%;"></div>
+                                <span style="font-size: 12px; color: #059669; font-weight: 600;">Synced</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+                            <span style="font-size: 13px; color: #374151;">Security Scanner</span>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 8px; height: 8px; background: #059669; border-radius: 50%;"></div>
+                                <span style="font-size: 12px; color: #059669; font-weight: 600;">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Notifications -->
+            <div class="card">
+                <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-bell" style="color: #3b82f6;"></i>
+                        Recent Notifications
+                    </h3>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <div style="display: grid; gap: 8px; max-height: 200px; overflow-y: auto;">
+                        <div style="display: flex; gap: 8px; align-items: start; padding: 8px; background: #fef2f2; border-radius: 6px; font-size: 12px;">
+                            <i class="fas fa-exclamation-circle" style="color: #dc2626; margin-top: 2px;"></i>
+                            <div>
+                                <div style="color: #7f1d1d; font-weight: 600;">Critical security alert triggered</div>
+                                <div style="color: #991b1b;">3 minutes ago</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: start; padding: 8px; background: #f0fdf4; border-radius: 6px; font-size: 12px;">
+                            <i class="fas fa-check-circle" style="color: #059669; margin-top: 2px;"></i>
+                            <div>
+                                <div style="color: #166534; font-weight: 600;">System backup completed successfully</div>
+                                <div style="color: #16a34a;">15 minutes ago</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: start; padding: 8px; background: #fffbeb; border-radius: 6px; font-size: 12px;">
+                            <i class="fas fa-info-circle" style="color: #f59e0b; margin-top: 2px;"></i>
+                            <div>
+                                <div style="color: #92400e; font-weight: 600;">New user registration pending approval</div>
+                                <div style="color: #a16207;">22 minutes ago</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; align-items: start; padding: 8px; background: #f0f9ff; border-radius: 6px; font-size: 12px;">
+                            <i class="fas fa-sync-alt" style="color: #3b82f6; margin-top: 2px;"></i>
+                            <div>
+                                <div style="color: #1e40af; font-weight: 600;">AI models updated successfully</div>
+                                <div style="color: #2563eb;">1 hour ago</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Email Notification System Integration -->
+<script>
+// Advanced Dashboard JavaScript functionality
+
+// Email notification templates based on your requirements
+const emailTemplates = {
+    industryPayment: {
+        industry: "Your payment of INR {amount} to NGO {ngoName} has been processed successfully.",
+        ngo: "You have received INR {amount} from {industryName}. Funds are now available in your account.",
+        admin: "Payment transaction completed: {industryName} → {ngoName} | Amount: INR {amount}"
+    },
+    withdrawalRequest: {
+        ngo: "Your withdrawal request of INR {amount} is under verification.",
+        admin: "New withdrawal request from {ngoName}: INR {amount} | Status: Under Review"
+    },
+    withdrawalApproved: {
+        ngo: "Your withdrawal of INR {amount} has been approved and released.",
+        admin: "Withdrawal request by {ngoName} has been processed successfully."
+    },
+    fraudDetected: {
+        admin: "⚠️ Alert: Fraudulent pattern detected in {entityName}'s transaction. Immediate review required.",
+        ngo: "⚠️ Alert: Your transaction with {industryName} has been flagged for review.",
+        auditor: "⚠️ Alert: Please re-check project documentation for {ngoName}."
+    }
+};
+
+// Critical Alert Management
+function handleCriticalAlerts() {
+    console.log('Handling critical alerts...');
+    // Open critical alert management dashboard
+    window.location.href = '/admin/critical-alerts';
+}
+
+function dismissBanner() {
+    document.getElementById('alertsBanner').style.display = 'none';
+}
+
+// Security Actions
+function emergencyLockProject(projectId) {
+    if (confirm(`EMERGENCY ACTION: Lock project ${projectId}? This will immediately suspend all activities.`)) {
+        console.log(`Emergency lock activated for project: ${projectId}`);
+        // Send emergency notifications
+        sendEmergencyNotification('projectLock', { projectId });
+        alert(`Project ${projectId} has been emergency locked. All stakeholders notified.`);
+    }
+}
+
+function notifyAuthorities(projectId) {
+    console.log(`Notifying authorities about project: ${projectId}`);
+    alert('Law enforcement and regulatory authorities have been notified. Case reference generated.');
+}
+
+function freezeTransactions(entityId) {
+    if (confirm(`Freeze all transactions for ${entityId}? This action requires senior approval.`)) {
+        console.log(`Transactions frozen for: ${entityId}`);
+        alert(`All transactions for ${entityId} have been frozen pending investigation.`);
+    }
+}
+
+function generateForensicReport(projectId) {
+    console.log(`Generating forensic report for: ${projectId}`);
+    alert('Forensic analysis initiated. Detailed report will be available in 15-20 minutes.');
+}
+
+// Financial Security Actions
+function investigateTransactions(ngoId) {
+    console.log(`Investigating transactions for: ${ngoId}`);
+    alert(`Opening transaction investigation dashboard for ${ngoId}...`);
+}
+
+function tempSuspendAccount(accountId) {
+    if (confirm(`Temporarily suspend account: ${accountId}?`)) {
+        console.log(`Account suspended: ${accountId}`);
+        // Send suspension notification
+        sendNotification('accountSuspended', { accountId });
+        alert(`Account ${accountId} temporarily suspended. User notified via email.`);
+    }
+}
+
+function requestVerification(accountId) {
+    console.log(`Requesting additional verification for: ${accountId}`);
+    // Send verification request email
+    sendNotification('verificationRequest', { accountId });
+    alert(`Verification request sent to ${accountId}. User will receive email with instructions.`);
+}
+
+// System Security Actions
+function blockIP(ipAddress) {
+    console.log(`Permanently blocking IP: ${ipAddress}`);
+    alert(`IP address ${ipAddress} permanently blocked. Added to security blacklist.`);
+}
+
+function enhanceSecurity() {
+    console.log('Enhancing system security...');
+    alert('Enhanced security measures activated. All users will be required to re-authenticate.');
+}
+
+// User Management Functions
+function viewUserDetails(userId) {
+    console.log(`Viewing details for user: ${userId}`);
+    window.location.href = `/admin/users/${userId}`;
+}
+
+function reviewSuspension(userId) {
+    console.log(`Reviewing suspension for: ${userId}`);
+    window.location.href = `/admin/users/${userId}/suspension-review`;
+}
+
+function approveUser(userId) {
+    if (confirm(`Approve user registration for: ${userId}?`)) {
+        console.log(`Approving user: ${userId}`);
+        // Send approval email
+        sendNotification('userApproved', { userId });
+        alert(`User ${userId} approved. Welcome email sent.`);
+    }
+}
+
+function exportUserReport() {
+    console.log('Exporting user activity report...');
+    alert('Generating comprehensive user activity report. Download will start shortly.');
+}
+
+// System Administration Functions
+function emergencyShutdown() {
+    if (confirm('CRITICAL ACTION: Emergency system shutdown? This will affect all users immediately.')) {
+        if (confirm('This action requires senior admin approval. Proceed?')) {
+            console.log('Emergency shutdown initiated...');
+            alert('Emergency shutdown sequence initiated. All users will be notified.');
+        }
+    }
+}
+
+function backupSystem() {
+    if (confirm('Initiate full system backup? This may affect performance for 10-15 minutes.')) {
+        console.log('System backup started...');
+        alert('Full system backup initiated. Progress will be monitored.');
+    }
+}
+
+function updateSecurityRules() {
+    console.log('Updating security rules...');
+    alert('Opening security rule configuration panel...');
+}
+
+function maintainanceModeToggle() {
+    console.log('Toggling maintenance mode...');
+    alert('Maintenance mode configuration updated. Users will be notified of any downtime.');
+}
+
+function broadcastMessage() {
+    const message = prompt('Enter broadcast message for all users:');
+    if (message) {
+        console.log(`Broadcasting message: ${message}`);
+        // Send to all users
+        sendBroadcastNotification(message);
+        alert(`Message broadcast to all active users: "${message}"`);
+    }
+}
+
+function refreshSecurityStatus() {
+    console.log('Refreshing security status...');
+    // Simulate refresh with updated data
+    setTimeout(() => {
+        updateSecurityMetrics();
+        alert('Security status refreshed. All metrics updated.');
+    }, 1000);
+}
+
+function generateSecurityReport() {
+    console.log('Generating comprehensive security report...');
+    alert('Security report generation started. Report will be available for download in 5 minutes.');
+}
+
+// Email notification system
+function sendNotification(type, data) {
+    console.log(`Sending notification: ${type}`, data);
+    // Integration with email service would happen here
+    
+    const templates = {
+        projectLock: `Emergency Alert: Project ${data.projectId} has been locked due to security concerns.`,
+        accountSuspended: `Account ${data.accountId} has been temporarily suspended pending review.`,
+        verificationRequest: `Additional verification required for account ${data.accountId}.`,
+        userApproved: `Your account registration has been approved. Welcome to BlueCarbon MRV platform!`,
+        fraudAlert: `Security Alert: Suspicious activity detected in your account.`
+    };
+    
+    // Simulate email sending
+    if (templates[type]) {
+        console.log(`Email sent: ${templates[type]}`);
+    }
+}
+
+function sendBroadcastNotification(message) {
+    console.log(`Broadcasting to all users: ${message}`);
+    // Would integrate with bulk email service
+}
+
+function sendEmergencyNotification(type, data) {
+    console.log(`Emergency notification: ${type}`, data);
+    // High-priority notification system
+}
+
+// Real-time data updates
+function updateSecurityMetrics() {
+    // Simulate real-time security metrics updates
+    const metrics = {
+        fraudDetected: Math.floor(Math.random() * 10) + 5,
+        suspiciousActivities: Math.floor(Math.random() * 30) + 15,
+        aiConfidence: (90 + Math.random() * 8).toFixed(1),
+        preventedLosses: (Math.random() * 20 + 10).toFixed(1)
+    };
+    
+    document.getElementById('fraudDetected').textContent = metrics.fraudDetected;
+    document.getElementById('suspiciousActivities').textContent = metrics.suspiciousActivities;
+    document.getElementById('aiConfidenceScore').textContent = `${metrics.aiConfidence}%`;
+    document.getElementById('preventedLosses').textContent = `₹${metrics.preventedLosses}L`;
+}
+
+function updateSystemHealth() {
+    // Simulate system health updates
+    const health = (95 + Math.random() * 4).toFixed(1);
+    const responseTime = Math.floor(200 + Math.random() * 100);
+    const activeSessions = Math.floor(1200 + Math.random() * 100);
+    
+    document.getElementById('systemHealthScore').textContent = `${health}%`;
+    document.getElementById('responseTime').textContent = `${responseTime}ms`;
+    document.getElementById('activeSessions').textContent = activeSessions.toLocaleString();
+}
+
+function updateProjectStats() {
+    // Update project statistics
+    const stats = {
+        total: Math.floor(140 + Math.random() * 10),
+        approved: Math.floor(85 + Math.random() * 10),
+        review: Math.floor(30 + Math.random() * 10),
+        processing: Math.floor(10 + Math.random() * 5),
+        flagged: Math.floor(5 + Math.random() * 5)
+    };
+    
+    document.getElementById('totalActiveProjects').textContent = stats.total;
+    document.getElementById('approvedProjects').textContent = stats.approved;
+    document.getElementById('reviewProjects').textContent = stats.review;
+    document.getElementById('processingProjects').textContent = stats.processing;
+    document.getElementById('flaggedProjects').textContent = stats.flagged;
+}
+
+// Initialize dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Comprehensive Admin Dashboard initialized');
+    
+    // Show critical alerts banner if there are critical issues
+    const criticalAlerts = parseInt(document.getElementById('criticalThreats').textContent);
+    if (criticalAlerts > 0) {
+        document.getElementById('alertsBanner').style.display = 'block';
+    }
+    
+    // Update metrics periodically
+    setInterval(updateSecurityMetrics, 30000); // Every 30 seconds
+    setInterval(updateSystemHealth, 45000);    // Every 45 seconds
+    setInterval(updateProjectStats, 60000);    // Every minute
+    
+    // Initial data load
+    updateSecurityMetrics();
+    updateSystemHealth();
+    updateProjectStats();
+});
+
+// CSS animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        50% { transform: scale(1.05); opacity: 0.8; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    
+    .security-alert {
+        transition: all 0.3s ease;
+    }
+    
+    .security-alert:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+`;
+document.head.appendChild(style);
+</script>
+{% endblock %}

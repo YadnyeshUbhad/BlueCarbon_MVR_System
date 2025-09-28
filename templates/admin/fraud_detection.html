@@ -1,0 +1,512 @@
+{% extends 'admin_base.html' %}
+{% set active='fraud_detection' %}
+{% set title='Fraud Detection - Admin Portal' %}
+{% set header='AI-Powered Fraud Detection Dashboard' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Alert Banner -->
+    <div id="alertBanner" style="background: linear-gradient(135deg, #fee2e2, #fecaca); border: 1px solid #f87171; border-radius: 12px; padding: 16px; display: none;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-exclamation-triangle" style="color: #dc2626; font-size: 20px;"></i>
+            <div>
+                <div style="font-weight: 600; color: #991b1b;">High-Risk Activity Detected</div>
+                <div style="font-size: 13px; color: #7f1d1d;">Multiple suspicious documents uploaded from IP: 192.168.1.100</div>
+            </div>
+            <button onclick="dismissAlert()" style="margin-left: auto; background: none; border: none; color: #991b1b; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-shield-alt" style="color: #dc2626;"></i>
+                Fraud Detection Center
+            </h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">AI-powered document verification and anomaly detection system</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="badge danger" style="padding: 8px 16px;">
+                <i class="fas fa-exclamation-circle"></i> 3 Active Alerts
+            </div>
+            <button onclick="generateFraudReport()" class="btn">
+                <i class="fas fa-file-alt"></i> Generate Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Real-time Statistics -->
+    <div class="cards">
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-search"></i>
+                Documents Scanned Today
+            </div>
+            <div class="stat-value" style="color: var(--primary);">1,247</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +15% from yesterday
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i>
+                Fraud Attempts Blocked
+            </div>
+            <div class="stat-value" style="color: var(--danger);">23</div>
+            <div class="stat-change positive">
+                <i class="fas fa-shield-alt"></i>
+                Auto-blocked by AI
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-check-circle"></i>
+                AI Confidence Score
+            </div>
+            <div class="stat-value" style="color: var(--success);">94.8%</div>
+            <div class="stat-change positive">
+                <i class="fas fa-brain"></i>
+                Model accuracy
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-clock"></i>
+                Avg. Verification Time
+            </div>
+            <div class="stat-value" style="color: var(--info);">2.3s</div>
+            <div class="stat-change positive">
+                <i class="fas fa-bolt"></i>
+                Real-time processing
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Verification Engine Status -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-brain" style="color: var(--accent);"></i>
+                AI Verification Engine Status
+            </h3>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px;">
+                <div style="background: #f0f9ff; border-radius: 12px; padding: 20px; border: 1px solid #bfdbfe;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; background: var(--info); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-file-image" style="color: white;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; color: #1e40af;">Document OCR</h4>
+                            <p style="margin: 4px 0 0 0; color: #1e40af; font-size: 13px;">Text extraction & analysis</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #1e40af; font-weight: 600;">Status: Active</span>
+                        <span class="badge success" style="font-size: 11px;">98.2% Accuracy</span>
+                    </div>
+                </div>
+                
+                <div style="background: #f0fdf4; border-radius: 12px; padding: 20px; border: 1px solid #bbf7d0;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-fingerprint" style="color: white;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; color: #166534;">Authenticity Check</h4>
+                            <p style="margin: 4px 0 0 0; color: #166534; font-size: 13px;">Digital signature verification</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #166534; font-weight: 600;">Status: Active</span>
+                        <span class="badge success" style="font-size: 11px;">Real-time</span>
+                    </div>
+                </div>
+                
+                <div style="background: #fef3c7; border-radius: 12px; padding: 20px; border: 1px solid #fcd34d;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                        <div style="width: 48px; height: 48px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                            <i class="fas fa-search-plus" style="color: white;"></i>
+                        </div>
+                        <div>
+                            <h4 style="margin: 0; color: #92400e;">Pattern Analysis</h4>
+                            <p style="margin: 4px 0 0 0; color: #92400e; font-size: 13px;">Behavioral anomaly detection</p>
+                        </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="color: #92400e; font-weight: 600;">Status: Learning</span>
+                        <span class="badge warning" style="font-size: 11px;">Training Mode</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Fraud Attempts -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-exclamation-circle" style="color: var(--danger);"></i>
+                Recent Fraud Attempts
+            </h3>
+            <div style="display: flex; gap: 8px;">
+                <select onchange="filterFraudAttempts(this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                    <option value="all">All Attempts</option>
+                    <option value="high">High Risk</option>
+                    <option value="medium">Medium Risk</option>
+                    <option value="blocked">Blocked</option>
+                </select>
+                <button onclick="exportFraudData()" class="btn outline">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div id="fraudAttemptsList" style="display: grid; gap: 16px;">
+                <!-- High Risk Attempt -->
+                <div class="fraud-attempt" data-risk="high" style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; border-left: 4px solid #dc2626;">
+                    <div style="display: flex; justify-content: between; align-items: flex-start; gap: 16px;">
+                        <div style="width: 48px; height: 48px; background: #dc2626; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div>
+                                    <span class="badge danger" style="font-size: 11px; margin-right: 8px;">HIGH RISK</span>
+                                    <span style="font-weight: 600; color: #991b1b;">Suspicious Document Upload</span>
+                                </div>
+                                <span style="font-size: 12px; color: #7f1d1d;">2 minutes ago</span>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 13px; color: #7f1d1d; margin-bottom: 4px;">
+                                    <strong>User:</strong> john.doe@company.com (ID: #12845)
+                                </div>
+                                <div style="font-size: 13px; color: #7f1d1d; margin-bottom: 4px;">
+                                    <strong>Issue:</strong> Tampered digital signature detected in environmental clearance document
+                                </div>
+                                <div style="font-size: 13px; color: #7f1d1d;">
+                                    <strong>AI Confidence:</strong> 97.3% probability of forgery
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button onclick="viewFraudDetails('12845')" class="btn" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                                <button onclick="blockUser('12845')" class="btn danger" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-ban"></i> Block User
+                                </button>
+                                <button onclick="escalateCase('12845')" class="btn secondary" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-arrow-up"></i> Escalate
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medium Risk Attempt -->
+                <div class="fraud-attempt" data-risk="medium" style="background: #fefbf2; border: 1px solid #fed7aa; border-radius: 12px; padding: 20px; border-left: 4px solid #f59e0b;">
+                    <div style="display: flex; justify-content: between; align-items: flex-start; gap: 16px;">
+                        <div style="width: 48px; height: 48px; background: #f59e0b; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                            <i class="fas fa-exclamation"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div>
+                                    <span class="badge warning" style="font-size: 11px; margin-right: 8px;">MEDIUM RISK</span>
+                                    <span style="font-weight: 600; color: #92400e;">Inconsistent Location Data</span>
+                                </div>
+                                <span style="font-size: 12px; color: #78350f;">15 minutes ago</span>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 13px; color: #78350f; margin-bottom: 4px;">
+                                    <strong>User:</strong> greenearth.ngo@email.com (ID: #10293)
+                                </div>
+                                <div style="font-size: 13px; color: #78350f; margin-bottom: 4px;">
+                                    <strong>Issue:</strong> Project coordinates don't match satellite imagery
+                                </div>
+                                <div style="font-size: 13px; color: #78350f;">
+                                    <strong>AI Confidence:</strong> 73.1% probability of location spoofing
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button onclick="viewFraudDetails('10293')" class="btn" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                                <button onclick="requestVerification('10293')" class="btn warning" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-question-circle"></i> Request Verification
+                                </button>
+                                <button onclick="flagForReview('10293')" class="btn secondary" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-flag"></i> Flag for Review
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Blocked Attempt -->
+                <div class="fraud-attempt" data-risk="blocked" style="background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 12px; padding: 20px; border-left: 4px solid #6b7280;">
+                    <div style="display: flex; justify-content: between; align-items: flex-start; gap: 16px;">
+                        <div style="width: 48px; height: 48px; background: #6b7280; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; flex-shrink: 0;">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <div>
+                                    <span class="badge secondary" style="font-size: 11px; margin-right: 8px;">BLOCKED</span>
+                                    <span style="font-weight: 600; color: #4b5563;">Auto-blocked Duplicate Submission</span>
+                                </div>
+                                <span style="font-size: 12px; color: #6b7280;">1 hour ago</span>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">
+                                    <strong>User:</strong> suspicious.user@temp.com (ID: #99999)
+                                </div>
+                                <div style="font-size: 13px; color: #6b7280; margin-bottom: 4px;">
+                                    <strong>Issue:</strong> Identical document submitted multiple times with different project names
+                                </div>
+                                <div style="font-size: 13px; color: #6b7280;">
+                                    <strong>Action:</strong> Automatically blocked by AI system
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button onclick="viewFraudDetails('99999')" class="btn outline" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                                <button onclick="permanentBan('99999')" class="btn danger" style="font-size: 12px; padding: 8px 12px;">
+                                    <i class="fas fa-ban"></i> Permanent Ban
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Model Performance -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-chart-line" style="color: var(--accent);"></i>
+                AI Model Performance Metrics
+            </h3>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 24px;">
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Detection Accuracy</h4>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 14px; color: #6b7280;">Current Model</span>
+                            <span style="font-weight: 600; color: var(--success);">94.8%</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 8px;">
+                            <div style="width: 94.8%; background: linear-gradient(90deg, var(--primary), var(--success)); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">False Positive Rate</h4>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 14px; color: #6b7280;">Target: <2%</span>
+                            <span style="font-weight: 600; color: var(--success);">1.2%</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 8px;">
+                            <div style="width: 1.2%; background: var(--success); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Processing Speed</h4>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span style="font-size: 14px; color: #6b7280;">Avg. Response Time</span>
+                            <span style="font-weight: 600; color: var(--info);">2.3s</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+                            <i class="fas fa-bolt" style="color: var(--warning);"></i>
+                            <span style="font-size: 12px; color: #6b7280;">Real-time processing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fraud Details Modal -->
+<div id="fraudDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="margin: 0; color: #1f2937;">Fraud Analysis Report</h3>
+            <button onclick="closeFraudModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <div id="fraudDetailsContent" style="display: grid; gap: 24px;">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Show alert banner on page load
+setTimeout(() => {
+    document.getElementById('alertBanner').style.display = 'block';
+}, 2000);
+
+function dismissAlert() {
+    document.getElementById('alertBanner').style.display = 'none';
+}
+
+function filterFraudAttempts(risk) {
+    const attempts = document.querySelectorAll('.fraud-attempt');
+    attempts.forEach(attempt => {
+        if (risk === 'all' || attempt.dataset.risk === risk) {
+            attempt.style.display = 'block';
+        } else {
+            attempt.style.display = 'none';
+        }
+    });
+}
+
+function viewFraudDetails(userId) {
+    const modal = document.getElementById('fraudDetailsModal');
+    const content = document.getElementById('fraudDetailsContent');
+    
+    // Simulate loading fraud details
+    content.innerHTML = `
+        <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border-left: 4px solid var(--danger);">
+            <h4 style="margin: 0 0 12px 0; color: #dc2626;">High-Risk Fraud Attempt Detected</h4>
+            <p style="margin: 0; color: #6b7280;">User ID: ${userId} • Threat Level: Critical • AI Confidence: 97.3%</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div>
+                <h5 style="margin: 0 0 12px 0; color: #374151;">User Information</h5>
+                <div style="font-size: 13px; color: #6b7280; line-height: 1.6;">
+                    <div><strong>Email:</strong> john.doe@company.com</div>
+                    <div><strong>Registration:</strong> 2 days ago</div>
+                    <div><strong>IP Address:</strong> 192.168.1.100</div>
+                    <div><strong>Location:</strong> Mumbai, India</div>
+                    <div><strong>Trust Score:</strong> <span style="color: var(--danger);">12/100</span></div>
+                </div>
+            </div>
+            
+            <div>
+                <h5 style="margin: 0 0 12px 0; color: #374151;">Fraud Indicators</h5>
+                <div style="font-size: 13px; color: #6b7280; line-height: 1.6;">
+                    <div style="color: var(--danger);">✗ Tampered digital signature</div>
+                    <div style="color: var(--danger);">✗ Metadata inconsistencies</div>
+                    <div style="color: var(--danger);">✗ Suspicious file creation date</div>
+                    <div style="color: var(--warning);">⚠ Multiple uploads from same IP</div>
+                </div>
+            </div>
+        </div>
+        
+        <div>
+            <h5 style="margin: 0 0 12px 0; color: #374151;">AI Analysis Results</h5>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px;">
+                <div style="font-size: 13px; color: #7f1d1d; line-height: 1.6;">
+                    <div><strong>Document Type:</strong> Environmental Clearance Certificate</div>
+                    <div><strong>Anomaly Score:</strong> 8.7/10 (Critical)</div>
+                    <div><strong>Forgery Probability:</strong> 97.3%</div>
+                    <div><strong>Key Issues:</strong> Digital signature verification failed, document metadata indicates creation after claimed issuance date</div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function closeFraudModal() {
+    document.getElementById('fraudDetailsModal').style.display = 'none';
+}
+
+function blockUser(userId) {
+    if (confirm(`Are you sure you want to block user ${userId}? This action cannot be undone.`)) {
+        alert(`User ${userId} has been blocked. All pending applications have been rejected.`);
+        // Here you would make an API call to block the user
+    }
+}
+
+function escalateCase(userId) {
+    alert(`Case ${userId} has been escalated to senior fraud investigators.`);
+}
+
+function requestVerification(userId) {
+    alert(`Verification request sent to user ${userId}. They have 48 hours to provide additional documentation.`);
+}
+
+function flagForReview(userId) {
+    alert(`User ${userId} has been flagged for manual review by the compliance team.`);
+}
+
+function permanentBan(userId) {
+    if (confirm(`Are you sure you want to permanently ban user ${userId}? This action cannot be undone.`)) {
+        alert(`User ${userId} has been permanently banned from the platform.`);
+    }
+}
+
+function generateFraudReport() {
+    alert('Generating comprehensive fraud detection report. You will receive it via email in 5-10 minutes.');
+}
+
+function exportFraudData() {
+    alert('Exporting fraud attempt data as CSV file...');
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('fraudDetailsModal');
+    if (event.target === modal) {
+        closeFraudModal();
+    }
+}
+
+// Simulate real-time updates
+setInterval(() => {
+    const alerts = document.querySelector('.badge.danger');
+    if (alerts && Math.random() > 0.7) {
+        const currentCount = parseInt(alerts.textContent.match(/\d+/)[0]);
+        alerts.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${currentCount + 1} Active Alerts`;
+    }
+}, 30000);
+</script>
+
+<style>
+.fraud-attempt {
+    transition: all 0.3s ease;
+}
+
+.fraud-attempt:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .fraud-attempt {
+        padding: 16px !important;
+    }
+    
+    .fraud-attempt .btn {
+        font-size: 11px !important;
+        padding: 6px 10px !important;
+    }
+}
+</style>
+{% endblock %}

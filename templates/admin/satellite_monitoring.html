@@ -1,0 +1,632 @@
+{% extends 'admin_base.html' %}
+{% set active='satellite_monitoring' %}
+{% set title='Satellite Monitoring - NCCR Admin' %}
+{% set header='Satellite Monitoring & Verification System' %}
+
+{% block head %}
+<!-- Leaflet CSS for satellite maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+.satellite-dashboard {
+    display: grid;
+    gap: 20px;
+}
+
+.monitoring-map {
+    height: 500px;
+    border-radius: 12px;
+    border: 2px solid #e5e7eb;
+    overflow: hidden;
+    position: relative;
+}
+
+.project-marker {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.marker-verified { background: #10b981; }
+.marker-monitoring { background: #f59e0b; }
+.marker-alert { background: #ef4444; animation: pulse 2s infinite; }
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.satellite-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    display: flex;
+    gap: 8px;
+}
+
+.satellite-btn {
+    background: white;
+    border: 1px solid #cbd5e1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.2s;
+}
+
+.satellite-btn:hover {
+    background: #f1f5f9;
+}
+
+.satellite-btn.active {
+    background: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+}
+
+.ndvi-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.ndvi-excellent { background: #065f46; }
+.ndvi-good { background: #10b981; }
+.ndvi-fair { background: #f59e0b; }
+.ndvi-poor { background: #ef4444; }
+
+.real-time-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: #10b981;
+}
+
+.real-time-indicator::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.3; }
+}
+
+.timeline-view {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.timeline-item {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: 16px;
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: #e5e7eb;
+}
+
+.timeline-item::after {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 4px;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid #3b82f6;
+}
+
+.project-detail-panel {
+    position: fixed;
+    top: 0;
+    right: -400px;
+    width: 400px;
+    height: 100vh;
+    background: white;
+    box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+    transition: right 0.3s ease;
+    z-index: 2000;
+    overflow-y: auto;
+}
+
+.project-detail-panel.open {
+    right: 0;
+}
+</style>
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block content %}
+<!-- Real-time Satellite Monitoring Dashboard -->
+<div class="satellite-dashboard">
+    <!-- Monitoring Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--primary);">{{ (projects|length) * 3 }}</div>
+            <div class="stat-label">
+                <i class="fas fa-satellite"></i> Active Monitoring Sites
+            </div>
+            <div class="real-time-indicator">Live monitoring</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--success);">92.3%</div>
+            <div class="stat-label">
+                <i class="fas fa-leaf"></i> Average NDVI Health
+            </div>
+            <div style="font-size: 12px; color: #10b981;">+2.1% this week</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--warning);">{{ (projects|length * 0.2)|round|int }}</div>
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i> Active Alerts
+            </div>
+            <div style="font-size: 12px; color: #f59e0b;">{{ (projects|length * 0.1)|round|int }} critical</div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--info);">{{ (projects|sum(attribute='area')|round)|int if projects else '2,450' }}</div>
+            <div class="stat-label">
+                <i class="fas fa-map"></i> Total Area Monitored
+            </div>
+            <div style="font-size: 12px; color: #3b82f6;">hectares</div>
+        </div>
+    </div>
+
+    <!-- Main Monitoring Interface -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Real-time Satellite Map -->
+        <div class="card">
+            <div style="padding: 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: between; align-items: center;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-globe-americas" style="color: var(--primary);"></i>
+                    Real-time Satellite Monitoring Map
+                </h3>
+                <div class="real-time-indicator">Live Data</div>
+            </div>
+            
+            <div class="monitoring-map">
+                <div id="satelliteMonitoringMap" style="height: 100%; width: 100%;"></div>
+                
+                <!-- Map Controls -->
+                <div class="satellite-controls">
+                    <button class="satellite-btn active" id="satelliteBtn" onclick="toggleSatelliteLayer('satellite')">
+                        <i class="fas fa-satellite"></i> Satellite
+                    </button>
+                    <button class="satellite-btn" id="ndviBtn" onclick="toggleSatelliteLayer('ndvi')">
+                        <i class="fas fa-leaf"></i> NDVI
+                    </button>
+                    <button class="satellite-btn" id="thermalBtn" onclick="toggleSatelliteLayer('thermal')">
+                        <i class="fas fa-thermometer-half"></i> Thermal
+                    </button>
+                </div>
+                
+                <!-- Map Loading -->
+                <div id="mapLoading" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: #6b7280;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 8px;"></i>
+                    <div>Loading satellite data...</div>
+                </div>
+            </div>
+            
+            <!-- Map Legend -->
+            <div style="padding: 12px; background: #f8fafc; border-top: 1px solid var(--border); display: flex; justify-content: between; align-items: center;">
+                <div style="display: flex; gap: 16px; font-size: 12px;">
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div class="ndvi-indicator ndvi-excellent"></div>
+                        Excellent (0.8-1.0)
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div class="ndvi-indicator ndvi-good"></div>
+                        Good (0.6-0.8)
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div class="ndvi-indicator ndvi-fair"></div>
+                        Fair (0.4-0.6)
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 4px;">
+                        <div class="ndvi-indicator ndvi-poor"></div>
+                        Poor (0.0-0.4)
+                    </div>
+                </div>
+                <div style="font-size: 11px; color: #6b7280;">
+                    Last updated: <span id="lastUpdated">{{ now().strftime('%H:%M:%S') if now() else 'Just now' }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Monitoring Panel -->
+        <div>
+            <!-- Project List -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h4 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-list" style="color: var(--primary);"></i>
+                    Active Projects
+                </h4>
+                
+                <div style="max-height: 200px; overflow-y: auto;">
+                    {% for project in projects[:8] %}
+                    <div class="project-item" onclick="focusOnProject('{{ project.id }}')"
+                         style="padding: 8px; margin-bottom: 8px; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.2s;"
+                         onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <div class="project-marker marker-{{ 'verified' if project.status == 'Verified' else 'monitoring' }}"></div>
+                            <div style="font-weight: 500; font-size: 13px;">{{ project.name }}</div>
+                        </div>
+                        <div style="font-size: 11px; color: #6b7280; margin-bottom: 4px;">{{ project.location }}</div>
+                        <div style="display: flex; justify-content: between; align-items: center;">
+                            <span class="badge {{ 'success' if project.status == 'Verified' else 'warning' }}">NDVI: 0.{{ 75 + (loop.index0 % 20) }}</span>
+                            <span style="font-size: 10px; color: #6b7280;">{{ project.area }}ha</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <!-- Recent Alerts -->
+            <div class="card">
+                <h4 style="margin: 0 0 16px 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                    Recent Alerts
+                </h4>
+                
+                <div class="timeline-view">
+                    {% set alert_types = ['Vegetation Decline', 'Water Stress', 'New Growth', 'Erosion Detected', 'Pest Activity', 'Flooding Risk'] %}
+                    {% set alert_colors = ['#f59e0b', '#ef4444', '#10b981', '#ef4444', '#f59e0b', '#3b82f6'] %}
+                    {% set alert_times = ['2 min ago', '15 min ago', '1 hour ago', '3 hours ago', '6 hours ago', '1 day ago'] %}
+                    
+                    {% for i in range(6) %}
+                    <div class="timeline-item">
+                        <div style="font-weight: 500; font-size: 13px; color: {{ alert_colors[i % 6] }};">{{ alert_types[i % 6] }}</div>
+                        <div style="font-size: 12px; color: #6b7280; margin-bottom: 2px;">Project {{ projects[i % projects|length].name if projects else 'PROJ100' + i|string }}</div>
+                        <div style="font-size: 11px; color: #9ca3af;">{{ alert_times[i % 6] }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div style="margin-top: 16px;">
+                    <button class="btn outline" style="width: 100%; font-size: 12px;" onclick="openAlertsPanel()">
+                        <i class="fas fa-bell"></i> View All Alerts
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Sources Panel -->
+    <div class="card" style="margin-top: 24px;">
+        <h4 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-satellite-dish" style="color: var(--primary);"></i>
+            Active Data Sources
+        </h4>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div class="card" style="text-align: center; padding: 16px; background: linear-gradient(135deg, #f0f9ff, #e0f2fe);">
+                <div style="font-size: 20px; font-weight: 700; color: #0369a1; margin-bottom: 4px;">NASA Landsat</div>
+                <div style="font-size: 12px; color: #0369a1; margin-bottom: 8px;">8/9 Constellation</div>
+                <div class="real-time-indicator" style="color: #10b981;">Active - 2h ago</div>
+                <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">15m resolution</div>
+            </div>
+            
+            <div class="card" style="text-align: center; padding: 16px; background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+                <div style="font-size: 20px; font-weight: 700; color: #166534; margin-bottom: 4px;">ESA Sentinel</div>
+                <div style="font-size: 12px; color: #166534; margin-bottom: 8px;">2A/2B Mission</div>
+                <div class="real-time-indicator" style="color: #10b981;">Active - 1h ago</div>
+                <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">10m resolution</div>
+            </div>
+            
+            <div class="card" style="text-align: center; padding: 16px; background: linear-gradient(135deg, #fefbeb, #fef3c7);">
+                <div style="font-size: 20px; font-weight: 700; color: #92400e; margin-bottom: 4px;">ISRO RISAT</div>
+                <div style="font-size: 12px; color: #92400e; margin-bottom: 8px;">2B SAR Satellite</div>
+                <div class="real-time-indicator" style="color: #10b981;">Active - 30m ago</div>
+                <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">1m resolution</div>
+            </div>
+            
+            <div class="card" style="text-align: center; padding: 16px; background: linear-gradient(135deg, #fef7ff, #f3e8ff);">
+                <div style="font-size: 20px; font-weight: 700; color: #7c2d12; margin-bottom: 4px;">IoT Sensors</div>
+                <div style="font-size: 12px; color: #7c2d12; margin-bottom: 8px;">Ground Network</div>
+                <div class="real-time-indicator" style="color: #10b981;">{{ (projects|length * 3) }} sensors</div>
+                <div style="font-size: 10px; color: #6b7280; margin-top: 4px;">Real-time data</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Project Detail Panel -->
+<div id="projectDetailPanel" class="project-detail-panel">
+    <div style="padding: 20px; border-bottom: 1px solid #e5e7eb; display: flex; justify-content: between; align-items: center;">
+        <h3 style="margin: 0;">Project Details</h3>
+        <button onclick="closeProjectPanel()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #6b7280;">
+            &times;
+        </button>
+    </div>
+    
+    <div id="projectDetailContent" style="padding: 20px;">
+        <!-- Project details will be loaded here -->
+    </div>
+</div>
+
+<script>
+// Satellite Monitoring Variables
+let monitoringMap = null;
+let projectMarkers = [];
+let currentLayer = 'satellite';
+
+// Mock project data with coordinates (in production, this would come from the server)
+const projectCoordinates = {
+    {% for project in projects %}
+    '{{ project.id }}': {
+        lat: {{ 19.0 + (loop.index0 * 3.5) % 20 }},
+        lng: {{ 72.0 + (loop.index0 * 4.2) % 25 }},
+        name: '{{ project.name }}',
+        status: '{{ project.status }}',
+        area: {{ project.area if project.area else 50 + (loop.index0 * 20) % 100 }},
+        ndvi: 0.{{ 75 + (loop.index0 % 20) }}
+    }{{ ',' if not loop.last }}
+    {% endfor %}
+};
+
+// Initialize satellite monitoring map on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMonitoringMap();
+    startRealTimeUpdates();
+});
+
+function initializeMonitoringMap() {
+    try {
+        // Initialize map centered on India
+        monitoringMap = L.map('satelliteMonitoringMap').setView([20.5937, 78.9629], 5);
+        
+        // Add satellite tile layer
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+            maxZoom: 18,
+            attribution: '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye'
+        }).addTo(monitoringMap);
+        
+        // Add project markers
+        addProjectMarkers();
+        
+        // Hide loading indicator
+        document.getElementById('mapLoading').style.display = 'none';
+        
+        console.log('Satellite monitoring map initialized successfully');
+        
+    } catch (error) {
+        console.error('Error initializing monitoring map:', error);
+        document.getElementById('mapLoading').innerHTML = `
+            <div style="text-align: center; color: #dc2626;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 24px; margin-bottom: 8px;"></i>
+                <div>Failed to load satellite monitoring map</div>
+                <div style="font-size: 12px; margin-top: 4px;">Please check your connection</div>
+            </div>
+        `;
+    }
+}
+
+function addProjectMarkers() {
+    // Clear existing markers
+    projectMarkers.forEach(marker => monitoringMap.removeLayer(marker));
+    projectMarkers = [];
+    
+    // Add markers for each project
+    Object.keys(projectCoordinates).forEach(projectId => {
+        const project = projectCoordinates[projectId];
+        
+        // Determine marker class based on status
+        let markerClass = 'marker-monitoring';
+        if (project.status === 'Verified' && project.ndvi > 0.8) {
+            markerClass = 'marker-verified';
+        } else if (project.ndvi < 0.6) {
+            markerClass = 'marker-alert';
+        }
+        
+        // Create custom marker
+        const markerIcon = L.divIcon({
+            className: `project-marker ${markerClass}`,
+            html: '<i class="fas fa-seedling" style="color: white; font-size: 10px; margin-top: 2px;"></i>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 10]
+        });
+        
+        const marker = L.marker([project.lat, project.lng], { icon: markerIcon })
+            .addTo(monitoringMap)
+            .bindPopup(`
+                <div style="text-align: center; padding: 8px; min-width: 200px;">
+                    <strong>${project.name}</strong><br>
+                    <div style="margin: 8px 0;">
+                        <span class="badge success">NDVI: ${project.ndvi}</span>
+                        <span class="badge primary">Area: ${project.area}ha</span>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button class="btn" style="font-size: 11px; padding: 4px 8px;" onclick="focusOnProject('${projectId}')">
+                            <i class="fas fa-eye"></i> Monitor
+                        </button>
+                        <button class="btn secondary" style="font-size: 11px; padding: 4px 8px;" onclick="openProjectDetails('${projectId}')">
+                            <i class="fas fa-info"></i> Details
+                        </button>
+                    </div>
+                </div>
+            `);
+        
+        projectMarkers.push(marker);
+    });
+}
+
+function toggleSatelliteLayer(layerType) {
+    if (!monitoringMap) return;
+    
+    currentLayer = layerType;
+    
+    // Remove existing layers
+    monitoringMap.eachLayer(function(layer) {
+        if (layer instanceof L.TileLayer) {
+            monitoringMap.removeLayer(layer);
+        }
+    });
+    
+    // Add new layer
+    let tileUrl, attribution;
+    
+    switch(layerType) {
+        case 'ndvi':
+            // In production, this would be actual NDVI data
+            tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+            attribution = '&copy; NDVI Data - NASA/USGS';
+            break;
+        case 'thermal':
+            // In production, this would be thermal data
+            tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+            attribution = '&copy; Thermal Data - ESA/Copernicus';
+            break;
+        default: // satellite
+            tileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
+            attribution = '&copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS';
+    }
+    
+    L.tileLayer(tileUrl, {
+        maxZoom: 18,
+        attribution: attribution
+    }).addTo(monitoringMap);
+    
+    // Re-add markers
+    projectMarkers.forEach(marker => marker.addTo(monitoringMap));
+    
+    // Update button states
+    document.querySelectorAll('.satellite-btn').forEach(btn => btn.classList.remove('active'));
+    document.getElementById(layerType + 'Btn').classList.add('active');
+}
+
+function focusOnProject(projectId) {
+    const project = projectCoordinates[projectId];
+    if (project && monitoringMap) {
+        monitoringMap.setView([project.lat, project.lng], 15);
+        
+        // Highlight the project marker
+        projectMarkers.forEach(marker => {
+            const markerLatLng = marker.getLatLng();
+            if (Math.abs(markerLatLng.lat - project.lat) < 0.001 && Math.abs(markerLatLng.lng - project.lng) < 0.001) {
+                marker.openPopup();
+            }
+        });
+    }
+}
+
+function openProjectDetails(projectId) {
+    const project = projectCoordinates[projectId];
+    if (!project) return;
+    
+    const detailContent = `
+        <div class="card" style="margin-bottom: 16px;">
+            <h4 style="margin: 0 0 12px 0;">${project.name}</h4>
+            <div style="display: grid; gap: 8px; font-size: 14px;">
+                <div><strong>Status:</strong> ${project.status}</div>
+                <div><strong>NDVI Score:</strong> <span class="badge success">${project.ndvi}</span></div>
+                <div><strong>Area:</strong> ${project.area} hectares</div>
+                <div><strong>Coordinates:</strong> ${project.lat.toFixed(4)}, ${project.lng.toFixed(4)}</div>
+            </div>
+        </div>
+        
+        <div class="card" style="margin-bottom: 16px;">
+            <h5 style="margin: 0 0 12px 0;">Recent Monitoring Data</h5>
+            <div style="font-size: 12px; color: #6b7280;">
+                <div>Last satellite pass: 2 hours ago</div>
+                <div>Data quality: Excellent</div>
+                <div>Cloud coverage: 5%</div>
+                <div>Resolution: 10m/pixel</div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h5 style="margin: 0 0 12px 0;">Actions</h5>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn" onclick="generateReport('${projectId}')">
+                    <i class="fas fa-file-alt"></i> Generate Report
+                </button>
+                <button class="btn secondary" onclick="scheduleMonitoring('${projectId}')">
+                    <i class="fas fa-clock"></i> Schedule Monitoring
+                </button>
+                <button class="btn outline" onclick="exportData('${projectId}')">
+                    <i class="fas fa-download"></i> Export Data
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('projectDetailContent').innerHTML = detailContent;
+    document.getElementById('projectDetailPanel').classList.add('open');
+}
+
+function closeProjectPanel() {
+    document.getElementById('projectDetailPanel').classList.remove('open');
+}
+
+function openAlertsPanel() {
+    // In production, this would open a comprehensive alerts panel
+    alert('Advanced alerts panel would open here with detailed monitoring information');
+}
+
+function startRealTimeUpdates() {
+    // Update timestamp every 30 seconds
+    setInterval(function() {
+        const now = new Date();
+        document.getElementById('lastUpdated').textContent = now.toLocaleTimeString();
+    }, 30000);
+    
+    // Simulate real-time data updates
+    setInterval(function() {
+        // In production, this would fetch actual satellite data
+        console.log('Refreshing satellite monitoring data...');
+        
+        // Simulate NDVI updates
+        Object.keys(projectCoordinates).forEach(projectId => {
+            const variation = (Math.random() - 0.5) * 0.02; // Small random variation
+            const currentNdvi = parseFloat(projectCoordinates[projectId].ndvi);
+            projectCoordinates[projectId].ndvi = Math.max(0.3, Math.min(1.0, currentNdvi + variation)).toFixed(3);
+        });
+        
+        // Update project markers if needed
+        if (Math.random() < 0.1) { // 10% chance to update markers
+            addProjectMarkers();
+        }
+        
+    }, 60000); // Update every minute
+}
+
+// Additional utility functions
+function generateReport(projectId) {
+    alert(`Generating monitoring report for project ${projectId}...`);
+    // In production, this would generate and download a PDF report
+}
+
+function scheduleMonitoring(projectId) {
+    alert(`Opening monitoring schedule for project ${projectId}...`);
+    // In production, this would open a scheduling interface
+}
+
+function exportData(projectId) {
+    alert(`Exporting satellite data for project ${projectId}...`);
+    // In production, this would export CSV/JSON data
+}
+</script>
+{% endblock %}

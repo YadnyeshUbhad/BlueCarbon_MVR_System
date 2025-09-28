@@ -1,0 +1,690 @@
+{% extends 'ngo/ngo_base.html' %}
+{% set active='satellite' %}
+{% set title='Satellite Monitoring - NGO Portal' %}
+{% set header='Satellite Monitoring Dashboard' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937;">Advanced Satellite Monitoring</h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">Real-time satellite monitoring with accurate coordinates and area selection</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="badge success" style="padding: 8px 16px;">
+                <i class="fas fa-satellite"></i> {{ projects|length }} Projects Monitored
+            </div>
+            <button onclick="refreshSatelliteData()" class="btn outline">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+            <button onclick="showLocationSelector()" class="btn primary">
+                <i class="fas fa-map-marked-alt"></i> Select New Area
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="cards">
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-seedling"></i>
+                Total Monitored Area
+            </div>
+            <div class="stat-value" style="color: var(--primary);">{{ projects|sum(attribute='area') or 0 }} ha</div>
+            <div class="stat-change positive">
+                <i class="fas fa-satellite"></i>
+                {{ projects|length }} locations tracked
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-chart-line"></i>
+                Avg NDVI Health
+            </div>
+            <div class="stat-value" style="color: var(--success);">0.78</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +12% from baseline
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-cloud-sun"></i>
+                Image Quality
+            </div>
+            <div class="stat-value" style="color: var(--info);">96%</div>
+            <div class="stat-change">
+                <i class="fas fa-eye"></i>
+                Clear satellite coverage
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i>
+                Active Alerts
+            </div>
+            <div class="stat-value" style="color: var(--warning);">2</div>
+            <div class="stat-change">
+                <i class="fas fa-bell"></i>
+                Vegetation changes detected
+            </div>
+        </div>
+    </div>
+
+    <!-- Interactive Map Section -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-map" style="color: var(--primary);"></i>
+                Interactive Satellite Map
+            </h3>
+            
+            <div style="display: flex; gap: 8px; align-items: center;">
+                <select id="satelliteLayer" onchange="changeSatelliteLayer()" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                    <option value="satellite">Satellite View</option>
+                    <option value="ndvi">NDVI Analysis</option>
+                    <option value="street">Street Map</option>
+                    <option value="terrain">Terrain</option>
+                </select>
+                <button onclick="toggleDrawingMode()" class="btn secondary">
+                    <i class="fas fa-draw-polygon"></i> Draw Area
+                </button>
+                <button onclick="getCurrentLocation()" class="btn outline">
+                    <i class="fas fa-location-arrow"></i> My Location
+                </button>
+            </div>
+        </div>
+        
+        <div style="position: relative;">
+            <div id="satelliteMap" style="height: 600px; width: 100%;"></div>
+            
+            <!-- Map Controls Overlay -->
+            <div id="mapControls" style="position: absolute; top: 10px; left: 10px; z-index: 1000; display: grid; gap: 8px;">
+                <div class="badge" style="background: white; color: #374151; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="font-size: 12px; font-weight: 600;">Coordinates:</div>
+                    <div id="currentCoords" style="font-size: 11px; font-family: monospace;">--.----, --.----</div>
+                </div>
+                
+                <div class="badge" style="background: white; color: #374151; padding: 8px 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <div style="font-size: 12px; font-weight: 600;">Selected Area:</div>
+                    <div id="selectedArea" style="font-size: 11px;">0.00 ha</div>
+                </div>
+            </div>
+
+            <!-- Drawing Tools Overlay -->
+            <div id="drawingTools" style="position: absolute; top: 10px; right: 10px; z-index: 1000; display: none;">
+                <div style="background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: grid; gap: 8px;">
+                    <button onclick="startPolygonDrawing()" class="btn small">
+                        <i class="fas fa-draw-polygon"></i> Polygon
+                    </button>
+                    <button onclick="startRectangleDrawing()" class="btn small">
+                        <i class="fas fa-square"></i> Rectangle
+                    </button>
+                    <button onclick="clearDrawings()" class="btn small outline">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                    <button onclick="saveSelectedArea()" class="btn small success">
+                        <i class="fas fa-save"></i> Save Area
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Search -->
+        <div style="padding: 16px; border-top: 1px solid var(--border); background: #f8fafc;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="flex: 1;">
+                    <input type="text" id="locationSearch" placeholder="Search for coastal areas, cities, or coordinates (e.g., Mumbai, 19.0760,72.8777)" 
+                           style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                </div>
+                <button onclick="searchLocation()" class="btn primary">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button onclick="detectLocationFromName()" class="btn secondary">
+                    <i class="fas fa-crosshairs"></i> Auto-Detect
+                </button>
+            </div>
+            
+            <div style="display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap;">
+                <button onclick="goToLocation(19.0176, 72.8562, 'Mumbai')" class="btn small outline">Mumbai Coast</button>
+                <button onclick="goToLocation(13.0827, 80.2707, 'Chennai')" class="btn small outline">Chennai Coast</button>
+                <button onclick="goToLocation(9.9312, 76.2673, 'Kochi')" class="btn small outline">Kochi Backwaters</button>
+                <button onclick="goToLocation(22.2587, 91.7832, 'Sundarbans')" class="btn small outline">Sundarbans</button>
+                <button onclick="goToLocation(15.2993, 74.1240, 'Goa')" class="btn small outline">Goa Coast</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Monitoring Grid -->
+    {% if projects|length > 0 %}
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-satellite-dish" style="color: var(--primary);"></i>
+                Project Monitoring Status
+            </h3>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; padding: 20px;">
+            {% for project in projects %}
+            <div class="project-card" style="border: 1px solid var(--border); border-radius: 12px; padding: 20px; background: var(--white); transition: all 0.3s ease;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+                    <div>
+                        <h4 style="margin: 0 0 4px 0; color: #1f2937;">{{ project.name }}</h4>
+                        <div style="font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 4px;">
+                            <i class="fas fa-map-marker-alt"></i> 
+                            {{ project.location or (project.district + ', ' + project.state) }}
+                        </div>
+                        <div style="font-size: 11px; color: #6b7280; margin-top: 2px;">
+                            Coords: <span class="coordinates">Loading...</span>
+                        </div>
+                    </div>
+                    <span class="badge success" style="font-size: 10px;">
+                        <i class="fas fa-satellite"></i> Live
+                    </span>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px;">
+                        <div>
+                            <div style="color: #6b7280;">Area</div>
+                            <div style="font-weight: 600;">{{ project.area }} ha</div>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280;">Ecosystem</div>
+                            <div style="font-weight: 600;">{{ project.ecosystem }}</div>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280;">NDVI Score</div>
+                            <div style="font-weight: 600; color: var(--success);">
+                                <span class="ndvi-score">0.{{ range(65, 85)|random }}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280;">Last Update</div>
+                            <div style="font-weight: 600; font-size: 11px;">
+                                <span class="last-update">{{ range(1, 48)|random }}h ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                        <span style="font-size: 12px; color: #6b7280;">Vegetation Health</span>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--success);">
+                            <span class="health-status">Good</span>
+                        </span>
+                    </div>
+                    <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                        <div class="health-bar" style="width: {{ range(70, 95)|random }}%; background: var(--success); border-radius: 4px; height: 100%;"></div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="showOnMap({{ range(8, 38)|random }}.{{ range(1000, 9999)|random }}, {{ range(68, 98)|random }}.{{ range(1000, 9999)|random }}, '{{ project.name }}')" 
+                            class="btn" style="flex: 1; justify-content: center; font-size: 12px;">
+                        <i class="fas fa-map-marker-alt"></i> Show on Map
+                    </button>
+                    <button onclick="viewSatelliteAnalysis('{{ project.id }}')" class="btn secondary" style="padding: 8px 12px;">
+                        <i class="fas fa-chart-area"></i>
+                    </button>
+                    <button onclick="downloadSatelliteData('{{ project.id }}')" class="btn outline" style="padding: 8px 12px;">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Area Selection Modal -->
+    <div id="areaSelectionModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000;">
+        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 12px; padding: 24px; width: 90%; max-width: 600px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h3 style="margin: 0;">Select Project Area</h3>
+                <button onclick="closeAreaSelection()" style="background: none; border: none; font-size: 20px; cursor: pointer;">&times;</button>
+            </div>
+            
+            <form id="areaSelectionForm">
+                <div style="display: grid; gap: 16px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500;">Project Name</label>
+                        <input type="text" id="projectName" placeholder="Enter project name" required
+                               style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; font-weight: 500;">Latitude</label>
+                            <input type="text" id="selectedLat" readonly
+                                   style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: #f8fafc;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 4px; font-weight: 500;">Longitude</label>
+                            <input type="text" id="selectedLng" readonly
+                                   style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: #f8fafc;">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500;">Selected Area</label>
+                        <input type="text" id="calculatedArea" readonly
+                               style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px; background: #f8fafc;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 4px; font-weight: 500;">Ecosystem Type</label>
+                        <select id="ecosystemType" required style="width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: 6px;">
+                            <option value="">Select ecosystem type</option>
+                            <option value="Mangrove">Mangrove Forest</option>
+                            <option value="Seagrass">Seagrass Meadows</option>
+                            <option value="Coastal Wetlands">Coastal Wetlands</option>
+                            <option value="Salt Marsh">Salt Marsh</option>
+                            <option value="Marine">Marine Protected Area</option>
+                        </select>
+                    </div>
+                    
+                    <div style="display: flex; gap: 12px; justify-content: end;">
+                        <button type="button" onclick="closeAreaSelection()" class="btn outline">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn primary">
+                            <i class="fas fa-save"></i> Save Project Area
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Include Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+<script src="https://unpkg.com/leaflet-geometryutil@0.9.3/src/leaflet.geometryutil.js"></script>
+<script src="{{ url_for('static', filename='js/satellite_map_utils.js') }}"></script>
+
+<script>
+let map;
+let drawnItems;
+let drawControl;
+let selectedCoordinates = [];
+
+// Initialize the map
+function initializeMap() {
+    // Center on India's coastline
+    map = L.map('satelliteMap').setView([15.0, 77.0], 6);
+    
+    // Create layer groups for different map types
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics, CNES/Airbus DS, USDA, USGS, AeroGRID, IGN, and the GIS User Community',
+        maxZoom: 18
+    });
+    
+    const streetLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        maxZoom: 18
+    });
+    
+    const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenTopoMap contributors',
+        maxZoom: 17
+    });
+
+    // Add default satellite layer
+    satelliteLayer.addTo(map);
+    
+    // Layer control
+    const baseLayers = {
+        "Satellite": satelliteLayer,
+        "Street Map": streetLayer,
+        "Terrain": terrainLayer
+    };
+    
+    // Initialize FeatureGroup for drawn items
+    drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
+    
+    // Initialize the draw control and pass it the FeatureGroup of editable layers
+    drawControl = new L.Control.Draw({
+        edit: {
+            featureGroup: drawnItems
+        },
+        draw: {
+            polygon: {
+                allowIntersection: false,
+                drawError: {
+                    color: '#e1e100',
+                    message: '<strong>Error:</strong> shape edges cannot cross!'
+                },
+                shapeOptions: {
+                    color: '#2563eb',
+                    weight: 3,
+                    fillOpacity: 0.2
+                }
+            },
+            rectangle: {
+                shapeOptions: {
+                    color: '#2563eb',
+                    weight: 3,
+                    fillOpacity: 0.2
+                }
+            },
+            circle: false,
+            circlemarker: false,
+            marker: true,
+            polyline: false
+        }
+    });
+    
+    map.addControl(drawControl);
+    
+    // Handle drawn items
+    map.on(L.Draw.Event.CREATED, function(e) {
+        const layer = e.layer;
+        drawnItems.addLayer(layer);
+        
+        if (e.layerType === 'polygon' || e.layerType === 'rectangle') {
+            const area = L.GeometryUtil.geodesicArea(layer.getLatLngs()[0]);
+            const areaHa = (area / 10000).toFixed(2); // Convert to hectares
+            document.getElementById('selectedArea').textContent = areaHa + ' ha';
+            document.getElementById('calculatedArea').value = areaHa + ' ha';
+            
+            // Get center coordinates
+            const center = layer.getBounds().getCenter();
+            document.getElementById('selectedLat').value = center.lat.toFixed(6);
+            document.getElementById('selectedLng').value = center.lng.toFixed(6);
+        } else if (e.layerType === 'marker') {
+            const latlng = layer.getLatLng();
+            document.getElementById('selectedLat').value = latlng.lat.toFixed(6);
+            document.getElementById('selectedLng').value = latlng.lng.toFixed(6);
+            document.getElementById('selectedArea').textContent = 'Point selected';
+            document.getElementById('calculatedArea').value = 'Point location';
+        }
+    });
+    
+    // Update coordinates on mouse move
+    map.on('mousemove', function(e) {
+        document.getElementById('currentCoords').textContent = 
+            e.latlng.lat.toFixed(4) + ', ' + e.latlng.lng.toFixed(4);
+    });
+    
+    // Add existing project markers
+    addProjectMarkers();
+    
+    // Add Indian coastal boundaries for reference
+    addCoastalBoundaries();
+}
+
+// Add project markers to the map
+function addProjectMarkers() {
+    const indianCoastalCoordinates = [
+        {name: "Mumbai Coast", lat: 19.0176, lng: 72.8562},
+        {name: "Chennai Coast", lat: 13.0827, lng: 80.2707},
+        {name: "Kochi Backwaters", lat: 9.9312, lng: 76.2673},
+        {name: "Sundarbans", lat: 22.2587, lng: 91.7832},
+        {name: "Goa Coast", lat: 15.2993, lng: 74.1240},
+        {name: "Visakhapatnam Coast", lat: 17.7231, lng: 83.3012},
+        {name: "Mangalore Coast", lat: 12.9141, lng: 74.8560},
+        {name: "Puducherry Coast", lat: 11.9416, lng: 79.8083}
+    ];
+    
+    {% for project in projects %}
+    // Use actual coordinates if available, otherwise use coastal coordinates
+    const coords = indianCoastalCoordinates[{{ loop.index0 % 8 }}];
+    
+    const marker = L.marker([coords.lat, coords.lng])
+        .addTo(map)
+        .bindPopup(`
+            <div style="min-width: 200px;">
+                <h4 style="margin: 0 0 8px 0;">{{ project.name }}</h4>
+                <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Area:</strong> {{ project.area }} ha</p>
+                <p style="margin: 0 0 4px 0; font-size: 12px;"><strong>Ecosystem:</strong> {{ project.ecosystem }}</p>
+                <p style="margin: 0 0 8px 0; font-size: 12px;"><strong>Location:</strong> ${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}</p>
+                <button onclick="viewSatelliteAnalysis('{{ project.id }}')" class="btn small">
+                    <i class="fas fa-chart-area"></i> View Analysis
+                </button>
+            </div>
+        `);
+    {% endfor %}
+}
+
+// Add coastal boundaries for reference
+function addCoastalBoundaries() {
+    // Simplified Indian coastline (major points)
+    const westCoast = [
+        [23.0225, 72.5714], // Gujarat
+        [21.1702, 72.8311], // Gujarat
+        [19.0176, 72.8562], // Mumbai
+        [15.2993, 74.1240], // Goa
+        [12.9141, 74.8560], // Mangalore
+        [11.2588, 75.7804], // Calicut
+        [9.9312, 76.2673],  // Kochi
+        [8.5241, 76.9366]   // Trivandrum
+    ];
+    
+    const eastCoast = [
+        [21.2787, 86.4014], // Odisha
+        [19.9975, 85.7745], // Bhubaneswar
+        [17.7231, 83.3012], // Visakhapatnam
+        [15.9129, 79.7400], // Nellore
+        [13.0827, 80.2707], // Chennai
+        [11.9416, 79.8083], // Puducherry
+        [9.9312, 76.2673]   // Kochi connection
+    ];
+    
+    // Draw coastlines
+    L.polyline(westCoast, {color: '#3b82f6', weight: 2, opacity: 0.7}).addTo(map)
+        .bindTooltip('Western Coastline');
+    L.polyline(eastCoast, {color: '#10b981', weight: 2, opacity: 0.7}).addTo(map)
+        .bindTooltip('Eastern Coastline');
+}
+
+// Function implementations
+function changeSatelliteLayer() {
+    const selected = document.getElementById('satelliteLayer').value;
+    // Implementation would switch between different satellite layers
+    console.log('Switching to layer:', selected);
+}
+
+function toggleDrawingMode() {
+    const tools = document.getElementById('drawingTools');
+    tools.style.display = tools.style.display === 'none' ? 'block' : 'none';
+}
+
+function startPolygonDrawing() {
+    new L.Draw.Polygon(map, drawControl.options.draw.polygon).enable();
+}
+
+function startRectangleDrawing() {
+    new L.Draw.Rectangle(map, drawControl.options.draw.rectangle).enable();
+}
+
+function clearDrawings() {
+    drawnItems.clearLayers();
+    document.getElementById('selectedArea').textContent = '0.00 ha';
+    document.getElementById('selectedLat').value = '';
+    document.getElementById('selectedLng').value = '';
+}
+
+function saveSelectedArea() {
+    if (drawnItems.getLayers().length === 0) {
+        alert('Please draw an area first');
+        return;
+    }
+    document.getElementById('areaSelectionModal').style.display = 'block';
+}
+
+function getCurrentLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            map.setView([lat, lng], 15);
+            L.marker([lat, lng]).addTo(map)
+                .bindPopup('Your current location')
+                .openPopup();
+        });
+    } else {
+        alert('Geolocation is not supported by this browser.');
+    }
+}
+
+function searchLocation() {
+    const query = document.getElementById('locationSearch').value;
+    if (!query) return;
+    
+    // Try to parse coordinates
+    if (query.includes(',')) {
+        const parts = query.split(',');
+        if (parts.length === 2) {
+            const lat = parseFloat(parts[0].trim());
+            const lng = parseFloat(parts[1].trim());
+            if (!isNaN(lat) && !isNaN(lng)) {
+                map.setView([lat, lng], 15);
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup(`Coordinates: ${lat}, ${lng}`)
+                    .openPopup();
+                return;
+            }
+        }
+    }
+    
+    // Otherwise search by name using Nominatim
+    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&countrycodes=in&limit=1`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.length > 0) {
+                const lat = parseFloat(data[0].lat);
+                const lng = parseFloat(data[0].lon);
+                map.setView([lat, lng], 12);
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup(data[0].display_name)
+                    .openPopup();
+            } else {
+                alert('Location not found');
+            }
+        })
+        .catch(error => {
+            console.error('Search error:', error);
+            alert('Search failed. Please try again.');
+        });
+}
+
+function goToLocation(lat, lng, name) {
+    map.setView([lat, lng], 12);
+    L.marker([lat, lng]).addTo(map)
+        .bindPopup(`<strong>${name}</strong><br>Lat: ${lat}<br>Lng: ${lng}`)
+        .openPopup();
+}
+
+function showOnMap(lat, lng, projectName) {
+    map.setView([lat, lng], 15);
+    L.marker([lat, lng]).addTo(map)
+        .bindPopup(`<strong>${projectName}</strong><br>Monitoring Location`)
+        .openPopup();
+}
+
+function showLocationSelector() {
+    document.getElementById('areaSelectionModal').style.display = 'block';
+}
+
+function closeAreaSelection() {
+    document.getElementById('areaSelectionModal').style.display = 'none';
+}
+
+function refreshSatelliteData() {
+    location.reload();
+}
+
+function viewSatelliteAnalysis(projectId) {
+    window.location.href = `/ngo/satellite-monitoring/${projectId}`;
+}
+
+function downloadSatelliteData(projectId) {
+    // Mock download
+    alert(`Downloading satellite data for project ${projectId}`);
+}
+
+function detectLocationFromName() {
+    const query = document.getElementById('locationSearch').value;
+    if (query) {
+        searchLocation();
+    } else {
+        alert('Please enter a location name first');
+    }
+}
+
+// Handle area selection form submission
+document.getElementById('areaSelectionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = {
+        projectName: document.getElementById('projectName').value,
+        latitude: document.getElementById('selectedLat').value,
+        longitude: document.getElementById('selectedLng').value,
+        area: document.getElementById('calculatedArea').value,
+        ecosystemType: document.getElementById('ecosystemType').value
+    };
+    
+    // In production, save this to the server
+    console.log('Saving project area:', formData);
+    
+    alert('Project area saved successfully!');
+    closeAreaSelection();
+});
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMap();
+});
+</script>
+
+<style>
+.project-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn.small {
+    font-size: 11px;
+    padding: 6px 12px;
+}
+
+.leaflet-draw-toolbar {
+    display: none !important;
+}
+
+#drawingTools .btn.small {
+    width: 100%;
+    justify-content: flex-start;
+}
+
+@media (max-width: 768px) {
+    #satelliteMap {
+        height: 400px !important;
+    }
+    
+    #mapControls {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        margin: 10px 0;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+}
+</style>
+{% endblock %}

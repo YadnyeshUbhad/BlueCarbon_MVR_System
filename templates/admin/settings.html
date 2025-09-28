@@ -1,0 +1,310 @@
+{% extends 'admin_base.html' %}
+{% set active='settings' %}
+{% set title='System Settings - NCCR Admin' %}
+{% set header='System Settings' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937;">System Configuration</h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">Manage NCCR system settings and preferences</p>
+        </div>
+    </div>
+
+    <!-- Settings Sections -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- General Settings -->
+        <div class="card">
+            <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cog" style="color: var(--primary);"></i>
+                    General Settings
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <form id="generalSettingsForm">
+                    <div class="form-group">
+                        <label for="systemName">System Name</label>
+                        <input type="text" id="systemName" name="systemName" value="BlueCarbon MRV System" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="organizationName">Organization Name</label>
+                        <input type="text" id="organizationName" name="organizationName" value="National Centre for Coastal Research" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="systemVersion">System Version</label>
+                        <input type="text" id="systemVersion" name="systemVersion" value="v1.0.0" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="environment">Environment</label>
+                        <select id="environment" name="environment" disabled>
+                            <option value="development" selected>Development</option>
+                            <option value="production">Production</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Security Settings -->
+        <div class="card">
+            <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-shield-alt" style="color: var(--success);"></i>
+                    Security Settings
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <form id="securitySettingsForm">
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked disabled> 
+                            Enable Session Timeout
+                        </label>
+                        <small style="color: #6b7280; display: block; margin-top: 4px;">
+                            Automatically log out users after 30 minutes of inactivity
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked disabled> 
+                            Enable Login Audit Trail
+                        </label>
+                        <small style="color: #6b7280; display: block; margin-top: 4px;">
+                            Track all login attempts and activities
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" disabled> 
+                            Enable Two-Factor Authentication (Coming Soon)
+                        </label>
+                        <small style="color: #6b7280; display: block; margin-top: 4px;">
+                            Require 2FA for admin accounts
+                        </small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxLoginAttempts">Max Failed Login Attempts</label>
+                        <input type="number" id="maxLoginAttempts" name="maxLoginAttempts" value="5" min="3" max="10" readonly>
+                        <small style="color: #6b7280;">Account will be locked after this many failed attempts</small>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Email & Notifications -->
+        <div class="card">
+            <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-envelope" style="color: var(--info);"></i>
+                    Email & Notifications
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <form id="emailSettingsForm">
+                    <div class="form-group">
+                        <label for="emailProvider">Email Provider</label>
+                        <select id="emailProvider" name="emailProvider" disabled>
+                            <option value="resend" selected>Resend API</option>
+                            <option value="smtp">SMTP Server</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="fromEmail">From Email Address</label>
+                        <input type="email" id="fromEmail" name="fromEmail" value="noreply@nccr.gov.in" readonly>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked disabled> 
+                            Email Registration Confirmations
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked disabled> 
+                            Email Approval Notifications
+                        </label>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" checked disabled> 
+                            Email Transaction Alerts
+                        </label>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Database & Storage -->
+        <div class="card">
+            <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-database" style="color: var(--warning);"></i>
+                    Database & Storage
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <div style="display: grid; gap: 16px;">
+                    <div>
+                        <strong>Database Type:</strong> SQLite (Development)
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">
+                            Location: instance/database.db
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <strong>Firebase Integration:</strong> Mock Mode
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">
+                            Install firebase-admin for production use
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <strong>File Storage:</strong> Local Filesystem
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">
+                            static/uploads/ directory
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <strong>Blockchain Integration:</strong> Mock Mode
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 2px;">
+                            Configure Web3 for production
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <button type="button" class="btn outline" onclick="backupDatabase()" disabled>
+                        <i class="fas fa-download"></i> Backup Database
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Configuration -->
+    <div class="card">
+        <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-plug" style="color: var(--secondary);"></i>
+                API Configuration
+            </h3>
+        </div>
+        <div style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Blockchain API</h4>
+                    <div style="font-size: 14px; color: #6b7280;">
+                        <div><strong>Status:</strong> <span class="badge warning">Mock Mode</span></div>
+                        <div><strong>Endpoint:</strong> /api/blockchain/*</div>
+                        <div><strong>Provider:</strong> Web3.py (Not Connected)</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Satellite API</h4>
+                    <div style="font-size: 14px; color: #6b7280;">
+                        <div><strong>Status:</strong> <span class="badge info">Available</span></div>
+                        <div><strong>Provider:</strong> NASA Earth Data</div>
+                        <div><strong>Data Source:</strong> Landsat/Sentinel</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Email API</h4>
+                    <div style="font-size: 14px; color: #6b7280;">
+                        <div><strong>Status:</strong> <span class="badge warning">Not Configured</span></div>
+                        <div><strong>Provider:</strong> Resend</div>
+                        <div><strong>Fallback:</strong> SMTP Server</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Status -->
+    <div class="card">
+        <div style="padding: 16px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-heartbeat" style="color: var(--danger);"></i>
+                System Status
+            </h3>
+        </div>
+        <div style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Server Status</div>
+                    <div style="color: var(--success);"><i class="fas fa-circle"></i> Online</div>
+                </div>
+                
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Database Status</div>
+                    <div style="color: var(--success);"><i class="fas fa-circle"></i> Connected</div>
+                </div>
+                
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Email Service</div>
+                    <div style="color: var(--warning);"><i class="fas fa-circle"></i> Not Configured</div>
+                </div>
+                
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Blockchain</div>
+                    <div style="color: var(--warning);"><i class="fas fa-circle"></i> Mock Mode</div>
+                </div>
+                
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Last Restart</div>
+                    <div style="color: #6b7280;">{{ moment().format('DD MMM YYYY, HH:mm') if moment else 'Unknown' }}</div>
+                </div>
+                
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Debug Mode</div>
+                    <div style="color: var(--info);"><i class="fas fa-circle"></i> Enabled</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Security Warning -->
+    <div style="background: #fef2f2; border: 1px solid #fecaca; padding: 16px; border-radius: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; color: #dc2626;">
+            <i class="fas fa-exclamation-triangle" style="font-size: 20px;"></i>
+            <div>
+                <div style="font-weight: 600; margin-bottom: 4px;">Production Deployment Notice</div>
+                <div style="font-size: 14px;">
+                    This system is currently in development mode. Before deploying to production:
+                    <ul style="margin: 8px 0 0 16px;">
+                        <li>Set up environment variables (.env file)</li>
+                        <li>Configure Firebase Admin SDK</li>
+                        <li>Set up production database (PostgreSQL/MySQL)</li>
+                        <li>Configure email service (Resend/SMTP)</li>
+                        <li>Enable HTTPS and SSL certificates</li>
+                        <li>Set DEBUG=False in Flask configuration</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function backupDatabase() {
+    alert('Database backup functionality is not available in development mode.');
+}
+</script>
+{% endblock %}

@@ -1,0 +1,791 @@
+{% extends 'admin_base.html' %}
+{% set active='carbon_calculator' %}
+{% set title='Carbon Calculator - Admin Portal' %}
+{% set header='Real-time Carbon Impact Calculator' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-leaf" style="color: #059669;"></i>
+                Carbon Impact Calculator
+            </h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">Dynamic carbon credit calculator with real-time pricing, impact metrics, and environmental benefit projections</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="badge success" style="padding: 8px 16px;">
+                <i class="fas fa-chart-line"></i> Real-time Pricing: $27.80/tCO₂
+            </div>
+            <button onclick="exportCalculations()" class="btn">
+                <i class="fas fa-download"></i> Export Results
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Calculator -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-calculator" style="color: var(--primary);"></i>
+                Quick Carbon Impact Estimation
+            </h3>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+                <!-- Input Parameters -->
+                <div>
+                    <h4 style="margin: 0 0 20px 0; color: #374151;">Project Parameters</h4>
+                    
+                    <div style="display: grid; gap: 16px;">
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Project Type</label>
+                            <select id="projectType" onchange="updateCalculation()" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                <option value="mangrove_restoration">Mangrove Restoration</option>
+                                <option value="blue_carbon">Blue Carbon</option>
+                                <option value="forest_conservation">Forest Conservation</option>
+                                <option value="reforestation">Reforestation</option>
+                                <option value="wetland_protection">Wetland Protection</option>
+                                <option value="coastal_protection">Coastal Protection</option>
+                                <option value="agroforestry">Agroforestry</option>
+                                <option value="urban_forestry">Urban Forestry</option>
+                            </select>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Area (hectares)</label>
+                                <input type="number" id="projectArea" value="100" min="1" onchange="updateCalculation()" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Duration (years)</label>
+                                <input type="number" id="projectDuration" value="20" min="1" max="50" onchange="updateCalculation()" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Climate Zone</label>
+                                <select id="climateZone" onchange="updateCalculation()" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                    <option value="tropical">Tropical</option>
+                                    <option value="subtropical">Subtropical</option>
+                                    <option value="temperate" selected>Temperate</option>
+                                    <option value="boreal">Boreal</option>
+                                    <option value="arid">Arid</option>
+                                    <option value="semi_arid">Semi-arid</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Soil Type</label>
+                                <select id="soilType" onchange="updateCalculation()" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                                    <option value="organic_rich">Organic Rich</option>
+                                    <option value="clay">Clay</option>
+                                    <option value="loam" selected>Loam</option>
+                                    <option value="sandy">Sandy</option>
+                                    <option value="rocky">Rocky</option>
+                                    <option value="waterlogged">Waterlogged</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label style="display: block; margin-bottom: 6px; font-weight: 500; color: #374151;">Location (Optional)</label>
+                            <input type="text" id="projectLocation" placeholder="e.g., Sundarbans, India" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                        </div>
+                        
+                        <button onclick="calculateDetailed()" class="btn" style="width: 100%; margin-top: 8px;">
+                            <i class="fas fa-calculator"></i> Calculate Carbon Impact
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Results Display -->
+                <div id="resultsPanel">
+                    <h4 style="margin: 0 0 20px 0; color: #374151;">Carbon Impact Results</h4>
+                    
+                    <!-- Real-time Results -->
+                    <div id="quickResults" style="display: grid; gap: 16px;">
+                        <!-- Carbon Sequestration Card -->
+                        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 48px; height: 48px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                    <i class="fas fa-tree"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #166534;">Total CO₂ Sequestered</div>
+                                    <div style="font-size: 12px; color: #16a34a;">Over project lifetime</div>
+                                </div>
+                            </div>
+                            <div id="totalSequestration" style="font-size: 28px; font-weight: 700; color: var(--success); margin-bottom: 8px;">12,435 tonnes</div>
+                            <div style="font-size: 13px; color: #16a34a;">
+                                Annual Rate: <span id="annualRate">622 tonnes CO₂/year</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Carbon Credits Card -->
+                        <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 48px; height: 48px; background: var(--info); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #1e40af;">Carbon Credits Generated</div>
+                                    <div style="font-size: 12px; color: #2563eb;">Verified Carbon Standard</div>
+                                </div>
+                            </div>
+                            <div id="carbonCredits" style="font-size: 28px; font-weight: 700; color: var(--info); margin-bottom: 8px;">10,570 credits</div>
+                            <div style="font-size: 13px; color: #2563eb;">
+                                Buffer Applied: <span style="font-weight: 600;">15%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Revenue Card -->
+                        <div style="background: #fffbeb; border: 1px solid #fed7aa; border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                <div style="width: 48px; height: 48px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #92400e;">Estimated Revenue</div>
+                                    <div style="font-size: 12px; color: #d97706;">Current market price</div>
+                                </div>
+                            </div>
+                            <div id="estimatedRevenue" style="font-size: 28px; font-weight: 700; color: var(--warning); margin-bottom: 8px;">$293,446</div>
+                            <div style="font-size: 13px; color: #d97706;">
+                                Price: <span id="currentPrice">$27.80</span>/tCO₂ 
+                                <span id="pricetrend" style="margin-left: 8px; font-weight: 600;">↗ +2.1%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Confidence Level -->
+                        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                <span style="font-weight: 600; color: #374151;">Calculation Confidence</span>
+                                <span id="confidenceLevel" style="font-size: 18px; font-weight: 700; color: var(--success);">88.5%</span>
+                            </div>
+                            <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 8px;">
+                                <div id="confidenceBar" style="width: 88.5%; background: linear-gradient(90deg, var(--warning), var(--success)); border-radius: 4px; height: 100%; transition: width 0.3s ease;"></div>
+                            </div>
+                            <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+                                Based on methodology and data availability
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Analysis & Environmental Co-benefits -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Environmental Co-benefits -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-seedling" style="color: var(--success);"></i>
+                    Environmental Co-benefits
+                </h3>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div id="environmentalBenefits" style="display: grid; gap: 16px;">
+                    <!-- Biodiversity Impact -->
+                    <div style="padding: 16px; background: #f0fdf4; border-radius: 8px; border-left: 4px solid var(--success);">
+                        <h5 style="margin: 0 0 12px 0; color: #166534; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-paw"></i>
+                            Biodiversity Conservation
+                        </h5>
+                        <div style="display: grid; gap: 8px; font-size: 13px; color: #166534;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Habitat Protected:</span>
+                                <span style="font-weight: 600;" id="habitatProtected">210 hectares</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Species Diversity Index:</span>
+                                <span style="font-weight: 600;" id="diversityIndex">210</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Connectivity Score:</span>
+                                <span style="font-weight: 600;" id="connectivityScore">105</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Water Impact -->
+                    <div style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid var(--info);">
+                        <h5 style="margin: 0 0 12px 0; color: #1e40af; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-tint"></i>
+                            Water Quality & Protection
+                        </h5>
+                        <div style="display: grid; gap: 8px; font-size: 13px; color: #1e40af;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Filtration Capacity:</span>
+                                <span style="font-weight: 600;" id="filtrationCapacity">190,000 L/day</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Flood Protection Value:</span>
+                                <span style="font-weight: 600;" id="floodProtection">$95,000/year</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Groundwater Recharge:</span>
+                                <span style="font-weight: 600;" id="groundwaterRecharge">152,000 L/year</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Soil Health -->
+                    <div style="padding: 16px; background: #fef3c7; border-radius: 8px; border-left: 4px solid var(--warning);">
+                        <h5 style="margin: 0 0 12px 0; color: #92400e; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-mountain"></i>
+                            Soil Health & Erosion Prevention
+                        </h5>
+                        <div style="display: grid; gap: 8px; font-size: 13px; color: #92400e;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Erosion Prevented:</span>
+                                <span style="font-weight: 600;" id="erosionPrevented">300 tonnes/year</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Organic Matter Increase:</span>
+                                <span style="font-weight: 600;" id="organicMatter">36%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Nutrient Retention:</span>
+                                <span style="font-weight: 600;" id="nutrientRetention">$18,000/year</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Total Economic Value -->
+                    <div style="padding: 16px; background: #f3f4f6; border-radius: 8px; border: 2px dashed #6b7280; text-align: center;">
+                        <div style="font-size: 14px; color: #4b5563; margin-bottom: 8px;">Total Co-benefits Value</div>
+                        <div id="totalEconomicValue" style="font-size: 24px; font-weight: 700; color: #374151;">$118,250</div>
+                        <div style="font-size: 12px; color: #6b7280; margin-top: 4px;">Additional to carbon revenue</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SDG Impact & Market Data -->
+        <div style="display: grid; gap: 24px;">
+            <!-- SDG Impact -->
+            <div class="card">
+                <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-globe" style="color: var(--accent);"></i>
+                        UN SDG Contributions
+                    </h3>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <div id="sdgContributions" style="display: grid; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f0fdf4; border-radius: 8px;">
+                            <div style="width: 32px; height: 32px; background: var(--success); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px;">13</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #166534; font-size: 14px;">Climate Action</div>
+                                <div style="width: 100%; background: #d1fae5; border-radius: 4px; height: 6px; margin-top: 4px;">
+                                    <div style="width: 95%; background: var(--success); border-radius: 4px; height: 100%;"></div>
+                                </div>
+                            </div>
+                            <span style="font-weight: 600; color: #166534; font-size: 13px;">95%</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f0f9ff; border-radius: 8px;">
+                            <div style="width: 32px; height: 32px; background: var(--info); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px;">14</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #1e40af; font-size: 14px;">Life Below Water</div>
+                                <div style="width: 100%; background: #dbeafe; border-radius: 4px; height: 6px; margin-top: 4px;">
+                                    <div style="width: 90%; background: var(--info); border-radius: 4px; height: 100%;"></div>
+                                </div>
+                            </div>
+                            <span style="font-weight: 600; color: #1e40af; font-size: 13px;">90%</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #fffbeb; border-radius: 8px;">
+                            <div style="width: 32px; height: 32px; background: var(--warning); border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 12px;">15</div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; color: #92400e; font-size: 14px;">Life on Land</div>
+                                <div style="width: 100%; background: #fed7aa; border-radius: 4px; height: 6px; margin-top: 4px;">
+                                    <div style="width: 85%; background: var(--warning); border-radius: 4px; height: 100%;"></div>
+                                </div>
+                            </div>
+                            <span style="font-weight: 600; color: #92400e; font-size: 13px;">85%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Pricing Data -->
+            <div class="card">
+                <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-chart-line" style="color: var(--accent);"></i>
+                        Real-time Market Data
+                    </h3>
+                </div>
+                
+                <div style="padding: 20px;">
+                    <div style="display: grid; gap: 16px;">
+                        <!-- Current Pricing -->
+                        <div style="text-align: center; padding: 20px; background: #f8fafc; border-radius: 12px;">
+                            <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">VCS Carbon Credit Price</div>
+                            <div style="font-size: 32px; font-weight: 700; color: var(--primary); margin-bottom: 4px;">$27.80</div>
+                            <div style="display: flex; align-items: center; justify-content: center; gap: 4px; color: var(--success); font-size: 13px;">
+                                <i class="fas fa-arrow-up"></i>
+                                <span>+2.1% (24h)</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Market Indicators -->
+                        <div style="display: grid; gap: 8px; font-size: 13px;">
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                                <span>Market Trend:</span>
+                                <span style="font-weight: 600; color: var(--success);">Increasing ↗</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                                <span>Volatility (24h):</span>
+                                <span style="font-weight: 600; color: var(--warning);">8.2%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f3f4f6;">
+                                <span>Regional Premium:</span>
+                                <span style="font-weight: 600; color: var(--info);">Asia-Pacific +0%</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+                                <span>Project Premium:</span>
+                                <span style="font-weight: 600; color: var(--success);">Blue Carbon +40%</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Last Updated -->
+                        <div style="text-align: center; font-size: 11px; color: #9ca3af; padding-top: 12px; border-top: 1px solid #f3f4f6;">
+                            Last updated: <span id="lastUpdated">2 minutes ago</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Recommendations -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-lightbulb" style="color: var(--accent);"></i>
+                AI-Powered Recommendations
+            </h3>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div id="recommendations" style="display: grid; gap: 16px;">
+                <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <i class="fas fa-arrow-up" style="color: var(--info);"></i>
+                        <span style="font-weight: 600; color: #1e40af;">Optimization Opportunity</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13px; color: #1e40af; line-height: 1.5;">
+                        Consider expanding to blue carbon projects for 40% higher sequestration rates. Current mangrove restoration could sequester an additional 3,200 tonnes CO₂ with similar area.
+                    </p>
+                </div>
+                
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <i class="fas fa-dollar-sign" style="color: var(--success);"></i>
+                        <span style="font-weight: 600; color: #166534;">Revenue Enhancement</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13px; color: #166534; line-height: 1.5;">
+                        Co-benefits value of $118,250 could be monetized through ecosystem service payments and biodiversity credits for additional revenue streams.
+                    </p>
+                </div>
+                
+                <div style="background: #fffbeb; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <i class="fas fa-certificate" style="color: var(--warning);"></i>
+                        <span style="font-weight: 600; color: #92400e;">Certification Strategy</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
+                        Consider Gold Standard certification for 28% price premium. Additional verification costs offset by higher credit prices within 2 years.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Calculation Modal -->
+<div id="calculationModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="margin: 0; color: #1f2937;">Detailed Carbon Calculation Report</h3>
+            <button onclick="closeCalculationModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <div id="detailedResults">
+            <!-- Detailed results will be loaded here -->
+        </div>
+    </div>
+</div>
+
+<script>
+// Base sequestration rates by project type (tonnes CO2/ha/year)
+const SEQUESTRATION_RATES = {
+    'mangrove_restoration': 6.8,
+    'blue_carbon': 9.3,
+    'forest_conservation': 4.5,
+    'reforestation': 5.2,
+    'wetland_protection': 7.2,
+    'coastal_protection': 8.1,
+    'agroforestry': 3.8,
+    'urban_forestry': 2.1
+};
+
+const CLIMATE_MULTIPLIERS = {
+    'tropical': 1.3,
+    'subtropical': 1.1,
+    'temperate': 1.0,
+    'boreal': 0.7,
+    'arid': 0.4,
+    'semi_arid': 0.6
+};
+
+const SOIL_MULTIPLIERS = {
+    'organic_rich': 1.2,
+    'clay': 1.1,
+    'loam': 1.0,
+    'sandy': 0.8,
+    'rocky': 0.6,
+    'waterlogged': 1.4
+};
+
+let currentPrice = 27.80;
+let lastCalculation = null;
+
+function updateCalculation() {
+    const projectType = document.getElementById('projectType').value;
+    const area = parseFloat(document.getElementById('projectArea').value) || 100;
+    const duration = parseInt(document.getElementById('projectDuration').value) || 20;
+    const climate = document.getElementById('climateZone').value;
+    const soil = document.getElementById('soilType').value;
+    
+    // Calculate carbon impact
+    const calculation = calculateCarbonImpact(projectType, area, duration, climate, soil);
+    
+    // Update UI
+    updateResultsDisplay(calculation);
+    updateEnvironmentalBenefits(calculation);
+    updateRecommendations(calculation);
+    
+    lastCalculation = calculation;
+}
+
+function calculateCarbonImpact(projectType, area, duration, climate, soil) {
+    const baseRate = SEQUESTRATION_RATES[projectType] || 5.0;
+    const climateMultiplier = CLIMATE_MULTIPLIERS[climate] || 1.0;
+    const soilMultiplier = SOIL_MULTIPLIERS[soil] || 1.0;
+    
+    const annualRate = baseRate * area * climateMultiplier * soilMultiplier;
+    
+    // Apply age factor (simplified)
+    let totalSequestration = 0;
+    for (let year = 1; year <= duration; year++) {
+        let yearlyRate = annualRate;
+        if (['mangrove_restoration', 'reforestation'].includes(projectType)) {
+            // S-curve growth
+            const growthFactor = 1 / (1 + Math.exp(-0.5 * (year - 8)));
+            yearlyRate = annualRate * 0.3 + (annualRate * 1.5 - annualRate * 0.3) * growthFactor;
+        }
+        totalSequestration += yearlyRate;
+    }
+    
+    // Apply additionality and buffer
+    const additionality = getAdditionality(projectType);
+    const additionalSequestration = totalSequestration * additionality;
+    const carbonCredits = additionalSequestration * 0.85; // 15% buffer
+    
+    // Calculate revenue
+    const projectMultiplier = getProjectMultiplier(projectType);
+    const revenue = carbonCredits * currentPrice * projectMultiplier;
+    
+    // Calculate confidence
+    const confidence = calculateConfidence(projectType, area, duration);
+    
+    return {
+        projectType,
+        area,
+        duration,
+        totalSequestration: additionalSequestration,
+        annualRate,
+        carbonCredits,
+        revenue,
+        confidence,
+        currentPrice,
+        projectMultiplier
+    };
+}
+
+function getAdditionality(projectType) {
+    const additionalityFactors = {
+        'blue_carbon': 0.95,
+        'mangrove_restoration': 0.90,
+        'wetland_protection': 0.85,
+        'reforestation': 0.80,
+        'forest_conservation': 0.70,
+        'coastal_protection': 0.85,
+        'agroforestry': 0.75,
+        'urban_forestry': 0.60
+    };
+    return additionalityFactors[projectType] || 0.75;
+}
+
+function getProjectMultiplier(projectType) {
+    const multipliers = {
+        'blue_carbon': 1.4,
+        'mangrove_restoration': 1.3,
+        'wetland_protection': 1.2,
+        'forest_conservation': 1.1,
+        'reforestation': 1.0,
+        'coastal_protection': 1.25,
+        'agroforestry': 0.9,
+        'urban_forestry': 0.8
+    };
+    return multipliers[projectType] || 1.0;
+}
+
+function calculateConfidence(projectType, area, duration) {
+    let confidence = 85;
+    
+    // Adjust based on project type
+    const confidenceAdjustments = {
+        'forest_conservation': 5,
+        'reforestation': 3,
+        'blue_carbon': -2,
+        'urban_forestry': -5
+    };
+    
+    confidence += confidenceAdjustments[projectType] || 0;
+    
+    // Adjust based on project size
+    if (area > 500) confidence += 3;
+    if (area < 50) confidence -= 2;
+    
+    return Math.min(98, Math.max(65, confidence));
+}
+
+function updateResultsDisplay(calc) {
+    document.getElementById('totalSequestration').textContent = `${Math.round(calc.totalSequestration).toLocaleString()} tonnes`;
+    document.getElementById('annualRate').textContent = `${Math.round(calc.annualRate)} tonnes CO₂/year`;
+    document.getElementById('carbonCredits').textContent = `${Math.round(calc.carbonCredits).toLocaleString()} credits`;
+    document.getElementById('estimatedRevenue').textContent = `$${Math.round(calc.revenue).toLocaleString()}`;
+    document.getElementById('confidenceLevel').textContent = `${calc.confidence}%`;
+    document.getElementById('confidenceBar').style.width = `${calc.confidence}%`;
+    document.getElementById('currentPrice').textContent = `$${calc.currentPrice}`;
+}
+
+function updateEnvironmentalBenefits(calc) {
+    const biodiversityFactor = getBiodiversityFactor(calc.projectType);
+    const waterFactor = getWaterFactor(calc.projectType);
+    const soilFactor = getSoilFactor(calc.projectType);
+    
+    // Update biodiversity
+    document.getElementById('habitatProtected').textContent = `${Math.round(calc.area * biodiversityFactor)} hectares`;
+    document.getElementById('diversityIndex').textContent = Math.round(biodiversityFactor * 100);
+    document.getElementById('connectivityScore').textContent = Math.round(Math.min(100, calc.area * biodiversityFactor * 0.5));
+    
+    // Update water impact
+    document.getElementById('filtrationCapacity').textContent = `${Math.round(calc.area * waterFactor * 1000).toLocaleString()} L/day`;
+    document.getElementById('floodProtection').textContent = `$${Math.round(calc.area * waterFactor * 500).toLocaleString()}/year`;
+    document.getElementById('groundwaterRecharge').textContent = `${Math.round(calc.area * waterFactor * 800).toLocaleString()} L/year`;
+    
+    // Update soil impact
+    document.getElementById('erosionPrevented').textContent = `${Math.round(calc.area * soilFactor * 2.5)} tonnes/year`;
+    document.getElementById('organicMatter').textContent = `${Math.round(calc.area * soilFactor * 0.3)}%`;
+    document.getElementById('nutrientRetention').textContent = `$${Math.round(calc.area * soilFactor * 150).toLocaleString()}/year`;
+    
+    // Calculate total economic value
+    const totalValue = 
+        Math.min(100, calc.area * biodiversityFactor * 0.5) * 50 +
+        calc.area * waterFactor * 500 +
+        calc.area * soilFactor * 150;
+    
+    document.getElementById('totalEconomicValue').textContent = `$${Math.round(totalValue).toLocaleString()}`;
+}
+
+function getBiodiversityFactor(projectType) {
+    const factors = {
+        'mangrove_restoration': 2.1,
+        'blue_carbon': 2.3,
+        'wetland_protection': 1.8,
+        'forest_conservation': 1.5,
+        'coastal_protection': 1.7,
+        'reforestation': 1.2,
+        'agroforestry': 1.0,
+        'urban_forestry': 0.6
+    };
+    return factors[projectType] || 1.0;
+}
+
+function getWaterFactor(projectType) {
+    const factors = {
+        'wetland_protection': 2.2,
+        'mangrove_restoration': 1.9,
+        'blue_carbon': 1.8,
+        'coastal_protection': 1.5,
+        'forest_conservation': 1.3,
+        'reforestation': 1.1,
+        'agroforestry': 0.9,
+        'urban_forestry': 0.7
+    };
+    return factors[projectType] || 1.0;
+}
+
+function getSoilFactor(projectType) {
+    const factors = {
+        'agroforestry': 1.8,
+        'reforestation': 1.5,
+        'coastal_protection': 1.4,
+        'forest_conservation': 1.3,
+        'mangrove_restoration': 1.2,
+        'wetland_protection': 1.1,
+        'blue_carbon': 1.0,
+        'urban_forestry': 0.8
+    };
+    return factors[projectType] || 1.0;
+}
+
+function updateRecommendations(calc) {
+    // This would normally be more sophisticated AI-generated recommendations
+    // For demo purposes, we'll show static recommendations based on project parameters
+}
+
+function calculateDetailed() {
+    if (!lastCalculation) {
+        updateCalculation();
+    }
+    
+    // Show detailed modal
+    document.getElementById('calculationModal').style.display = 'block';
+    loadDetailedResults();
+}
+
+function loadDetailedResults() {
+    const content = `
+        <div style="display: grid; gap: 24px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Calculation Methodology</h4>
+                    <div style="background: #f8fafc; padding: 16px; border-radius: 8px; font-size: 13px; line-height: 1.6;">
+                        <div style="margin-bottom: 12px;"><strong>Base Model:</strong> ${lastCalculation.projectType}_methodology_v2.1</div>
+                        <div style="margin-bottom: 12px;"><strong>Sequestration Rate:</strong> ${SEQUESTRATION_RATES[lastCalculation.projectType]} tCO₂/ha/year</div>
+                        <div style="margin-bottom: 12px;"><strong>Climate Adjustment:</strong> ${CLIMATE_MULTIPLIERS[document.getElementById('climateZone').value]}x</div>
+                        <div style="margin-bottom: 12px;"><strong>Soil Adjustment:</strong> ${SOIL_MULTIPLIERS[document.getElementById('soilType').value]}x</div>
+                        <div style="margin-bottom: 12px;"><strong>Additionality:</strong> ${(getAdditionality(lastCalculation.projectType) * 100)}%</div>
+                        <div><strong>Buffer Applied:</strong> 15% uncertainty buffer</div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Verification Requirements</h4>
+                    <div style="display: grid; gap: 8px; font-size: 13px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>Third-party verification by accredited body</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>Annual monitoring with satellite imagery</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>Baseline assessment documentation</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>Additionality demonstration</span>
+                        </div>
+                        ${['blue_carbon', 'mangrove_restoration'].includes(lastCalculation.projectType) ? `
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--info);"></i>
+                            <span>Tidal gauge measurements</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--info);"></i>
+                            <span>Sediment core analysis</span>
+                        </div>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; padding-top: 20px; border-top: 1px solid var(--border);">
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 16px;">
+                    Calculation completed at ${new Date().toLocaleString()}
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="exportCalculation()" class="btn outline">
+                        <i class="fas fa-download"></i> Export PDF Report
+                    </button>
+                    <button onclick="saveCalculation()" class="btn">
+                        <i class="fas fa-save"></i> Save Calculation
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('detailedResults').innerHTML = content;
+}
+
+function closeCalculationModal() {
+    document.getElementById('calculationModal').style.display = 'none';
+}
+
+function exportCalculation() {
+    alert('Exporting detailed carbon calculation report as PDF...');
+}
+
+function saveCalculation() {
+    alert('Calculation saved to project database.');
+}
+
+function exportCalculations() {
+    alert('Exporting all carbon calculations...');
+}
+
+// Initialize calculation on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateCalculation();
+    
+    // Simulate real-time price updates
+    setInterval(() => {
+        const volatility = (Math.random() - 0.5) * 0.02; // ±1%
+        currentPrice = Math.max(15, currentPrice * (1 + volatility));
+        document.getElementById('currentPrice').textContent = `$${currentPrice.toFixed(2)}`;
+        
+        const trend = volatility > 0 ? '↗ +' : '↘ ';
+        const change = Math.abs(volatility * 100).toFixed(1);
+        document.getElementById('pricetrend').innerHTML = `${trend}${change}%`;
+        document.getElementById('priceTrend').style.color = volatility > 0 ? 'var(--success)' : 'var(--danger)';
+        
+        if (lastCalculation) {
+            lastCalculation.revenue = lastCalculation.carbonCredits * currentPrice * lastCalculation.projectMultiplier;
+            document.getElementById('estimatedRevenue').textContent = `$${Math.round(lastCalculation.revenue).toLocaleString()}`;
+        }
+    }, 30000); // Update every 30 seconds
+    
+    // Update last updated timestamp
+    setInterval(() => {
+        const now = new Date();
+        const minutes = Math.floor(Math.random() * 5) + 1;
+        document.getElementById('lastUpdated').textContent = `${minutes} minutes ago`;
+    }, 60000);
+});
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('calculationModal');
+    if (event.target === modal) {
+        closeCalculationModal();
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,709 @@
+{% extends "industry_base.html" %}
+
+{% block title %}Credit Marketplace - Industry Portal{% endblock %}
+
+{% block main_content %}
+<div class="container-fluid px-4">
+    <!-- Header Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0 text-gray-800">Industry Credit Marketplace</h1>
+                    <p class="text-muted">Buy and sell carbon credits with other industries</p>
+                </div>
+                <div>
+                    <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#sellCreditsModal">
+                        <i class="fas fa-plus-circle me-2"></i>List Credits for Sale
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshMarketplace()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Statistics -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Available Credits
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalAvailableCredits">15,250</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-coins fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Average Price
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">₹<span id="averagePrice">245</span>/credit</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-rupee-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Active Sellers
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeSellers">27</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                24h Volume
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="dailyVolume">3,420</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marketplace Tabs -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <ul class="nav nav-tabs card-header-tabs" id="marketplaceTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="buy-tab" data-bs-toggle="tab" data-bs-target="#buy-panel" type="button" role="tab">
+                        <i class="fas fa-shopping-cart me-2"></i>Buy Credits
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="sell-tab" data-bs-toggle="tab" data-bs-target="#sell-panel" type="button" role="tab">
+                        <i class="fas fa-store me-2"></i>My Listings
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="history-tab" data-bs-toggle="tab" data-bs-target="#history-panel" type="button" role="tab">
+                        <i class="fas fa-history me-2"></i>Transaction History
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="marketplaceTabContent">
+                <!-- Buy Credits Panel -->
+                <div class="tab-pane fade show active" id="buy-panel" role="tabpanel">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="searchCredits" placeholder="Search by seller, project, or ecosystem...">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="ecosystemFilter">
+                                <option value="">All Ecosystems</option>
+                                <option value="Mangrove">Mangrove</option>
+                                <option value="Seagrass">Seagrass</option>
+                                <option value="Coastal Wetlands">Coastal Wetlands</option>
+                                <option value="Seaweed">Seaweed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select class="form-select" id="priceFilter">
+                                <option value="">All Prices</option>
+                                <option value="0-200">₹0-200</option>
+                                <option value="200-300">₹200-300</option>
+                                <option value="300-400">₹300-400</option>
+                                <option value="400+">₹400+</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="creditsTable">
+                            <thead>
+                                <tr>
+                                    <th>Seller</th>
+                                    <th>Project</th>
+                                    <th>Ecosystem</th>
+                                    <th>Credits Available</th>
+                                    <th>Price/Credit</th>
+                                    <th>Total Value</th>
+                                    <th>Verification</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="creditsTableBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sell Credits Panel -->
+                <div class="tab-pane fade" id="sell-panel" role="tabpanel">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5>Your Active Listings</h5>
+                                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#sellCreditsModal">
+                                    <i class="fas fa-plus me-2"></i>Create New Listing
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Listing ID</th>
+                                    <th>Project</th>
+                                    <th>Credits Listed</th>
+                                    <th>Credits Sold</th>
+                                    <th>Price/Credit</th>
+                                    <th>Status</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="myListingsBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Transaction History Panel -->
+                <div class="tab-pane fade" id="history-panel" role="tabpanel">
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Counterparty</th>
+                                    <th>Project</th>
+                                    <th>Credits</th>
+                                    <th>Price/Credit</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transactionHistoryBody">
+                                <!-- Dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Sell Credits Modal -->
+<div class="modal fade" id="sellCreditsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">List Credits for Sale</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="sellCreditsForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="selectProject" class="form-label">Select Project</label>
+                            <select class="form-select" id="selectProject" required>
+                                <option value="">Choose a project...</option>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="availableCredits" class="form-label">Available Credits</label>
+                            <input type="text" class="form-control" id="availableCredits" readonly placeholder="Select project first">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="creditsToSell" class="form-label">Credits to Sell</label>
+                            <input type="number" class="form-control" id="creditsToSell" min="1" required placeholder="Enter quantity">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="pricePerCredit" class="form-label">Price per Credit (₹)</label>
+                            <input type="number" class="form-control" id="pricePerCredit" min="1" step="0.01" required placeholder="Enter price">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="listingDescription" class="form-label">Description (Optional)</label>
+                        <textarea class="form-control" id="listingDescription" rows="3" placeholder="Describe your credits, certification details, etc."></textarea>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Listing Duration</label>
+                            <select class="form-select" id="listingDuration">
+                                <option value="7">7 days</option>
+                                <option value="14" selected>14 days</option>
+                                <option value="30">30 days</option>
+                                <option value="60">60 days</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="totalValue" class="form-label">Total Value</label>
+                            <input type="text" class="form-control" id="totalValue" readonly placeholder="₹0">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="createListing()">
+                    <i class="fas fa-store me-2"></i>Create Listing
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Buy Credits Modal -->
+<div class="modal fade" id="buyCreditsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Purchase Credits</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="buyCreditsForm">
+                    <input type="hidden" id="buyListingId">
+                    <div class="mb-3">
+                        <label class="form-label">Seller</label>
+                        <input type="text" class="form-control" id="buySellerName" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Project</label>
+                        <input type="text" class="form-control" id="buyProjectName" readonly>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Available Credits</label>
+                            <input type="text" class="form-control" id="buyAvailableCredits" readonly>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Price per Credit</label>
+                            <input type="text" class="form-control" id="buyPricePerCredit" readonly>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="buyQuantity" class="form-label">Quantity to Purchase</label>
+                        <input type="number" class="form-control" id="buyQuantity" min="1" required onchange="updatePurchaseTotal()">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Total Cost</label>
+                        <input type="text" class="form-control" id="buyTotalCost" readonly placeholder="₹0">
+                    </div>
+                    <div class="mb-3">
+                        <label for="buyPaymentMethod" class="form-label">Payment Method</label>
+                        <select class="form-select" id="buyPaymentMethod">
+                            <option value="wallet">Wallet Balance</option>
+                            <option value="bank">Bank Transfer</option>
+                            <option value="credit_card">Credit Card</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="processPurchase()">
+                    <i class="fas fa-shopping-cart me-2"></i>Purchase Credits
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Sample data - in production this would come from API
+let marketplaceData = {
+    listings: [
+        {
+            id: 'LIST001',
+            seller: 'TechCorp Industries',
+            sellerId: 'IND001',
+            project: 'Mumbai Mangrove Restoration',
+            ecosystem: 'Mangrove',
+            creditsAvailable: 500,
+            pricePerCredit: 250,
+            totalValue: 125000,
+            verification: 'Gold Standard',
+            created: '2024-01-15',
+            description: 'High-quality mangrove restoration credits with full verification'
+        },
+        {
+            id: 'LIST002',
+            seller: 'GreenEnergy Corp',
+            sellerId: 'IND002',
+            project: 'Kerala Seagrass Conservation',
+            ecosystem: 'Seagrass',
+            creditsAvailable: 750,
+            pricePerCredit: 280,
+            totalValue: 210000,
+            verification: 'VCS Verified',
+            created: '2024-01-20',
+            description: 'Premium seagrass conservation credits from Kerala backwaters'
+        },
+        {
+            id: 'LIST003',
+            seller: 'EcoManufacturing Ltd',
+            sellerId: 'IND003',
+            project: 'Tamil Nadu Coastal Wetlands',
+            ecosystem: 'Coastal Wetlands',
+            creditsAvailable: 300,
+            pricePerCredit: 220,
+            totalValue: 66000,
+            verification: 'Gold Standard',
+            created: '2024-01-25',
+            description: 'Wetland restoration credits with community co-benefits'
+        }
+    ],
+    myListings: [
+        {
+            id: 'MYLST001',
+            project: 'Sundarbans Restoration',
+            creditsListed: 200,
+            creditsSold: 50,
+            pricePerCredit: 260,
+            status: 'Active',
+            created: '2024-01-10'
+        }
+    ],
+    transactions: [
+        {
+            date: '2024-01-28',
+            type: 'Purchase',
+            counterparty: 'TechCorp Industries',
+            project: 'Mumbai Mangrove Restoration',
+            credits: 100,
+            pricePerCredit: 250,
+            total: 25000,
+            status: 'Completed'
+        },
+        {
+            date: '2024-01-15',
+            type: 'Sale',
+            counterparty: 'GreenTech Solutions',
+            project: 'Sundarbans Restoration',
+            credits: 50,
+            pricePerCredit: 260,
+            total: 13000,
+            status: 'Completed'
+        }
+    ]
+};
+
+// Initialize marketplace
+document.addEventListener('DOMContentLoaded', function() {
+    loadBuyCredits();
+    loadMyListings();
+    loadTransactionHistory();
+    populateProjectOptions();
+    setupFilters();
+    calculateTotalValue();
+});
+
+function loadBuyCredits() {
+    const tbody = document.getElementById('creditsTableBody');
+    tbody.innerHTML = '';
+    
+    marketplaceData.listings.forEach(listing => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${listing.seller}</td>
+            <td>${listing.project}</td>
+            <td><span class="badge bg-success">${listing.ecosystem}</span></td>
+            <td>${listing.creditsAvailable.toLocaleString()}</td>
+            <td>₹${listing.pricePerCredit}</td>
+            <td>₹${listing.totalValue.toLocaleString()}</td>
+            <td><span class="badge bg-info">${listing.verification}</span></td>
+            <td>
+                <button class="btn btn-primary btn-sm" onclick="openBuyModal('${listing.id}')">
+                    <i class="fas fa-shopping-cart me-1"></i>Buy
+                </button>
+            </td>
+        `;
+    });
+}
+
+function loadMyListings() {
+    const tbody = document.getElementById('myListingsBody');
+    tbody.innerHTML = '';
+    
+    marketplaceData.myListings.forEach(listing => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${listing.id}</td>
+            <td>${listing.project}</td>
+            <td>${listing.creditsListed}</td>
+            <td>${listing.creditsSold}</td>
+            <td>₹${listing.pricePerCredit}</td>
+            <td><span class="badge bg-success">${listing.status}</span></td>
+            <td>${listing.created}</td>
+            <td>
+                <button class="btn btn-warning btn-sm me-1" onclick="editListing('${listing.id}')">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-danger btn-sm" onclick="deleteListing('${listing.id}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+    });
+}
+
+function loadTransactionHistory() {
+    const tbody = document.getElementById('transactionHistoryBody');
+    tbody.innerHTML = '';
+    
+    marketplaceData.transactions.forEach(transaction => {
+        const row = tbody.insertRow();
+        const typeClass = transaction.type === 'Purchase' ? 'bg-primary' : 'bg-success';
+        row.innerHTML = `
+            <td>${transaction.date}</td>
+            <td><span class="badge ${typeClass}">${transaction.type}</span></td>
+            <td>${transaction.counterparty}</td>
+            <td>${transaction.project}</td>
+            <td>${transaction.credits}</td>
+            <td>₹${transaction.pricePerCredit}</td>
+            <td>₹${transaction.total.toLocaleString()}</td>
+            <td><span class="badge bg-success">${transaction.status}</span></td>
+        `;
+    });
+}
+
+function populateProjectOptions() {
+    // Sample user projects - in production get from API
+    const projects = [
+        { id: 'PROJ001', name: 'Sundarbans Restoration', availableCredits: 150 },
+        { id: 'PROJ002', name: 'Chennai Coast Protection', availableCredits: 200 },
+        { id: 'PROJ003', name: 'Goa Mangrove Initiative', availableCredits: 100 }
+    ];
+    
+    const select = document.getElementById('selectProject');
+    projects.forEach(project => {
+        const option = document.createElement('option');
+        option.value = project.id;
+        option.textContent = project.name;
+        option.setAttribute('data-credits', project.availableCredits);
+        select.appendChild(option);
+    });
+    
+    select.addEventListener('change', function() {
+        const selectedOption = this.selectedOptions[0];
+        if (selectedOption) {
+            document.getElementById('availableCredits').value = selectedOption.getAttribute('data-credits') + ' credits';
+        } else {
+            document.getElementById('availableCredits').value = '';
+        }
+        calculateTotalValue();
+    });
+}
+
+function calculateTotalValue() {
+    const credits = parseFloat(document.getElementById('creditsToSell').value) || 0;
+    const price = parseFloat(document.getElementById('pricePerCredit').value) || 0;
+    const total = credits * price;
+    document.getElementById('totalValue').value = '₹' + total.toLocaleString();
+}
+
+// Event listeners for calculating total value
+document.getElementById('creditsToSell').addEventListener('input', calculateTotalValue);
+document.getElementById('pricePerCredit').addEventListener('input', calculateTotalValue);
+
+function createListing() {
+    const form = document.getElementById('sellCreditsForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    const newListing = {
+        id: 'MYLST' + (Date.now().toString().slice(-3)),
+        project: document.getElementById('selectProject').selectedOptions[0].textContent,
+        creditsListed: parseInt(document.getElementById('creditsToSell').value),
+        creditsSold: 0,
+        pricePerCredit: parseFloat(document.getElementById('pricePerCredit').value),
+        status: 'Active',
+        created: new Date().toISOString().split('T')[0]
+    };
+    
+    marketplaceData.myListings.push(newListing);
+    loadMyListings();
+    
+    // Close modal and show success message
+    const modal = bootstrap.Modal.getInstance(document.getElementById('sellCreditsModal'));
+    modal.hide();
+    form.reset();
+    showAlert('success', 'Listing created successfully!');
+}
+
+function openBuyModal(listingId) {
+    const listing = marketplaceData.listings.find(l => l.id === listingId);
+    if (!listing) return;
+    
+    document.getElementById('buyListingId').value = listingId;
+    document.getElementById('buySellerName').value = listing.seller;
+    document.getElementById('buyProjectName').value = listing.project;
+    document.getElementById('buyAvailableCredits').value = listing.creditsAvailable + ' credits';
+    document.getElementById('buyPricePerCredit').value = '₹' + listing.pricePerCredit;
+    
+    const modal = new bootstrap.Modal(document.getElementById('buyCreditsModal'));
+    modal.show();
+}
+
+function updatePurchaseTotal() {
+    const quantity = parseInt(document.getElementById('buyQuantity').value) || 0;
+    const priceText = document.getElementById('buyPricePerCredit').value;
+    const price = parseFloat(priceText.replace('₹', '')) || 0;
+    const total = quantity * price;
+    document.getElementById('buyTotalCost').value = '₹' + total.toLocaleString();
+}
+
+function processPurchase() {
+    const form = document.getElementById('buyCreditsForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Simulate purchase processing
+    const modal = bootstrap.Modal.getInstance(document.getElementById('buyCreditsModal'));
+    modal.hide();
+    
+    // Add to transaction history
+    const listingId = document.getElementById('buyListingId').value;
+    const listing = marketplaceData.listings.find(l => l.id === listingId);
+    const quantity = parseInt(document.getElementById('buyQuantity').value);
+    
+    const newTransaction = {
+        date: new Date().toISOString().split('T')[0],
+        type: 'Purchase',
+        counterparty: listing.seller,
+        project: listing.project,
+        credits: quantity,
+        pricePerCredit: listing.pricePerCredit,
+        total: quantity * listing.pricePerCredit,
+        status: 'Completed'
+    };
+    
+    marketplaceData.transactions.unshift(newTransaction);
+    loadTransactionHistory();
+    
+    // Update listing availability
+    listing.creditsAvailable -= quantity;
+    loadBuyCredits();
+    
+    showAlert('success', `Successfully purchased ${quantity} credits for ₹${(quantity * listing.pricePerCredit).toLocaleString()}!`);
+}
+
+function setupFilters() {
+    document.getElementById('searchCredits').addEventListener('input', filterCredits);
+    document.getElementById('ecosystemFilter').addEventListener('change', filterCredits);
+    document.getElementById('priceFilter').addEventListener('change', filterCredits);
+}
+
+function filterCredits() {
+    // Implementation for filtering credits table
+    const search = document.getElementById('searchCredits').value.toLowerCase();
+    const ecosystem = document.getElementById('ecosystemFilter').value;
+    const priceRange = document.getElementById('priceFilter').value;
+    
+    const rows = document.querySelectorAll('#creditsTableBody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const ecosystemMatch = !ecosystem || row.querySelector('.badge').textContent === ecosystem;
+        const searchMatch = !search || text.includes(search);
+        
+        let priceMatch = true;
+        if (priceRange) {
+            const price = parseInt(row.cells[4].textContent.replace('₹', ''));
+            if (priceRange === '0-200') priceMatch = price <= 200;
+            else if (priceRange === '200-300') priceMatch = price > 200 && price <= 300;
+            else if (priceRange === '300-400') priceMatch = price > 300 && price <= 400;
+            else if (priceRange === '400+') priceMatch = price > 400;
+        }
+        
+        row.style.display = searchMatch && ecosystemMatch && priceMatch ? '' : 'none';
+    });
+}
+
+function editListing(listingId) {
+    showAlert('info', 'Edit listing functionality would be implemented here');
+}
+
+function deleteListing(listingId) {
+    if (confirm('Are you sure you want to delete this listing?')) {
+        marketplaceData.myListings = marketplaceData.myListings.filter(l => l.id !== listingId);
+        loadMyListings();
+        showAlert('success', 'Listing deleted successfully!');
+    }
+}
+
+function refreshMarketplace() {
+    loadBuyCredits();
+    loadMyListings();
+    loadTransactionHistory();
+    showAlert('success', 'Marketplace data refreshed!');
+}
+
+function showAlert(type, message) {
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 1060; min-width: 300px;';
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    document.body.appendChild(alertDiv);
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

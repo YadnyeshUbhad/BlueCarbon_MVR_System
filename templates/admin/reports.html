@@ -1,0 +1,322 @@
+{% extends 'admin_base.html' %}
+{% set active='reports' %}
+{% set title='Reports & Analytics - NCCR Admin' %}
+{% set header='Reports & Analytics' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937;">NCCR Analytics Dashboard</h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">Comprehensive reporting and data insights for blue carbon MRV system</p>
+        </div>
+        <div style="display: flex; gap: 12px;">
+            <button class="btn outline" onclick="exportReport('summary')">
+                <i class="fas fa-download"></i> Export Summary
+            </button>
+            <button class="btn" onclick="refreshData()">
+                <i class="fas fa-sync-alt"></i> Refresh Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics Overview -->
+    <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--primary);">{{ stats.projects.total }}</div>
+            <div class="stat-label">
+                <i class="fas fa-seedling"></i> Total Projects
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> +{{ stats.projects.verified }} verified
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--success);">{{ "{:,}".format(stats.credits.total_issued) }}</div>
+            <div class="stat-label">
+                <i class="fas fa-coins"></i> Credits Issued
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> Active trading
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--info);">₹{{ "{:,}".format(stats.credits.total_revenue) }}</div>
+            <div class="stat-label">
+                <i class="fas fa-rupee-sign"></i> Platform Revenue
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> Growing ecosystem
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-value" style="color: var(--warning);">{{ stats.ngos.verified }}</div>
+            <div class="stat-label">
+                <i class="fas fa-users"></i> Verified NGOs
+            </div>
+            <div class="stat-change neutral">
+                <i class="fas fa-clock"></i> {{ stats.ngos.pending }} pending
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- Project Status Distribution -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-pie" style="color: var(--primary);"></i>
+                    Project Status Distribution
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <canvas id="projectStatusChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Monthly Registrations -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-line" style="color: var(--success);"></i>
+                    Monthly Growth
+                </h3>
+            </div>
+            <div style="padding: 20px; text-align: center;">
+                <div style="font-size: 32px; font-weight: bold; color: var(--success); margin-bottom: 8px;">+47%</div>
+                <div style="color: #6b7280; margin-bottom: 16px;">This month vs last</div>
+                <div style="display: grid; gap: 8px; font-size: 14px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>New Projects:</span>
+                        <span style="font-weight: 600;">{{ stats.projects.pending }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>NGO Applications:</span>
+                        <span style="font-weight: 600;">{{ stats.ngos.pending }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Industry Signups:</span>
+                        <span style="font-weight: 600;">{{ stats.industries.pending }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Credits Analytics -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-leaf" style="color: var(--success);"></i>
+                    Credit Market Activity
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <div style="display: grid; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f8fafc; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: 600;">Credits Available</div>
+                            <div style="font-size: 12px; color: #6b7280;">Ready for marketplace</div>
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold; color: var(--primary);">{{ "{:,}".format(stats.credits.total_issued - stats.credits.total_purchased) }}</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #f0fdf4; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: 600;">Credits Sold</div>
+                            <div style="font-size: 12px; color: #6b7280;">Total transactions</div>
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold; color: var(--success);">{{ "{:,}".format(stats.credits.total_purchased) }}</div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #fefce8; border-radius: 8px;">
+                        <div>
+                            <div style="font-weight: 600;">Avg. Price per Credit</div>
+                            <div style="font-size: 12px; color: #6b7280;">Market rate</div>
+                        </div>
+                        <div style="font-size: 20px; font-weight: bold; color: var(--warning);">₹215</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Geographic Distribution -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-map-marked-alt" style="color: var(--info);"></i>
+                    Geographic Distribution
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; background: #3b82f6; border-radius: 2px;"></div>
+                            Maharashtra
+                        </span>
+                        <span style="font-weight: 600;">{{ ((stats.projects.total * 0.25) | round | int) }} projects</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; background: #10b981; border-radius: 2px;"></div>
+                            West Bengal
+                        </span>
+                        <span style="font-weight: 600;">{{ ((stats.projects.total * 0.22) | round | int) }} projects</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; background: #f59e0b; border-radius: 2px;"></div>
+                            Tamil Nadu
+                        </span>
+                        <span style="font-weight: 600;">{{ ((stats.projects.total * 0.20) | round | int) }} projects</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; background: #8b5cf6; border-radius: 2px;"></div>
+                            Kerala
+                        </span>
+                        <span style="font-weight: 600;">{{ ((stats.projects.total * 0.18) | round | int) }} projects</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 12px; height: 12px; background: #ef4444; border-radius: 2px;"></div>
+                            Others
+                        </span>
+                        <span style="font-weight: 600;">{{ ((stats.projects.total * 0.15) | round | int) }} projects</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Log -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-history" style="color: var(--primary);"></i>
+                Recent System Activity
+            </h3>
+            <button class="btn small outline" onclick="viewFullLog()">View Full Log</button>
+        </div>
+        <div style="padding: 20px;">
+            <div style="display: grid; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f0fdf4; border-left: 4px solid var(--success); border-radius: 4px;">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <div>
+                        <div style="font-weight: 600;">Project "Sundarbans Mangrove Restoration" approved</div>
+                        <div style="font-size: 12px; color: #6b7280;">2 hours ago • 450 credits issued</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #eff6ff; border-left: 4px solid var(--info); border-radius: 4px;">
+                    <i class="fas fa-user-check" style="color: var(--info);"></i>
+                    <div>
+                        <div style="font-weight: 600;">New NGO "Green Earth Foundation" registered</div>
+                        <div style="font-size: 12px; color: #6b7280;">5 hours ago • Pending admin approval</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #fefce8; border-left: 4px solid var(--warning); border-radius: 4px;">
+                    <i class="fas fa-coins" style="color: var(--warning);"></i>
+                    <div>
+                        <div style="font-weight: 600;">Credits purchased by EcoTech Industries Ltd</div>
+                        <div style="font-size: 12px; color: #6b7280;">1 day ago • 200 credits for ₹43,000</div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f8fafc; border-left: 4px solid #6b7280; border-radius: 4px;">
+                    <i class="fas fa-upload" style="color: #6b7280;"></i>
+                    <div>
+                        <div style="font-weight: 600;">New project submitted for verification</div>
+                        <div style="font-size: 12px; color: #6b7280;">2 days ago • "Kerala Seagrass Conservation"</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Initialize charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeCharts();
+});
+
+function initializeCharts() {
+    // Project Status Pie Chart
+    const ctx = document.getElementById('projectStatusChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Verified', 'Pending Review', 'Under Verification', 'Rejected'],
+            datasets: [{
+                data: [
+                    {{ stats.projects.verified }}, 
+                    {{ stats.projects.pending }}, 
+                    {{ stats.projects.under_review }}, 
+                    {{ stats.projects.total - stats.projects.verified - stats.projects.pending - stats.projects.under_review }}
+                ],
+                backgroundColor: ['#10b981', '#f59e0b', '#3b82f6', '#ef4444'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                }
+            }
+        }
+    });
+}
+
+function exportReport(type) {
+    if (type === 'summary') {
+        window.location.href = '/admin/export/summary';
+    }
+}
+
+function refreshData() {
+    location.reload();
+}
+
+function viewFullLog() {
+    // Implement full activity log view
+    alert('Full activity log feature coming soon!');
+}
+</script>
+
+<style>
+.stat-change {
+    font-size: 12px;
+    font-weight: 500;
+    margin-top: 4px;
+}
+
+.stat-change.positive {
+    color: var(--success);
+}
+
+.stat-change.negative {
+    color: var(--danger);
+}
+
+.stat-change.neutral {
+    color: var(--warning);
+}
+</style>
+{% endblock %}

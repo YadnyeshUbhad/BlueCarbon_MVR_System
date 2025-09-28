@@ -1,0 +1,463 @@
+{% extends 'ngo/ngo_base.html' %}
+{% set active='drone' %}
+{% set title='Drone Analysis - NGO Portal' %}
+{% set header='Drone Monitoring Dashboard' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937;">Drone Analysis</h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">High-resolution drone imaging and AI analysis of your projects</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="badge primary" style="padding: 8px 16px;">
+                <i class="fas fa-helicopter"></i> {{ projects|length }} Sites Monitored
+            </div>
+            <button onclick="scheduleNewSurvey()" class="btn">
+                <i class="fas fa-plus"></i> Schedule Survey
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="cards">
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-helicopter"></i>
+                Active Surveys
+            </div>
+            <div class="stat-value" style="color: var(--primary);">{{ projects|length }}</div>
+            <div class="stat-change positive">
+                <i class="fas fa-camera"></i>
+                High-res analysis available
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-tree"></i>
+                Tree Count Accuracy
+            </div>
+            <div class="stat-value" style="color: var(--success);">96.8%</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +2.1% from last analysis
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-leaf"></i>
+                Canopy Coverage
+            </div>
+            <div class="stat-value" style="color: var(--success);">78%</div>
+            <div class="stat-change positive">
+                <i class="fas fa-chart-line"></i>
+                Average across projects
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-circle"></i>
+                Issues Detected
+            </div>
+            <div class="stat-value" style="color: var(--warning);">5</div>
+            <div class="stat-change">
+                <i class="fas fa-search"></i>
+                Requiring attention
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Analysis Grid -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-helicopter" style="color: var(--primary);"></i>
+                Drone Analysis Reports
+            </h3>
+            
+            <div style="display: flex; gap: 8px;">
+                <button onclick="exportAllReports()" class="btn outline">
+                    <i class="fas fa-download"></i> Export All
+                </button>
+                <button onclick="toggleAnalysisView()" class="btn secondary">
+                    <i class="fas fa-chart-bar"></i> Analytics View
+                </button>
+            </div>
+        </div>
+        
+        {% if projects|length > 0 %}
+        <div id="projectAnalysisGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px; padding: 24px;">
+            {% for project in projects %}
+            <div class="analysis-card" style="border: 1px solid var(--border); border-radius: 16px; padding: 24px; background: var(--white); transition: all 0.3s ease; position: relative; overflow: hidden;">
+                <!-- Status Indicator -->
+                <div style="position: absolute; top: 16px; right: 16px;">
+                    <span class="badge success" style="font-size: 11px;">
+                        <i class="fas fa-check-circle"></i> Analysis Complete
+                    </span>
+                </div>
+                
+                <!-- Project Header -->
+                <div style="margin-bottom: 20px;">
+                    <h4 style="margin: 0 0 6px 0; color: #1f2937; font-size: 16px;">{{ project.name }}</h4>
+                    <div style="font-size: 12px; color: #6b7280; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-map-marker-alt"></i>
+                        {{ project.location or project.district + ', ' + project.state }}
+                        <span style="margin-left: 12px;">
+                            <i class="fas fa-calendar"></i>
+                            Last survey: {{ range(1, 30)|random }} days ago
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Drone Analysis Summary -->
+                <div style="background: #f8fafc; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; font-size: 13px;">
+                        <div>
+                            <div style="color: #6b7280; margin-bottom: 4px;">Trees Counted</div>
+                            <div style="font-weight: 700; font-size: 18px; color: var(--primary);">
+                                {{ range(1200, 5000)|random|int }}
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280; margin-bottom: 4px;">Canopy Coverage</div>
+                            <div style="font-weight: 700; font-size: 18px; color: var(--success);">
+                                {{ range(65, 90)|random }}%
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280; margin-bottom: 4px;">Health Score</div>
+                            <div style="font-weight: 700; font-size: 18px; color: var(--success);">
+                                {{ range(75, 95)|random }}/100
+                            </div>
+                        </div>
+                        <div>
+                            <div style="color: #6b7280; margin-bottom: 4px;">Area Surveyed</div>
+                            <div style="font-weight: 700; font-size: 18px; color: var(--info);">
+                                {{ project.area }} ha
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- AI Analysis Insights -->
+                <div style="margin-bottom: 20px;">
+                    <h5 style="margin: 0 0 12px 0; color: #374151; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+                        <i class="fas fa-brain" style="color: var(--accent);"></i>
+                        AI Analysis Insights
+                    </h5>
+                    <div style="display: grid; gap: 8px;">
+                        {% set insights = [
+                            "Dense growth observed in northern sector",
+                            "Optimal spacing detected between plantings", 
+                            "Some signs of stress in waterlogged areas",
+                            "New saplings emerging in monitored zones",
+                            "Canopy closure progressing well",
+                            "Minimal pest damage detected"
+                        ] %}
+                        {% for insight in insights[:2] %}
+                        <div style="display: flex; align-items: center; gap: 8px; font-size: 12px;">
+                            <i class="fas fa-check-circle" style="color: var(--success); font-size: 10px;"></i>
+                            <span>{{ insight }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Progress Visualization -->
+                <div style="margin-bottom: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span style="font-size: 12px; color: #6b7280;">Project Progress</span>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--primary);">
+                            {{ range(70, 95)|random }}%
+                        </span>
+                    </div>
+                    <div style="width: 100%; background: #e5e7eb; border-radius: 8px; height: 8px; position: relative;">
+                        <div style="width: {{ range(70, 95)|random }}%; background: linear-gradient(90deg, var(--primary), var(--success)); border-radius: 8px; height: 100%;"></div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div style="display: flex; gap: 8px;">
+                    <a href="{{ url_for('ngo.ngo_drone_project_detail', project_id=project.id) }}" class="btn" style="flex: 1; justify-content: center; font-size: 13px;">
+                        <i class="fas fa-chart-area"></i> Full Report
+                    </a>
+                    <button onclick="downloadReport('{{ project.id }}')" class="btn outline" style="padding: 10px 14px;">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button onclick="scheduleRescan('{{ project.id }}')" class="btn secondary" style="padding: 10px 14px;">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Analytics View (Hidden by default) -->
+        <div id="analyticsView" style="display: none; padding: 24px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Tree Count Trends</h4>
+                    <div style="height: 200px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6b7280;">
+                        <div style="text-align: center;">
+                            <i class="fas fa-chart-line" style="font-size: 32px; margin-bottom: 8px;"></i>
+                            <p>Tree Growth Analytics</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #f8fafc; padding: 20px; border-radius: 12px;">
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Health Distribution</h4>
+                    <div style="height: 200px; background: #e5e7eb; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #6b7280;">
+                        <div style="text-align: center;">
+                            <i class="fas fa-chart-pie" style="font-size: 32px; margin-bottom: 8px;"></i>
+                            <p>Health Score Distribution</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% else %}
+        <div style="text-align: center; padding: 60px 20px; color: #6b7280;">
+            <i class="fas fa-helicopter" style="font-size: 64px; margin-bottom: 24px; opacity: 0.3;"></i>
+            <h3 style="margin: 0 0 8px 0; color: #374151;">No Drone Surveys Available</h3>
+            <p style="margin: 0 0 16px 0;">Schedule drone surveys for your verified projects to get detailed analysis</p>
+            <button onclick="scheduleNewSurvey()" class="btn">
+                <i class="fas fa-plus"></i> Schedule Your First Survey
+            </button>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-history" style="color: var(--accent);"></i>
+                Recent Drone Activity
+            </h3>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="display: grid; gap: 16px;">
+                <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #f0f9ff; border-radius: 12px; border-left: 4px solid var(--info);">
+                    <div style="width: 48px; height: 48px; background: var(--info); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="fas fa-helicopter"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #1e40af; margin-bottom: 4px;">
+                            Survey Completed - Mangrove Restoration Project
+                        </div>
+                        <div style="font-size: 13px; color: #1e40af;">
+                            3,247 trees counted • 84% canopy coverage • Health score: 92/100
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #1e40af; text-align: right;">
+                        <div>2 hours ago</div>
+                        <div style="margin-top: 2px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i> Complete
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #fef3c7; border-radius: 12px; border-left: 4px solid var(--warning);">
+                    <div style="width: 48px; height: 48px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #92400e; margin-bottom: 4px;">
+                            Survey Scheduled - Coastal Forest Initiative
+                        </div>
+                        <div style="font-size: 13px; color: #92400e;">
+                            Weather conditions optimal • Drone team assigned • Equipment checked
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #92400e; text-align: right;">
+                        <div>Tomorrow 9:00 AM</div>
+                        <div style="margin-top: 2px;">
+                            <i class="fas fa-calendar" style="color: var(--warning);"></i> Scheduled
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 16px; padding: 16px; background: #d1fae5; border-radius: 12px; border-left: 4px solid var(--success);">
+                    <div style="width: 48px; height: 48px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #065f46; margin-bottom: 4px;">
+                            AI Analysis Report Generated
+                        </div>
+                        <div style="font-size: 13px; color: #065f46;">
+                            Biodiversity assessment complete • Growth patterns analyzed • Recommendations ready
+                        </div>
+                    </div>
+                    <div style="font-size: 12px; color: #065f46; text-align: right;">
+                        <div>1 day ago</div>
+                        <div style="margin-top: 2px;">
+                            <i class="fas fa-file-alt" style="color: var(--success);"></i> Ready
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Survey Modal -->
+<div id="scheduleSurveyModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 500px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="margin: 0; color: #1f2937;">Schedule Drone Survey</h3>
+            <button onclick="closeScheduleModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <form style="display: grid; gap: 20px;">
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Select Project</label>
+                <select style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Preferred Date</label>
+                    <input type="date" style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Time Slot</label>
+                    <select style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
+                        <option>Morning (8:00 AM - 12:00 PM)</option>
+                        <option>Afternoon (1:00 PM - 5:00 PM)</option>
+                        <option>Evening (6:00 PM - 8:00 PM)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Survey Type</label>
+                <div style="display: grid; gap: 8px;">
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" checked> Tree counting and health assessment
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" checked> Canopy coverage analysis
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox"> Biodiversity mapping
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox"> Change detection analysis
+                    </label>
+                </div>
+            </div>
+            
+            <div>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">Special Instructions</label>
+                <textarea style="width: 100%; padding: 12px; border: 1px solid #d1d5db; border-radius: 8px; min-height: 80px; resize: vertical;" placeholder="Any specific areas to focus on or requirements..."></textarea>
+            </div>
+            
+            <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 16px; border-top: 1px solid #e5e7eb;">
+                <button type="button" onclick="closeScheduleModal()" class="btn outline">
+                    Cancel
+                </button>
+                <button type="submit" class="btn" onclick="submitSurveyRequest(event)">
+                    <i class="fas fa-calendar-plus"></i> Schedule Survey
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function scheduleNewSurvey() {
+    document.getElementById('scheduleSurveyModal').style.display = 'block';
+}
+
+function closeScheduleModal() {
+    document.getElementById('scheduleSurveyModal').style.display = 'none';
+}
+
+function submitSurveyRequest(event) {
+    event.preventDefault();
+    
+    // Simulate survey scheduling
+    alert('Survey scheduled successfully! You will receive a confirmation email shortly.');
+    closeScheduleModal();
+}
+
+function toggleAnalysisView() {
+    const grid = document.getElementById('projectAnalysisGrid');
+    const analytics = document.getElementById('analyticsView');
+    const button = event.target;
+    
+    if (grid.style.display === 'none') {
+        grid.style.display = 'grid';
+        analytics.style.display = 'none';
+        button.innerHTML = '<i class="fas fa-chart-bar"></i> Analytics View';
+    } else {
+        grid.style.display = 'none';
+        analytics.style.display = 'block';
+        button.innerHTML = '<i class="fas fa-th"></i> Card View';
+    }
+}
+
+function downloadReport(projectId) {
+    // Simulate report download
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    setTimeout(() => {
+        button.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+            button.innerHTML = originalText;
+        }, 1000);
+    }, 1500);
+}
+
+function scheduleRescan(projectId) {
+    if (confirm('Schedule a new drone survey for this project?')) {
+        alert('Drone survey scheduled for this project. You will be notified of the date and time.');
+    }
+}
+
+function exportAllReports() {
+    alert('All drone analysis reports will be exported as a comprehensive PDF.');
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('scheduleSurveyModal');
+    if (event.target === modal) {
+        closeScheduleModal();
+    }
+}
+</script>
+
+<style>
+.analysis-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.analysis-card .btn {
+    font-size: 13px;
+    padding: 10px 16px;
+}
+
+@media (max-width: 768px) {
+    #projectAnalysisGrid {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}

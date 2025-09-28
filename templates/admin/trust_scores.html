@@ -1,0 +1,568 @@
+{% extends 'admin_base.html' %}
+{% set active='trust_scores' %}
+{% set title='Trust Score Management - Admin Portal' %}
+{% set header='Trust Score & Reputation Management' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-star" style="color: #f59e0b;"></i>
+                Trust Score Management
+            </h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">AI-powered reputation scoring and risk assessment for all platform entities</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button onclick="recalculateAllScores()" class="btn secondary">
+                <i class="fas fa-sync-alt"></i> Recalculate All
+            </button>
+            <button onclick="exportTrustReport()" class="btn">
+                <i class="fas fa-download"></i> Export Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Trust Score Overview Statistics -->
+    <div class="cards">
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-users"></i>
+                Total Entities
+            </div>
+            <div class="stat-value" style="color: var(--primary);">2,847</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +127 this month
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-shield-alt"></i>
+                High Trust Entities
+            </div>
+            <div class="stat-value" style="color: var(--success);">1,923</div>
+            <div class="stat-change positive">
+                <i class="fas fa-check-circle"></i>
+                67.5% of total
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i>
+                Risk Entities
+            </div>
+            <div class="stat-value" style="color: var(--danger);">184</div>
+            <div class="stat-change negative">
+                <i class="fas fa-arrow-down"></i>
+                -23 this week
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-chart-line"></i>
+                Average Score
+            </div>
+            <div class="stat-value" style="color: var(--info);">74.2</div>
+            <div class="stat-change positive">
+                <i class="fas fa-trending-up"></i>
+                +2.1 this month
+            </div>
+        </div>
+    </div>
+
+    <!-- Risk Alert Dashboard -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-exclamation-circle" style="color: var(--danger);"></i>
+                High-Risk Entities Alert
+            </h3>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="display: grid; gap: 16px;">
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px; border-left: 4px solid #dc2626;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="badge danger" style="font-size: 11px;">VERY HIGH RISK</span>
+                            <span style="font-weight: 600; color: #991b1b;">EcoFraud Industries Ltd.</span>
+                            <span style="color: #7f1d1d; font-size: 13px;">Trust Score: 12.3</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="viewEntityProfile('industry_001')" class="btn" style="font-size: 12px; padding: 6px 12px;">
+                                View Profile
+                            </button>
+                            <button onclick="suspendEntity('industry_001')" class="btn danger" style="font-size: 12px; padding: 6px 12px;">
+                                Suspend
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #fefbf2; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px; border-left: 4px solid #f59e0b;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <span class="badge warning" style="font-size: 11px;">HIGH RISK</span>
+                            <span style="font-weight: 600; color: #92400e;">GreenWash NGO</span>
+                            <span style="color: #78350f; font-size: 13px;">Trust Score: 28.7</span>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <button onclick="viewEntityProfile('ngo_042')" class="btn" style="font-size: 12px; padding: 6px 12px;">
+                                View Profile
+                            </button>
+                            <button onclick="requestAudit('ngo_042')" class="btn warning" style="font-size: 12px; padding: 6px 12px;">
+                                Audit Required
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entity Trust Scores by Type -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- NGO Trust Scores -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-heart" style="color: var(--success);"></i>
+                    NGO Trust Scores
+                </h3>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div style="display: grid; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+                        <div>
+                            <div style="font-weight: 600; color: #166534;">Ocean Conservation Society</div>
+                            <div style="font-size: 12px; color: #16a34a; margin-top: 2px;">
+                                <i class="fas fa-star"></i> Top Performer • Verified
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--success);">94.2</div>
+                            <div style="font-size: 11px; color: #16a34a;">
+                                <i class="fas fa-arrow-up"></i> +2.1
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+                        <div>
+                            <div style="font-weight: 600; color: #166534;">Coastal Restoration Initiative</div>
+                            <div style="font-size: 12px; color: #16a34a; margin-top: 2px;">
+                                <i class="fas fa-check-circle"></i> Excellent Record • Verified
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--success);">87.8</div>
+                            <div style="font-size: 11px; color: #16a34a;">
+                                <i class="fas fa-arrow-up"></i> +0.5
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: #fffbeb; border: 1px solid #fed7aa;">
+                        <div>
+                            <div style="font-weight: 600; color: #92400e;">Green Future Foundation</div>
+                            <div style="font-size: 12px; color: #d97706; margin-top: 2px;">
+                                <i class="fas fa-clock"></i> Pending Verification • New
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--warning);">52.1</div>
+                            <div style="font-size: 11px; color: #d97706;">
+                                <i class="fas fa-minus"></i> Stable
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <button onclick="viewAllNGOs()" class="btn outline">
+                        <i class="fas fa-list"></i> View All NGOs
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Industry Trust Scores -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-industry" style="color: var(--primary);"></i>
+                    Industry Trust Scores
+                </h3>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div style="display: grid; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: #f0fdf4; border: 1px solid #bbf7d0;">
+                        <div>
+                            <div style="font-weight: 600; color: #166534;">Sustainable Energy Corp</div>
+                            <div style="font-size: 12px; color: #16a34a; margin-top: 2px;">
+                                <i class="fas fa-leaf"></i> Carbon Neutral • ISO Certified
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--success);">91.5</div>
+                            <div style="font-size: 11px; color: #16a34a;">
+                                <i class="fas fa-arrow-up"></i> +1.8
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: #f0f9ff; border: 1px solid #bfdbfe;">
+                        <div>
+                            <div style="font-weight: 600; color: #1e40af;">CleanTech Solutions Ltd</div>
+                            <div style="font-size: 12px; color: #2563eb; margin-top: 2px;">
+                                <i class="fas fa-recycle"></i> Good Compliance • Verified
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--info);">76.3</div>
+                            <div style="font-size: 11px; color: #2563eb;">
+                                <i class="fas fa-arrow-up"></i> +3.2
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: #fef2f2; border: 1px solid #fecaca;">
+                        <div>
+                            <div style="font-weight: 600; color: #991b1b;">Legacy Industries Inc</div>
+                            <div style="font-size: 12px; color: #dc2626; margin-top: 2px;">
+                                <i class="fas fa-exclamation-triangle"></i> Violations Found • Under Review
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--danger);">23.7</div>
+                            <div style="font-size: 11px; color: #dc2626;">
+                                <i class="fas fa-arrow-down"></i> -8.4
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <button onclick="viewAllIndustries()" class="btn outline">
+                        <i class="fas fa-list"></i> View All Industries
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trust Score Analytics -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-chart-bar" style="color: var(--accent);"></i>
+                Trust Score Analytics & Trends
+            </h3>
+        </div>
+        
+        <div style="padding: 24px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px;">
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Score Distribution</h4>
+                    <div style="display: grid; gap: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">Very High (85-100)</span>
+                            <span style="font-weight: 600; color: var(--success);">892</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 31%; background: var(--success); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">High (70-84)</span>
+                            <span style="font-weight: 600; color: var(--info);">1,031</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 36%; background: var(--info); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">Medium (50-69)</span>
+                            <span style="font-weight: 600; color: var(--warning);">740</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 26%; background: var(--warning); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">Low (30-49)</span>
+                            <span style="font-weight: 600; color: var(--danger);">143</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 5%; background: var(--danger); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 13px;">Very Low (0-29)</span>
+                            <span style="font-weight: 600; color: var(--danger);">41</span>
+                        </div>
+                        <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                            <div style="width: 2%; background: var(--danger); border-radius: 4px; height: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Monthly Trends</h4>
+                    <div style="height: 200px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed #d1d5db;">
+                        <div style="text-align: center; color: #6b7280;">
+                            <i class="fas fa-chart-line" style="font-size: 32px; margin-bottom: 8px;"></i>
+                            <p style="margin: 0; font-size: 13px;">Trust Score Trends</p>
+                            <p style="margin: 4px 0 0 0; font-size: 11px;">Chart integration ready</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 16px 0; color: #374151;">Risk Indicators</h4>
+                    <div style="display: grid; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fef2f2; border-radius: 8px;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                            <span style="font-size: 13px; color: #991b1b;">41 entities below trust threshold</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fffbeb; border-radius: 8px;">
+                            <i class="fas fa-clock" style="color: var(--warning);"></i>
+                            <span style="font-size: 13px; color: #92400e;">183 entities pending verification</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0f9ff; border-radius: 8px;">
+                            <i class="fas fa-trending-down" style="color: var(--info);"></i>
+                            <span style="font-size: 13px; color: #1e40af;">67 entities with declining trends</span>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 8px;">
+                            <i class="fas fa-shield-alt" style="color: var(--success);"></i>
+                            <span style="font-size: 13px; color: #166534;">1,923 verified trusted entities</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI Recommendations -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-brain" style="color: var(--accent);"></i>
+                AI-Powered Recommendations
+            </h3>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="display: grid; gap: 16px;">
+                <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <i class="fas fa-lightbulb" style="color: var(--info);"></i>
+                        <span style="font-weight: 600; color: #1e40af;">Trust Score Optimization</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13px; color: #1e40af; line-height: 1.5;">
+                        Implement automated verification for document uploads to improve overall platform trust scores. 
+                        This could increase average scores by 3-5 points across all entity types.
+                    </p>
+                </div>
+                
+                <div style="background: #fffbeb; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                        <span style="font-weight: 600; color: #92400e;">Risk Mitigation Alert</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13px; color: #92400e; line-height: 1.5;">
+                        Focus attention on 23 entities showing rapid trust score decline. Early intervention 
+                        could prevent these from becoming high-risk cases requiring suspension.
+                    </p>
+                </div>
+                
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                        <i class="fas fa-trophy" style="color: var(--success);"></i>
+                        <span style="font-weight: 600; color: #166534;">Recognition Program</span>
+                    </div>
+                    <p style="margin: 0; font-size: 13px; color: #166534; line-height: 1.5;">
+                        Consider implementing a "Trusted Partner" badge program for entities with consistently 
+                        high trust scores (85+) to incentivize good platform behavior.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Entity Profile Modal -->
+<div id="entityProfileModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 900px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="margin: 0; color: #1f2937;">Trust Score Profile</h3>
+            <button onclick="closeProfileModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <div id="entityProfileContent">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<script>
+function viewEntityProfile(entityId) {
+    const modal = document.getElementById('entityProfileModal');
+    const content = document.getElementById('entityProfileContent');
+    
+    // Simulate loading entity profile
+    content.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+            <div>
+                <div style="text-align: center; padding: 24px; background: #f8fafc; border-radius: 12px;">
+                    <div style="width: 80px; height: 80px; background: var(--primary); border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px;">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <h4 style="margin: 0 0 8px 0;">EcoFraud Industries Ltd.</h4>
+                    <span class="badge danger">Very High Risk</span>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <h5 style="margin: 0 0 12px 0;">Trust Score History</h5>
+                    <div style="height: 150px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                        <span style="color: #6b7280;">Score Trend Chart</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 12px 0; color: #991b1b;">Current Trust Score</h4>
+                    <div style="font-size: 48px; font-weight: 700; color: var(--danger); text-align: center;">12.3</div>
+                    <div style="text-align: center; margin-top: 8px;">
+                        <span class="badge danger">Critical Risk Level</span>
+                    </div>
+                </div>
+                
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Risk Level:</span>
+                        <span style="font-weight: 600; color: var(--danger);">Very High</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Compliance Rate:</span>
+                        <span style="font-weight: 600; color: var(--danger);">23%</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Verification Status:</span>
+                        <span style="font-weight: 600; color: var(--warning);">Pending Review</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Score Trend:</span>
+                        <span style="font-weight: 600; color: var(--danger);">Declining</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Last Updated:</span>
+                        <span>2 hours ago</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 24px;">
+            <h5 style="margin: 0 0 12px 0;">Risk Indicators</h5>
+            <div style="display: grid; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fef2f2; border-radius: 6px;">
+                    <i class="fas fa-times-circle" style="color: var(--danger);"></i>
+                    <span style="font-size: 13px; color: #991b1b;">Multiple document fraud incidents detected</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fef2f2; border-radius: 6px;">
+                    <i class="fas fa-times-circle" style="color: var(--danger);"></i>
+                    <span style="font-size: 13px; color: #991b1b;">Poor compliance with environmental regulations</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #fffbeb; border-radius: 6px;">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+                    <span style="font-size: 13px; color: #92400e;">Suspicious pattern in project submissions</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 24px;">
+            <h5 style="margin: 0 0 12px 0;">AI Recommendations</h5>
+            <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 16px;">
+                <ul style="margin: 0; padding-left: 20px; color: #1e40af; font-size: 13px; line-height: 1.6;">
+                    <li>Immediate suspension recommended due to critical trust score</li>
+                    <li>Require comprehensive audit before allowing new project submissions</li>
+                    <li>Implement enhanced monitoring for all future activities</li>
+                    <li>Consider permanent platform ban if no improvement within 30 days</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--border);">
+            <button onclick="generateDetailedReport('${entityId}')" class="btn outline">
+                <i class="fas fa-file-alt"></i> Generate Report
+            </button>
+            <button onclick="requestAudit('${entityId}')" class="btn warning">
+                <i class="fas fa-search"></i> Request Audit
+            </button>
+            <button onclick="suspendEntity('${entityId}')" class="btn danger">
+                <i class="fas fa-ban"></i> Suspend Entity
+            </button>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function closeProfileModal() {
+    document.getElementById('entityProfileModal').style.display = 'none';
+}
+
+function suspendEntity(entityId) {
+    if (confirm(`Are you sure you want to suspend entity ${entityId}? This will prevent them from accessing platform features.`)) {
+        alert(`Entity ${entityId} has been suspended. All associated projects have been frozen pending review.`);
+        closeProfileModal();
+    }
+}
+
+function requestAudit(entityId) {
+    alert(`Audit request has been submitted for entity ${entityId}. The auditing team will be notified.`);
+}
+
+function generateDetailedReport(entityId) {
+    alert('Generating detailed trust score report. You will receive it via email in 5-10 minutes.');
+}
+
+function recalculateAllScores() {
+    if (confirm('Recalculate all trust scores? This process may take several minutes.')) {
+        alert('Trust score recalculation initiated. You will be notified when complete.');
+    }
+}
+
+function exportTrustReport() {
+    alert('Exporting comprehensive trust score report as PDF...');
+}
+
+function viewAllNGOs() {
+    alert('Redirecting to NGO trust scores detailed view...');
+}
+
+function viewAllIndustries() {
+    alert('Redirecting to Industry trust scores detailed view...');
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('entityProfileModal');
+    if (event.target === modal) {
+        closeProfileModal();
+    }
+}
+</script>
+{% endblock %}

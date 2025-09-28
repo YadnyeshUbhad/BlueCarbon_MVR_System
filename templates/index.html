@@ -117,7 +117,7 @@
 
         <!-- Portal Buttons -->
         <div class="buttons">
-            <button onclick="redirectTo('nncr')">NNCR Admin Portal</button>
+            <button onclick="redirectTo('nncr')">NCCR Admin Portal</button>
             <button onclick="redirectTo('ngo')">NGO Login & Registration</button>
             <button onclick="redirectTo('industry')">Industries Login & Registration</button>
         </div>
@@ -136,9 +136,9 @@
             if(portal === 'nncr') {
                 window.location.href = "/admin/login";
             } else if(portal === 'ngo') {
-                window.location.href = "/ngo/dashboard";
+                window.location.href = "/ngo/";
             } else if(portal === 'industry') {
-                window.location.href = "/industry/login";
+                window.location.href = "/industry/";
             }
         }
     </script>

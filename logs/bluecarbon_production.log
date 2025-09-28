@@ -1,0 +1,14 @@
+2025-09-28 02:00:52,466 - __main__ - INFO - Database initialized successfully
+2025-09-28 02:00:53,998 - root - INFO - Database connection initialized successfully
+2025-09-28 02:00:53,998 - root - INFO - Production services initialized for environment: production
+2025-09-28 02:00:54,000 - firebase_client - WARNING - Firebase credentials not found, using mock mode
+2025-09-28 02:00:54,625 - supabase_client - WARNING - Supabase not available or credentials not found, using mock mode
+2025-09-28 02:00:54,638 - __main__ - INFO - Flask application loaded successfully
+2025-09-28 02:00:54,660 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-28 02:00:54,660 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-28 02:00:59,357 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 02:00:59] "[33mGET /ngo/credits/realtime HTTP/1.1[0m" 404 -
+2025-09-28 02:01:01,487 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 02:01:01] "GET / HTTP/1.1" 200 -
+2025-09-28 02:01:04,704 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 02:01:04] "[33mGET /admin/login HTTP/1.1[0m" 404 -
+2025-09-28 02:01:11,078 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 02:01:11] "[33mGET /ngo/ HTTP/1.1[0m" 404 -
+2025-09-28 02:01:14,586 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 02:01:14] "[33mGET /industry/ HTTP/1.1[0m" 404 -

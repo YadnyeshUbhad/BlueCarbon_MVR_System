@@ -1,4 +1,4 @@
-const { ethers, upgrades } = require("hardhat");
+const { ethers } = require("hardhat");
 
 async function main() {
   console.log("Starting deployment of Blue Carbon MRV Smart Contracts...");
@@ -6,33 +6,35 @@ async function main() {
   // Get deployer account
   const [deployer] = await ethers.getSigners();
   console.log(`Deploying contracts with account: ${deployer.address}`);
-  console.log(`Account balance: ${ethers.utils.formatEther(await deployer.getBalance())} ETH`);
+  console.log(`Account balance: ${ethers.formatEther(await ethers.provider.getBalance(deployer.address))} POL`);
 
   // Deploy MRV Registry first
   console.log("\n=== Deploying MRV Registry ===");
   const MRVRegistry = await ethers.getContractFactory("MRVRegistry");
   const mrvRegistry = await MRVRegistry.deploy();
-  await mrvRegistry.deployed();
+  await mrvRegistry.waitForDeployment();
   
-  console.log(`✅ MRV Registry deployed to: ${mrvRegistry.address}`);
+  const mrvAddress = await mrvRegistry.getAddress();
+  console.log(`✅ MRV Registry deployed to: ${mrvAddress}`);
   
   // Wait for a few block confirmations
   console.log("Waiting for confirmations...");
-  await mrvRegistry.deployTransaction.wait(2);
+  // Note: ethers v6 handles confirmations automatically
 
   // Deploy Carbon Credit Token with MRV Registry address
   console.log("\n=== Deploying Carbon Credit Token ===");
   const CarbonCreditToken = await ethers.getContractFactory("CarbonCreditToken");
   const carbonToken = await CarbonCreditToken.deploy(
-    mrvRegistry.address, // MRV Registry address
+    mrvAddress, // MRV Registry address
     deployer.address     // Admin address
   );
-  await carbonToken.deployed();
+  await carbonToken.waitForDeployment();
   
-  console.log(`✅ Carbon Credit Token deployed to: ${carbonToken.address}`);
+  const carbonAddress = await carbonToken.getAddress();
+  console.log(`✅ Carbon Credit Token deployed to: ${carbonAddress}`);
   
   // Wait for confirmations
-  await carbonToken.deployTransaction.wait(2);
+  // Note: ethers v6 handles confirmations automatically
 
   // Setup initial roles and permissions
   console.log("\n=== Setting up roles and permissions ===");
@@ -64,23 +66,21 @@ async function main() {
   console.log(`Total batches: ${totalBatches}`);
 
   // Save deployment information
+  const network = await ethers.provider.getNetwork();
   const deploymentInfo = {
-    network: await ethers.provider.getNetwork(),
+    network: {
+      name: network.name,
+      chainId: network.chainId.toString()
+    },
     timestamp: new Date().toISOString(),
     deployer: deployer.address,
     contracts: {
       MRVRegistry: {
-        address: mrvRegistry.address,
-        transactionHash: mrvRegistry.deployTransaction.hash
+        address: mrvAddress
       },
       CarbonCreditToken: {
-        address: carbonToken.address,
-        transactionHash: carbonToken.deployTransaction.hash
+        address: carbonAddress
       }
-    },
-    gasUsed: {
-      MRVRegistry: (await mrvRegistry.deployTransaction.wait()).gasUsed.toString(),
-      CarbonCreditToken: (await carbonToken.deployTransaction.wait()).gasUsed.toString()
     }
   };
 
@@ -114,8 +114,8 @@ async function main() {
 # Network: ${deploymentInfo.network.name} (Chain ID: ${deploymentInfo.network.chainId})
 # Deployed: ${deploymentInfo.timestamp}
 
-MRV_REGISTRY_ADDRESS=${mrvRegistry.address}
-CARBON_TOKEN_ADDRESS=${carbonToken.address}
+MRV_REGISTRY_ADDRESS=${mrvAddress}
+CARBON_TOKEN_ADDRESS=${carbonAddress}
 DEPLOYER_ADDRESS=${deployer.address}
 NETWORK_NAME=${deploymentInfo.network.name}
 CHAIN_ID=${deploymentInfo.network.chainId}
@@ -136,8 +136,8 @@ CHAIN_ID=${deploymentInfo.network.chainId}
   
   if (deploymentInfo.network.name !== "hardhat" && deploymentInfo.network.name !== "localhost") {
     console.log("\n=== Verification Commands ===");
-    console.log(`npx hardhat verify --network ${deploymentInfo.network.name} ${mrvRegistry.address}`);
-    console.log(`npx hardhat verify --network ${deploymentInfo.network.name} ${carbonToken.address} "${mrvRegistry.address}" "${deployer.address}"`);
+    console.log(`npx hardhat verify --network ${deploymentInfo.network.name} ${mrvAddress}`);
+    console.log(`npx hardhat verify --network ${deploymentInfo.network.name} ${carbonAddress} "${mrvAddress}" "${deployer.address}"`);
   }
 }
 

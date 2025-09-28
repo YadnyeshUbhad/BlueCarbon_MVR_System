@@ -1,0 +1,913 @@
+{% extends 'ngo/ngo_base.html' %}
+{% set title='Field Data Collection - NGO Portal' %}
+{% set active='mobile_collection' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+    <!-- Header Section -->
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div style="width: 80px; height: 80px; background: var(--primary); color: white; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 36px;">
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+        <h2 style="margin: 0; color: #1f2937;">Field Data Collection</h2>
+        <p style="color: #6b7280; margin: 8px 0 0 0;">Collect real-time data from your blue carbon restoration sites</p>
+    </div>
+
+    <!-- Data Collection Form -->
+    <form id="fieldDataForm" class="mobile-form">
+        <!-- Project Selection -->
+        <div class="form-section">
+            <h3><i class="fas fa-project-diagram"></i> Project Information</h3>
+            
+            <div class="form-group">
+                <label for="project_id">Select Project *</label>
+                <select id="project_id" name="project_id" required>
+                    <option value="">Choose your project...</option>
+                    <option value="PROJ1001">Sundarbans Mangrove Restoration</option>
+                    <option value="PROJ1002">Chennai Coastal Forest Revival</option>
+                    <option value="PROJ1003">Kerala Seagrass Conservation</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="collection_date">Data Collection Date *</label>
+                <input type="date" id="collection_date" name="collection_date" required>
+            </div>
+        </div>
+
+        <!-- Location Data -->
+        <div class="form-section">
+            <h3><i class="fas fa-map-marker-alt"></i> Location & GPS</h3>
+            
+            <div class="location-controls">
+                <button type="button" id="getCurrentLocation" class="btn primary">
+                    <i class="fas fa-crosshairs"></i> Get Current Location
+                </button>
+                <span id="locationStatus" class="location-status">Location not captured</span>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="latitude">Latitude *</label>
+                    <input type="number" id="latitude" name="latitude" step="any" placeholder="0.000000" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude *</label>
+                    <input type="number" id="longitude" name="longitude" step="any" placeholder="0.000000" required readonly>
+                </div>
+            </div>
+            
+            <div id="locationMap" style="height: 200px; background: #f3f4f6; border: 2px dashed #d1d5db; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 16px 0;">
+                <div style="text-align: center; color: #6b7280;">
+                    <i class="fas fa-map" style="font-size: 24px; margin-bottom: 8px;"></i>
+                    <div>Map will appear here after location capture</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ecosystem Measurements -->
+        <div class="form-section">
+            <h3><i class="fas fa-seedling"></i> Ecosystem Measurements</h3>
+            
+            <div class="form-group">
+                <label for="ecosystem_type">Ecosystem Type *</label>
+                <select id="ecosystem_type" name="ecosystem_type" required>
+                    <option value="">Select ecosystem...</option>
+                    <option value="Mangrove">Mangrove Forest</option>
+                    <option value="Seagrass">Seagrass Meadows</option>
+                    <option value="Salt_Marsh">Salt Marsh</option>
+                    <option value="Coastal_Wetland">Coastal Wetland</option>
+                </select>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="area_covered">Area Covered (hectares) *</label>
+                    <input type="number" id="area_covered" name="area_covered" step="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label for="tree_count">Tree/Plant Count</label>
+                    <input type="number" id="tree_count" name="tree_count" placeholder="0">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="avg_height">Average Height (meters)</label>
+                    <input type="number" id="avg_height" name="avg_height" step="0.1" placeholder="0.0">
+                </div>
+                <div class="form-group">
+                    <label for="avg_diameter">Average Diameter (cm)</label>
+                    <input type="number" id="avg_diameter" name="avg_diameter" step="0.1" placeholder="0.0">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="species_identified">Species Identified</label>
+                <textarea id="species_identified" name="species_identified" rows="3" placeholder="List the main species observed..."></textarea>
+            </div>
+        </div>
+
+        <!-- Environmental Conditions -->
+        <div class="form-section">
+            <h3><i class="fas fa-thermometer-half"></i> Environmental Conditions</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="temperature">Temperature (°C)</label>
+                    <input type="number" id="temperature" name="temperature" step="0.1" placeholder="25.0">
+                </div>
+                <div class="form-group">
+                    <label for="humidity">Humidity (%)</label>
+                    <input type="number" id="humidity" name="humidity" step="1" placeholder="65">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="water_salinity">Water Salinity (ppt)</label>
+                    <input type="number" id="water_salinity" name="water_salinity" step="0.1" placeholder="35.0">
+                </div>
+                <div class="form-group">
+                    <label for="soil_ph">Soil pH</label>
+                    <input type="number" id="soil_ph" name="soil_ph" step="0.1" placeholder="7.0">
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="weather_conditions">Weather Conditions</label>
+                <select id="weather_conditions" name="weather_conditions">
+                    <option value="">Select conditions...</option>
+                    <option value="Sunny">Sunny</option>
+                    <option value="Partly_Cloudy">Partly Cloudy</option>
+                    <option value="Cloudy">Cloudy</option>
+                    <option value="Rainy">Rainy</option>
+                    <option value="Windy">Windy</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Photo Documentation -->
+        <div class="form-section">
+            <h3><i class="fas fa-camera"></i> Photo Documentation</h3>
+            
+            <div class="photo-capture">
+                <div id="photoPreview" class="photo-preview-grid"></div>
+                
+                <div class="camera-controls">
+                    <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display: none;" multiple>
+                    <button type="button" id="takePrimaryPhoto" class="btn primary">
+                        <i class="fas fa-camera"></i> Take Site Overview Photo
+                    </button>
+                    <button type="button" id="takeAdditionalPhotos" class="btn outline">
+                        <i class="fas fa-images"></i> Add More Photos
+                    </button>
+                </div>
+                
+                <div class="photo-guidelines">
+                    <h4>Photo Guidelines:</h4>
+                    <ul>
+                        <li>Take wide shots showing the overall restoration area</li>
+                        <li>Capture close-ups of individual plants/trees</li>
+                        <li>Document any wildlife or biodiversity</li>
+                        <li>Include reference objects for scale</li>
+                        <li>Ensure photos are clear and well-lit</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Field Observations -->
+        <div class="form-section">
+            <h3><i class="fas fa-eye"></i> Field Observations</h3>
+            
+            <div class="form-group">
+                <label for="restoration_progress">Restoration Progress</label>
+                <select id="restoration_progress" name="restoration_progress">
+                    <option value="">Select progress...</option>
+                    <option value="Excellent">Excellent - Above expectations</option>
+                    <option value="Good">Good - Meeting expectations</option>
+                    <option value="Fair">Fair - Some challenges</option>
+                    <option value="Poor">Poor - Needs intervention</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="wildlife_observed">Wildlife Observed</label>
+                <textarea id="wildlife_observed" name="wildlife_observed" rows="3" placeholder="Document any birds, fish, crabs, or other wildlife observed..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="challenges">Challenges/Issues Observed</label>
+                <textarea id="challenges" name="challenges" rows="3" placeholder="Note any problems, diseases, damage, or concerns..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="additional_notes">Additional Notes</label>
+                <textarea id="additional_notes" name="additional_notes" rows="4" placeholder="Any other observations or recommendations..."></textarea>
+            </div>
+        </div>
+
+        <!-- Data Validation -->
+        <div class="form-section validation-section" style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 20px; border-radius: 8px;">
+            <h3><i class="fas fa-check-circle" style="color: var(--success);"></i> Data Validation</h3>
+            
+            <div class="validation-checklist">
+                <div class="validation-item" id="validation-location">
+                    <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                    <span>GPS coordinates captured</span>
+                </div>
+                <div class="validation-item" id="validation-measurements">
+                    <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                    <span>Basic measurements recorded</span>
+                </div>
+                <div class="validation-item" id="validation-photos">
+                    <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                    <span>At least one photo taken</span>
+                </div>
+                <div class="validation-item" id="validation-observations">
+                    <i class="fas fa-times-circle" style="color: #ef4444;"></i>
+                    <span>Field observations documented</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Section -->
+        <div class="form-section submit-section">
+            <div class="offline-indicator" id="offlineIndicator" style="display: none;">
+                <i class="fas fa-wifi-slash"></i>
+                <span>Offline - Data will be saved locally and synced when online</span>
+            </div>
+            
+            <div class="submit-controls">
+                <button type="button" id="saveAsDraft" class="btn outline">
+                    <i class="fas fa-save"></i> Save as Draft
+                </button>
+                <button type="submit" id="submitData" class="btn primary" disabled>
+                    <i class="fas fa-paper-plane"></i> Submit Field Data
+                </button>
+            </div>
+            
+            <div class="submission-status" id="submissionStatus"></div>
+        </div>
+    </form>
+</div>
+
+<script>
+let fieldDataForm = {
+    photos: [],
+    location: null,
+    isOnline: navigator.onLine,
+    
+    init() {
+        this.setupEventListeners();
+        this.checkValidation();
+        this.setupOfflineDetection();
+        this.loadDraftData();
+        
+        // Set current date as default
+        document.getElementById('collection_date').value = new Date().toISOString().split('T')[0];
+    },
+    
+    setupEventListeners() {
+        // Location capture
+        document.getElementById('getCurrentLocation').addEventListener('click', () => this.getCurrentLocation());
+        
+        // Camera controls
+        document.getElementById('takePrimaryPhoto').addEventListener('click', () => this.openCamera(1));
+        document.getElementById('takeAdditionalPhotos').addEventListener('click', () => this.openCamera(5));
+        document.getElementById('cameraInput').addEventListener('change', (e) => this.handlePhotos(e));
+        
+        // Form validation
+        const form = document.getElementById('fieldDataForm');
+        form.addEventListener('input', () => this.checkValidation());
+        form.addEventListener('submit', (e) => this.handleSubmit(e));
+        
+        // Draft saving
+        document.getElementById('saveAsDraft').addEventListener('click', () => this.saveDraft());
+        
+        // Auto-save draft every 2 minutes
+        setInterval(() => this.autoSaveDraft(), 120000);
+    },
+    
+    getCurrentLocation() {
+        const button = document.getElementById('getCurrentLocation');
+        const status = document.getElementById('locationStatus');
+        
+        button.disabled = true;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting location...';
+        
+        if (!navigator.geolocation) {
+            this.showLocationError('Geolocation is not supported by this browser');
+            return;
+        }
+        
+        navigator.geolocation.getCurrentPosition(
+            (position) => this.handleLocationSuccess(position),
+            (error) => this.handleLocationError(error),
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
+            }
+        );
+    },
+    
+    handleLocationSuccess(position) {
+        this.location = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            accuracy: position.coords.accuracy
+        };
+        
+        document.getElementById('latitude').value = this.location.latitude.toFixed(6);
+        document.getElementById('longitude').value = this.location.longitude.toFixed(6);
+        
+        const button = document.getElementById('getCurrentLocation');
+        const status = document.getElementById('locationStatus');
+        
+        button.innerHTML = '<i class="fas fa-check"></i> Location Captured';
+        button.style.background = 'var(--success)';
+        
+        status.innerHTML = `<i class="fas fa-check-circle" style="color: var(--success);"></i> 
+                           Location captured (±${Math.round(this.location.accuracy)}m accuracy)`;
+        status.style.color = 'var(--success)';
+        
+        this.displayLocationMap();
+        this.checkValidation();
+    },
+    
+    handleLocationError(error) {
+        const button = document.getElementById('getCurrentLocation');
+        button.disabled = false;
+        button.innerHTML = '<i class="fas fa-crosshairs"></i> Get Current Location';
+        
+        let message = 'Location capture failed: ';
+        switch(error.code) {
+            case error.PERMISSION_DENIED:
+                message += 'Location access denied by user';
+                break;
+            case error.POSITION_UNAVAILABLE:
+                message += 'Location information unavailable';
+                break;
+            case error.TIMEOUT:
+                message += 'Location request timeout';
+                break;
+            default:
+                message += 'Unknown location error';
+        }
+        
+        this.showLocationError(message);
+    },
+    
+    showLocationError(message) {
+        const status = document.getElementById('locationStatus');
+        status.innerHTML = `<i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> ${message}`;
+        status.style.color = 'var(--danger)';
+    },
+    
+    displayLocationMap() {
+        const mapContainer = document.getElementById('locationMap');
+        mapContainer.innerHTML = `
+            <iframe 
+                src="https://maps.google.com/maps?q=${this.location.latitude},${this.location.longitude}&z=15&output=embed"
+                width="100%" 
+                height="200" 
+                style="border:0; border-radius: 8px;"
+                allowfullscreen=""
+                loading="lazy">
+            </iframe>
+        `;
+    },
+    
+    openCamera(maxPhotos) {
+        const input = document.getElementById('cameraInput');
+        input.multiple = maxPhotos > 1;
+        input.click();
+    },
+    
+    handlePhotos(event) {
+        const files = Array.from(event.target.files);
+        
+        files.forEach(file => {
+            if (file.type.startsWith('image/')) {
+                this.processPhoto(file);
+            }
+        });
+        
+        event.target.value = ''; // Clear input for reuse
+    },
+    
+    processPhoto(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const photoData = {
+                id: Date.now() + Math.random(),
+                file: file,
+                dataUrl: e.target.result,
+                timestamp: new Date(),
+                location: this.location
+            };
+            
+            this.photos.push(photoData);
+            this.displayPhotoPreview(photoData);
+            this.checkValidation();
+        };
+        reader.readAsDataURL(file);
+    },
+    
+    displayPhotoPreview(photoData) {
+        const preview = document.getElementById('photoPreview');
+        const photoElement = document.createElement('div');
+        photoElement.className = 'photo-preview-item';
+        photoElement.innerHTML = `
+            <div class="photo-container">
+                <img src="${photoData.dataUrl}" alt="Field photo">
+                <div class="photo-overlay">
+                    <div class="photo-info">
+                        <div style="font-size: 12px;">${photoData.timestamp.toLocaleTimeString()}</div>
+                        ${photoData.location ? `<div style="font-size: 11px;">📍 ${photoData.location.latitude.toFixed(4)}, ${photoData.location.longitude.toFixed(4)}</div>` : ''}
+                    </div>
+                    <button type="button" class="remove-photo" onclick="fieldDataForm.removePhoto('${photoData.id}')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        preview.appendChild(photoElement);
+    },
+    
+    removePhoto(photoId) {
+        this.photos = this.photos.filter(photo => photo.id != photoId);
+        this.refreshPhotoPreview();
+        this.checkValidation();
+    },
+    
+    refreshPhotoPreview() {
+        const preview = document.getElementById('photoPreview');
+        preview.innerHTML = '';
+        this.photos.forEach(photo => this.displayPhotoPreview(photo));
+    },
+    
+    checkValidation() {
+        const validations = {
+            location: this.location !== null,
+            measurements: document.getElementById('area_covered').value !== '' && 
+                         document.getElementById('ecosystem_type').value !== '',
+            photos: this.photos.length > 0,
+            observations: document.getElementById('restoration_progress').value !== ''
+        };
+        
+        // Update validation indicators
+        Object.keys(validations).forEach(key => {
+            const element = document.getElementById(`validation-${key}`);
+            const icon = element.querySelector('i');
+            
+            if (validations[key]) {
+                icon.className = 'fas fa-check-circle';
+                icon.style.color = 'var(--success)';
+            } else {
+                icon.className = 'fas fa-times-circle';
+                icon.style.color = '#ef4444';
+            }
+        });
+        
+        // Enable submit button if all validations pass
+        const allValid = Object.values(validations).every(v => v);
+        document.getElementById('submitData').disabled = !allValid;
+    },
+    
+    setupOfflineDetection() {
+        const updateStatus = () => {
+            this.isOnline = navigator.onLine;
+            const indicator = document.getElementById('offlineIndicator');
+            indicator.style.display = this.isOnline ? 'none' : 'block';
+        };
+        
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+        updateStatus();
+    },
+    
+    saveDraft() {
+        const formData = this.getFormData();
+        localStorage.setItem('fieldDataDraft', JSON.stringify(formData));
+        
+        const status = document.getElementById('submissionStatus');
+        status.innerHTML = '<div class="status-message success"><i class="fas fa-save"></i> Draft saved locally</div>';
+        setTimeout(() => status.innerHTML = '', 3000);
+    },
+    
+    autoSaveDraft() {
+        if (this.hasFormData()) {
+            this.saveDraft();
+        }
+    },
+    
+    loadDraftData() {
+        const draft = localStorage.getItem('fieldDataDraft');
+        if (draft) {
+            try {
+                const data = JSON.parse(draft);
+                this.populateForm(data);
+            } catch (e) {
+                console.error('Failed to load draft:', e);
+            }
+        }
+    },
+    
+    getFormData() {
+        const form = document.getElementById('fieldDataForm');
+        const formData = new FormData(form);
+        const data = {};
+        
+        for (let [key, value] of formData.entries()) {
+            data[key] = value;
+        }
+        
+        data.photos = this.photos.map(photo => ({
+            id: photo.id,
+            dataUrl: photo.dataUrl,
+            timestamp: photo.timestamp,
+            location: photo.location
+        }));
+        
+        data.location = this.location;
+        data.timestamp = new Date();
+        
+        return data;
+    },
+    
+    hasFormData() {
+        const form = document.getElementById('fieldDataForm');
+        const inputs = form.querySelectorAll('input, select, textarea');
+        return Array.from(inputs).some(input => input.value !== '');
+    },
+    
+    populateForm(data) {
+        // Populate form fields
+        Object.keys(data).forEach(key => {
+            const element = document.getElementById(key);
+            if (element && typeof data[key] === 'string') {
+                element.value = data[key];
+            }
+        });
+        
+        // Restore location
+        if (data.location) {
+            this.location = data.location;
+            this.displayLocationMap();
+            
+            const button = document.getElementById('getCurrentLocation');
+            button.innerHTML = '<i class="fas fa-check"></i> Location Loaded';
+            button.style.background = 'var(--success)';
+        }
+        
+        // Restore photos
+        if (data.photos) {
+            this.photos = data.photos;
+            this.refreshPhotoPreview();
+        }
+        
+        this.checkValidation();
+    },
+    
+    async handleSubmit(event) {
+        event.preventDefault();
+        
+        const submitButton = document.getElementById('submitData');
+        const status = document.getElementById('submissionStatus');
+        
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        
+        try {
+            const formData = this.getFormData();
+            
+            if (this.isOnline) {
+                await this.submitToServer(formData);
+                localStorage.removeItem('fieldDataDraft'); // Clear draft on successful submit
+                this.showSuccessMessage();
+            } else {
+                this.saveForOfflineSync(formData);
+                this.showOfflineMessage();
+            }
+        } catch (error) {
+            this.showErrorMessage(error.message);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Field Data';
+        }
+    },
+    
+    async submitToServer(data) {
+        const response = await fetch('/ngo/field-data/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+        }
+        
+        return await response.json();
+    },
+    
+    saveForOfflineSync(data) {
+        const offlineQueue = JSON.parse(localStorage.getItem('offlineFieldData') || '[]');
+        offlineQueue.push({
+            id: Date.now(),
+            data: data,
+            timestamp: new Date()
+        });
+        localStorage.setItem('offlineFieldData', JSON.stringify(offlineQueue));
+    },
+    
+    showSuccessMessage() {
+        const status = document.getElementById('submissionStatus');
+        status.innerHTML = `
+            <div class="status-message success">
+                <i class="fas fa-check-circle"></i> 
+                Field data submitted successfully! Your data has been added to the blockchain for verification.
+            </div>
+        `;
+    },
+    
+    showOfflineMessage() {
+        const status = document.getElementById('submissionStatus');
+        status.innerHTML = `
+            <div class="status-message warning">
+                <i class="fas fa-wifi-slash"></i> 
+                Data saved locally. Will be synced automatically when you're back online.
+            </div>
+        `;
+    },
+    
+    showErrorMessage(message) {
+        const status = document.getElementById('submissionStatus');
+        status.innerHTML = `
+            <div class="status-message error">
+                <i class="fas fa-exclamation-triangle"></i> 
+                Error submitting data: ${message}
+            </div>
+        `;
+    }
+};
+
+// Initialize when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    fieldDataForm.init();
+});
+</script>
+
+<style>
+.mobile-form {
+    max-width: 100%;
+}
+
+.form-section {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.form-section h3 {
+    margin: 0 0 20px 0;
+    color: #1f2937;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.location-controls {
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.location-status {
+    display: block;
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.photo-capture {
+    text-align: center;
+}
+
+.photo-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.photo-preview-item {
+    position: relative;
+}
+
+.photo-container {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #f3f4f6;
+}
+
+.photo-container img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+}
+
+.photo-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 60%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 8px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.photo-container:hover .photo-overlay {
+    opacity: 1;
+}
+
+.photo-info {
+    color: white;
+    font-size: 12px;
+    text-align: left;
+}
+
+.remove-photo {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    cursor: pointer;
+}
+
+.camera-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.photo-guidelines {
+    background: #f9fafb;
+    padding: 16px;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.photo-guidelines h4 {
+    margin: 0 0 12px 0;
+    color: #374151;
+}
+
+.photo-guidelines ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.photo-guidelines li {
+    margin-bottom: 4px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.validation-section {
+    border-left: 4px solid var(--success) !important;
+}
+
+.validation-checklist {
+    display: grid;
+    gap: 8px;
+}
+
+.validation-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.offline-indicator {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.submit-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.submit-controls .btn {
+    flex: 1;
+}
+
+.status-message {
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-message.success {
+    background: #f0fdf4;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+
+.status-message.warning {
+    background: #fefce8;
+    color: #a16207;
+    border: 1px solid #fde047;
+}
+
+.status-message.error {
+    background: #fef2f2;
+    color: #dc2626;
+    border: 1px solid #fecaca;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .camera-controls {
+        flex-direction: column;
+    }
+    
+    .submit-controls {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}

@@ -1,0 +1,610 @@
+{% extends 'ngo/ngo_base.html' %}
+{% set active='satellite' %}
+{% set title='Satellite Analysis - NGO Portal' %}
+{% set header='Satellite Data Analysis' %}
+
+{% block head %}
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/date-fns@1.30.1/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<!-- Leaflet for maps -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937;">Satellite Data Analysis</h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">
+                {% if project %}
+                Project: <strong>{{ project.name }}</strong> - {{ project.location or project.district + ', ' + project.state }}
+                {% else %}
+                Real-time NDVI, vegetation health, and environmental monitoring
+                {% endif %}
+            </p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button onclick="refreshAnalysis()" class="btn outline">
+                <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+            <button onclick="exportData()" class="btn secondary">
+                <i class="fas fa-download"></i> Export Data
+            </button>
+        </div>
+    </div>
+
+    <!-- Key Metrics Cards -->
+    <div class="cards">
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-leaf"></i>
+                Current NDVI
+            </div>
+            <div class="stat-value" style="color: var(--success);">
+                <span id="currentNDVI">0.75</span>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +8% from last month
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-thermometer-half"></i>
+                Surface Temperature
+            </div>
+            <div class="stat-value" style="color: var(--warning);">
+                <span id="surfaceTemp">28.5°C</span>
+            </div>
+            <div class="stat-change">
+                <i class="fas fa-thermometer-half"></i>
+                Normal range
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-tint"></i>
+                Soil Moisture
+            </div>
+            <div class="stat-value" style="color: var(--info);">
+                <span id="soilMoisture">62%</span>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +5% optimal
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i>
+                Change Alert
+            </div>
+            <div class="stat-value" style="color: var(--primary);">
+                <span id="changeAlert">Low</span>
+            </div>
+            <div class="stat-change">
+                <i class="fas fa-shield-alt"></i>
+                Monitoring active
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px;">
+        <!-- NDVI Trend Chart -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-line" style="color: var(--success);"></i>
+                    NDVI Trend Analysis
+                </h3>
+                <p style="color: #6b7280; margin: 4px 0 0 0; font-size: 14px;">
+                    Vegetation health index over the past 12 months
+                </p>
+            </div>
+            <div style="padding: 20px;">
+                <canvas id="ndviChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Health Status -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-heartbeat" style="color: var(--primary);"></i>
+                    Ecosystem Health
+                </h3>
+            </div>
+            <div style="padding: 20px; text-align: center;">
+                <canvas id="healthGauge" width="200" height="200"></canvas>
+                <div style="margin-top: 16px;">
+                    <div style="font-size: 18px; font-weight: 600; color: var(--success);" id="healthScore">87%</div>
+                    <div style="font-size: 14px; color: #6b7280;">Overall Health Score</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Environmental Parameters -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Temperature & Moisture -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-cloud-sun" style="color: var(--warning);"></i>
+                    Environmental Conditions
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <canvas id="environmentChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+
+        <!-- Change Detection -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-search" style="color: var(--info);"></i>
+                    Change Detection
+                </h3>
+            </div>
+            <div style="padding: 20px;">
+                <canvas id="changeChart" width="400" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location Map -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-map-marked-alt" style="color: var(--primary);"></i>
+                Project Location & Satellite Coverage
+            </h3>
+        </div>
+        <div style="position: relative;">
+            <div id="projectMap" style="height: 400px; width: 100%;"></div>
+            
+            <!-- Map Info Overlay -->
+            <div style="position: absolute; top: 10px; left: 10px; z-index: 1000; background: white; padding: 12px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <div style="font-size: 12px; color: #6b7280; margin-bottom: 4px;">
+                    {% if project %}
+                    Project Area: {{ project.area }} hectares
+                    {% else %}
+                    Click on map to select analysis area
+                    {% endif %}
+                </div>
+                <div style="font-size: 11px; color: #6b7280;">
+                    Last satellite pass: <span id="lastSatellitePass">2 hours ago</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Data Quality & Alerts -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-clipboard-check" style="color: var(--success);"></i>
+                Data Quality & Analysis Summary
+            </h3>
+        </div>
+        <div style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;">
+                <div>
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Data Quality</h4>
+                    <div style="display: grid; gap: 8px; font-size: 14px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Cloud Coverage:</span>
+                            <span class="badge success" style="font-size: 11px;">< 5%</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Image Resolution:</span>
+                            <span style="font-weight: 500;">10m/pixel</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Last Update:</span>
+                            <span style="font-weight: 500;">2h ago</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Data Confidence:</span>
+                            <span style="font-weight: 500; color: var(--success);">95%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Key Findings</h4>
+                    <div style="display: grid; gap: 8px; font-size: 14px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success); font-size: 12px;"></i>
+                            <span>Vegetation growth detected</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-info-circle" style="color: var(--info); font-size: 12px;"></i>
+                            <span>Stable soil moisture levels</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-exclamation-triangle" style="color: var(--warning); font-size: 12px;"></i>
+                            <span>Minor temperature variation</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-satellite" style="color: var(--primary); font-size: 12px;"></i>
+                            <span>Full area coverage achieved</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Recommendations</h4>
+                    <div style="display: grid; gap: 8px; font-size: 14px;">
+                        <div>• Continue current monitoring schedule</div>
+                        <div>• Schedule ground verification visit</div>
+                        <div>• Monitor for seasonal changes</div>
+                        <div>• Update baseline measurements</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Chart.js global configuration
+Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#6b7280';
+
+// Initialize all charts when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    initializeNDVIChart();
+    initializeHealthGauge();
+    initializeEnvironmentChart();
+    initializeChangeChart();
+    initializeProjectMap();
+    updateMetrics();
+});
+
+// NDVI Trend Chart
+function initializeNDVIChart() {
+    const ctx = document.getElementById('ndviChart').getContext('2d');
+    
+    // Generate sample NDVI data for the last 12 months
+    const labels = [];
+    const ndviData = [];
+    const now = new Date();
+    
+    for (let i = 11; i >= 0; i--) {
+        const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        labels.push(date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }));
+        ndviData.push(0.65 + Math.random() * 0.25); // NDVI values between 0.65-0.9
+    }
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'NDVI Value',
+                data: ndviData,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#10b981',
+                pointBorderColor: '#ffffff',
+                pointBorderWidth: 2,
+                pointRadius: 5
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    min: 0.5,
+                    max: 1.0,
+                    ticks: {
+                        callback: function(value) {
+                            return value.toFixed(2);
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'NDVI Value'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Month'
+                    }
+                }
+            },
+            elements: {
+                line: {
+                    borderWidth: 3
+                }
+            }
+        }
+    });
+}
+
+// Health Gauge Chart
+function initializeHealthGauge() {
+    const ctx = document.getElementById('healthGauge').getContext('2d');
+    
+    const healthScore = 87;
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [healthScore, 100 - healthScore],
+                backgroundColor: [
+                    '#10b981',
+                    '#e5e7eb'
+                ],
+                borderWidth: 0,
+                cutout: '70%'
+            }]
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    enabled: false
+                }
+            }
+        },
+        plugins: [{
+            id: 'centerText',
+            beforeDraw: function(chart) {
+                const ctx = chart.ctx;
+                ctx.save();
+                
+                const centerX = (chart.chartArea.left + chart.chartArea.right) / 2;
+                const centerY = (chart.chartArea.top + chart.chartArea.bottom) / 2;
+                
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = 'bold 24px Inter';
+                ctx.fillStyle = '#10b981';
+                ctx.fillText(healthScore + '%', centerX, centerY);
+                
+                ctx.restore();
+            }
+        }]
+    });
+}
+
+// Environmental Conditions Chart
+function initializeEnvironmentChart() {
+    const ctx = document.getElementById('environmentChart').getContext('2d');
+    
+    const labels = [];
+    const tempData = [];
+    const moistureData = [];
+    
+    for (let i = 23; i >= 0; i--) {
+        const hour = (new Date().getHours() - i + 24) % 24;
+        labels.push(hour + ':00');
+        tempData.push(25 + Math.random() * 8); // Temperature 25-33°C
+        moistureData.push(50 + Math.random() * 30); // Moisture 50-80%
+    }
+    
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Temperature (°C)',
+                data: tempData,
+                borderColor: '#f59e0b',
+                backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                yAxisID: 'y',
+                tension: 0.3
+            }, {
+                label: 'Soil Moisture (%)',
+                data: moistureData,
+                borderColor: '#3b82f6',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                yAxisID: 'y1',
+                tension: 0.3
+            }]
+        },
+        options: {
+            responsive: true,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    display: true,
+                    title: {
+                        display: true,
+                        text: 'Time (24h)'
+                    }
+                },
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Moisture (%)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                },
+            }
+        }
+    });
+}
+
+// Change Detection Chart
+function initializeChangeChart() {
+    const ctx = document.getElementById('changeChart').getContext('2d');
+    
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            datasets: [{
+                label: 'Vegetation Growth (%)',
+                data: [2.1, 3.5, 1.8, 4.2],
+                backgroundColor: '#10b981',
+                borderRadius: 4
+            }, {
+                label: 'Area Change (%)',
+                data: [0.5, 1.2, 0.8, 1.5],
+                backgroundColor: '#3b82f6',
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Change (%)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Initialize project map
+function initializeProjectMap() {
+    {% if project and project.location %}
+    // Use actual project coordinates if available
+    const coords = {{ project.location.split(',') if project.location else '[19.0760, 72.8777]' }};
+    const lat = parseFloat(coords[0]);
+    const lng = parseFloat(coords[1]);
+    {% else %}
+    // Default to Mumbai coordinates
+    const lat = 19.0760;
+    const lng = 72.8777;
+    {% endif %}
+    
+    const map = L.map('projectMap').setView([lat, lng], 15);
+    
+    // Add satellite tile layer
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; Esri &mdash; Source: Esri, Maxar, GeoEye, Earthstar Geographics',
+        maxZoom: 18
+    }).addTo(map);
+    
+    // Add project marker
+    L.marker([lat, lng])
+        .addTo(map)
+        .bindPopup(
+            {% if project %}
+            '<strong>{{ project.name }}</strong><br>{{ project.ecosystem }} Project<br>Area: {{ project.area }} ha'
+            {% else %}
+            '<strong>Analysis Location</strong><br>Coastal Monitoring Point'
+            {% endif %}
+        )
+        .openPopup();
+    
+    // Add project area polygon (sample)
+    const projectArea = [
+        [lat + 0.001, lng + 0.001],
+        [lat + 0.001, lng - 0.001],
+        [lat - 0.001, lng - 0.001],
+        [lat - 0.001, lng + 0.001]
+    ];
+    
+    L.polygon(projectArea, {
+        color: '#10b981',
+        weight: 2,
+        fillColor: '#10b981',
+        fillOpacity: 0.2
+    }).addTo(map).bindTooltip('Project Monitoring Area');
+}
+
+// Update metrics with real-time data
+function updateMetrics() {
+    // Simulate real-time updates
+    setInterval(() => {
+        const ndvi = (0.70 + Math.random() * 0.15).toFixed(3);
+        const temp = (26 + Math.random() * 5).toFixed(1);
+        const moisture = Math.round(55 + Math.random() * 20);
+        
+        document.getElementById('currentNDVI').textContent = ndvi;
+        document.getElementById('surfaceTemp').textContent = temp + '°C';
+        document.getElementById('soilMoisture').textContent = moisture + '%';
+        
+        // Update last satellite pass time
+        const minutes = Math.floor(Math.random() * 180) + 30;
+        document.getElementById('lastSatellitePass').textContent = 
+            minutes < 60 ? minutes + ' minutes ago' : Math.floor(minutes / 60) + ' hours ago';
+    }, 30000); // Update every 30 seconds
+}
+
+// Refresh analysis data
+function refreshAnalysis() {
+    location.reload();
+}
+
+// Export satellite data
+function exportData() {
+    const data = {
+        timestamp: new Date().toISOString(),
+        project: '{{ project.name if project else "Analysis Data" }}',
+        ndvi: document.getElementById('currentNDVI').textContent,
+        temperature: document.getElementById('surfaceTemp').textContent,
+        moisture: document.getElementById('soilMoisture').textContent,
+        health_score: document.getElementById('healthScore').textContent
+    };
+    
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `satellite_analysis_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+</script>
+{% endblock %}

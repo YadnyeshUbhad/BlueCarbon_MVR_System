@@ -1,0 +1,199 @@
+{% extends 'ngo/ngo_base.html' %}
+{% set active='new-project' %}
+{% set title='Register New Project - BlueCarbon MRV' %}
+{% set header='Register New Project' %}
+
+{% block content %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <!-- Page Header -->
+    <div class="card" style="margin-bottom: 30px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; border: none;">
+        <div style="text-align: center;">
+            <h2 style="margin: 0 0 12px 0; color: white;">
+                <i class="fas fa-seedling"></i> Register Blue Carbon Project
+            </h2>
+            <p style="margin: 0; opacity: 0.9; font-size: 16px;">
+                Submit your marine restoration project for verification and carbon credit generation
+            </p>
+        </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+        <!-- Basic Project Information -->
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-info-circle"></i>
+                Basic Project Information
+            </h3>
+            
+            <div style="display: grid; gap: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                            Project Name *
+                        </label>
+                        <input type="text" name="name" required
+                               style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px;"
+                               placeholder="e.g. Mumbai Mangrove Restoration">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                            Ecosystem Type *
+                        </label>
+                        <select name="ecosystem" required
+                                style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px;">
+                            <option value="">Select Ecosystem</option>
+                            <option value="mangrove">Mangrove</option>
+                            <option value="seagrass">Seagrass</option>
+                            <option value="seaweed">Seaweed</option>
+                            <option value="coastal-wetlands">Coastal Wetlands</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                        Project Description *
+                    </label>
+                    <textarea name="description" required rows="4"
+                              style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px; resize: vertical;"
+                              placeholder="Describe your restoration activities, goals, and methodology..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location & Area -->
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--primary); display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-map-marker-alt"></i>
+                Location & Area Details
+            </h3>
+            
+            <div style="display: grid; gap: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                            Start Date *
+                        </label>
+                        <input type="date" name="start_date" required
+                               style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                            Project Area (hectares) *
+                        </label>
+                        <input type="number" name="area" required step="0.01" min="0.1"
+                               style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px;"
+                               placeholder="e.g. 25.5">
+                    </div>
+                </div>
+                
+                <div>
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                        Location (GPS Coordinates or Address) *
+                    </label>
+                    <input type="text" name="location" required
+                           style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px;"
+                           placeholder="e.g. 19.0760, 72.8777 or Mumbai, Maharashtra">
+                </div>
+            </div>
+        </div>
+
+        <!-- Restoration Details -->
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--secondary); display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-seedling"></i>
+                Restoration Details
+            </h3>
+            
+            <div style="display: grid; gap: 20px;">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                            Species to Plant *
+                        </label>
+                        <input type="text" name="species" required
+                               style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px;"
+                               placeholder="e.g. Rhizophora, Avicennia">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text);">
+                            Estimated Seedlings *
+                        </label>
+                        <input type="number" name="seedlings" required min="1"
+                               style="width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; font-size: 16px;"
+                               placeholder="e.g. 5000">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Media Upload Section -->
+        <div class="card" style="margin-bottom: 24px;">
+            <h3 style="margin: 0 0 20px 0; color: var(--accent); display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-camera"></i>
+                Project Documentation
+            </h3>
+            
+            <div style="background: var(--light-blue); padding: 20px; border-radius: 12px; border: 2px dashed var(--accent);">
+                <div style="text-align: center; color: var(--primary);">
+                    <i class="fas fa-cloud-upload-alt" style="font-size: 48px; margin-bottom: 16px;"></i>
+                    <h4 style="margin: 0 0 8px 0;">Upload Geo-tagged Photos & Documents</h4>
+                    <p style="margin: 0 0 16px 0; color: var(--text-light);">
+                        Upload baseline condition photos, project site images, and supporting documents
+                    </p>
+                    <input type="file" name="media" multiple accept="image/*,.pdf,.doc,.docx"
+                           style="margin-bottom: 12px;">
+                    <p style="margin: 0; font-size: 14px; color: var(--text-light);">
+                        <i class="fas fa-info-circle"></i>
+                        Supported formats: JPG, PNG, PDF, DOC, DOCX (Max 10MB each)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div style="text-align: center; margin-top: 30px;">
+            <button type="submit" 
+                    style="background: linear-gradient(135deg, var(--primary), var(--accent)); 
+                           color: white; border: none; padding: 16px 32px; border-radius: 12px; 
+                           font-size: 18px; font-weight: 600; cursor: pointer; transition: all 0.3s ease;
+                           display: inline-flex; align-items: center; gap: 12px;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 25px rgba(0, 119, 182, 0.3)';"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <i class="fas fa-paper-plane"></i>
+                Submit Project for Verification
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+// Add some interactive features
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-calculate estimated credits based on area and ecosystem
+    const areaInput = document.querySelector('input[name="area"]');
+    const ecosystemSelect = document.querySelector('select[name="ecosystem"]');
+    
+    function updateEstimatedCredits() {
+        const area = parseFloat(areaInput.value) || 0;
+        const ecosystem = ecosystemSelect.value;
+        
+        let creditMultiplier = 1;
+        switch(ecosystem) {
+            case 'mangrove': creditMultiplier = 8.5; break;
+            case 'seagrass': creditMultiplier = 6.2; break;
+            case 'seaweed': creditMultiplier = 4.8; break;
+            case 'coastal-wetlands': creditMultiplier = 5.5; break;
+        }
+        
+        const estimatedCredits = (area * creditMultiplier).toFixed(1);
+        
+        // Show estimated credits (you could add this to UI)
+        console.log(`Estimated Credits: ${estimatedCredits} tCO2e`);
+    }
+    
+    areaInput.addEventListener('input', updateEstimatedCredits);
+    ecosystemSelect.addEventListener('change', updateEstimatedCredits);
+});
+</script>
+{% endblock %}

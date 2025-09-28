@@ -1,340 +1,142 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/utils/Counters.sol";
-import "./MRVRegistry.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title CarbonCreditToken
- * @dev ERC20 token representing verified blue carbon credits
- * Integrates with MRV registry for verified data-backed minting
+ * @dev ERC-1155 multi-token contract for Blue Carbon Credits
  */
-contract CarbonCreditToken is ERC20, AccessControl, Pausable {
-    using Counters for Counters.Counter;
-
+contract CarbonCreditToken is ERC1155, AccessControl, ReentrancyGuard, Pausable {
     // Role definitions
-    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
-    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
-
-    // MRV Registry integration
-    MRVRegistry public mrvRegistry;
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     
-    // Credit batch tracking
-    Counters.Counter private _batchIds;
+    // Token counter
+    uint256 private _tokenCounter;
     
-    // Credit batch structure
-    struct CreditBatch {
-        uint256 batchId;
-        uint256 mrvRecordId; // Link to MRV data
-        string projectId;
-        uint256 totalCredits;
-        uint256 issuanceDate;
-        uint256 vintageYear;
-        string methodology; // Carbon methodology used
-        bool retired; // Whether credits are retired
-        address issuer;
-        string serialNumber; // Unique serial for this batch
+    // Registry contract reference
+    address public registryContract;
+    
+    // Token info
+    struct TokenBatch {
+        uint256 id;
+        uint256 projectId;
+        address ngo;
+        string projectName;
+        uint256 amount;
+        uint256 mintTimestamp;
     }
     
-    // Storage mappings
-    mapping(uint256 => CreditBatch) public creditBatches;
-    mapping(uint256 => uint256) public mrvRecordToBatch; // MRV record ID to batch ID
-    mapping(address => uint256[]) public userBatches;
-    mapping(string => uint256[]) public projectBatches;
+    // Storage
+    mapping(uint256 => TokenBatch) public tokenBatches;
     
-    // Retirement tracking
-    mapping(address => uint256) public totalRetired;
-    uint256 public globalRetiredCredits;
+    // Statistics
+    uint256 public totalBatches;
+    uint256 public totalCreditsIssued;
     
     // Events
-    event CreditsIssued(
-        uint256 indexed batchId,
-        uint256 indexed mrvRecordId,
-        string indexed projectId,
-        address to,
-        uint256 amount,
-        string serialNumber
+    event CreditsMinted(
+        uint256 indexed tokenId,
+        uint256 indexed projectId,
+        address indexed ngo,
+        uint256 amount
     );
     
-    event CreditsRetired(
-        uint256 indexed batchId,
-        address indexed retiree,
-        uint256 amount,
-        string reason
-    );
-    
-    event BatchCreated(
-        uint256 indexed batchId,
-        string indexed projectId,
-        uint256 totalCredits,
-        uint256 vintageYear
-    );
-    
-    event MRVRegistryUpdated(
-        address indexed oldRegistry,
-        address indexed newRegistry
-    );
-
     constructor(
-        address _mrvRegistry,
+        address _registryContract,
         address _admin
-    ) ERC20("Blue Carbon Credit", "BCC") {
-        require(_mrvRegistry != address(0), "MRV Registry address cannot be zero");
-        require(_admin != address(0), "Admin address cannot be zero");
-        
-        mrvRegistry = MRVRegistry(_mrvRegistry);
-        
+    ) ERC1155("https://api.bluecarbon.mrv/tokens/{id}.json") {
         _grantRole(DEFAULT_ADMIN_ROLE, _admin);
         _grantRole(ADMIN_ROLE, _admin);
         _grantRole(MINTER_ROLE, _admin);
+        
+        registryContract = _registryContract;
     }
-
+    
     /**
-     * @dev Issue carbon credits based on verified MRV data
-     * @param _mrvRecordId MRV record ID from registry
-     * @param _recipient Address to receive credits
-     * @param _creditAmount Amount of credits to issue
-     * @param _vintageYear Year the carbon sequestration occurred
-     * @param _methodology Carbon accounting methodology used
-     * @param _serialNumber Unique serial number for this batch
+     * @dev Mint carbon credits
      */
-    function issueCredits(
-        uint256 _mrvRecordId,
-        address _recipient,
-        uint256 _creditAmount,
-        uint256 _vintageYear,
-        string memory _methodology,
-        string memory _serialNumber
+    function mintCredits(
+        address _ngo,
+        uint256 _projectId,
+        string memory _projectName,
+        uint256 _amount
     ) external onlyRole(MINTER_ROLE) whenNotPaused returns (uint256) {
-        require(_recipient != address(0), "Recipient cannot be zero address");
-        require(_creditAmount > 0, "Credit amount must be greater than 0");
-        require(_vintageYear <= getCurrentYear(), "Vintage year cannot be in future");
-        require(bytes(_serialNumber).length > 0, "Serial number cannot be empty");
-        require(mrvRecordToBatch[_mrvRecordId] == 0, "Credits already issued for this MRV record");
-        
-        // Verify MRV data exists and is verified
-        MRVRegistry.MRVData memory mrvData = mrvRegistry.getMRVData(_mrvRecordId);
-        require(
-            mrvData.status == MRVRegistry.VerificationStatus.VERIFIED,
-            "MRV data must be verified"
-        );
-        
-        // Create new credit batch
-        _batchIds.increment();
-        uint256 newBatchId = _batchIds.current();
-        
-        CreditBatch storage newBatch = creditBatches[newBatchId];
-        newBatch.batchId = newBatchId;
-        newBatch.mrvRecordId = _mrvRecordId;
-        newBatch.projectId = mrvData.projectId;
-        newBatch.totalCredits = _creditAmount;
-        newBatch.issuanceDate = block.timestamp;
-        newBatch.vintageYear = _vintageYear;
-        newBatch.methodology = _methodology;
-        newBatch.retired = false;
-        newBatch.issuer = msg.sender;
-        newBatch.serialNumber = _serialNumber;
-        
-        // Update tracking mappings
-        mrvRecordToBatch[_mrvRecordId] = newBatchId;
-        userBatches[_recipient].push(newBatchId);
-        projectBatches[mrvData.projectId].push(newBatchId);
-        
-        // Mint tokens to recipient
-        _mint(_recipient, _creditAmount * 10 ** decimals());
-        
-        emit BatchCreated(newBatchId, mrvData.projectId, _creditAmount, _vintageYear);
-        emit CreditsIssued(
-            newBatchId,
-            _mrvRecordId,
-            mrvData.projectId,
-            _recipient,
-            _creditAmount,
-            _serialNumber
-        );
-        
-        return newBatchId;
-    }
-
-    /**
-     * @dev Retire carbon credits (remove from circulation)
-     * @param _batchId Batch ID to retire credits from
-     * @param _amount Amount of credits to retire
-     * @param _reason Reason for retirement
-     */
-    function retireCredits(
-        uint256 _batchId,
-        uint256 _amount,
-        string memory _reason
-    ) external whenNotPaused {
-        require(_batchId <= _batchIds.current() && _batchId > 0, "Invalid batch ID");
+        require(_ngo != address(0), "Invalid NGO address");
         require(_amount > 0, "Amount must be greater than 0");
-        require(bytes(_reason).length > 0, "Retirement reason required");
+        require(bytes(_projectName).length > 0, "Project name required");
         
-        CreditBatch storage batch = creditBatches[_batchId];
-        require(!batch.retired, "Batch already fully retired");
+        _tokenCounter++;
+        uint256 tokenId = _tokenCounter;
         
-        uint256 tokenAmount = _amount * 10 ** decimals();
-        require(balanceOf(msg.sender) >= tokenAmount, "Insufficient balance");
+        tokenBatches[tokenId] = TokenBatch({
+            id: tokenId,
+            projectId: _projectId,
+            ngo: _ngo,
+            projectName: _projectName,
+            amount: _amount,
+            mintTimestamp: block.timestamp
+        });
         
-        // Burn tokens
-        _burn(msg.sender, tokenAmount);
+        // Mint tokens to NGO
+        _mint(_ngo, tokenId, _amount, "");
         
-        // Update retirement tracking
-        totalRetired[msg.sender] += _amount;
-        globalRetiredCredits += _amount;
+        // Update statistics
+        totalBatches++;
+        totalCreditsIssued += _amount;
         
-        // If all credits in batch are retired, mark batch as retired
-        if (totalSupply() == 0 || _amount >= batch.totalCredits) {
-            batch.retired = true;
-        }
-        
-        emit CreditsRetired(_batchId, msg.sender, _amount, _reason);
+        emit CreditsMinted(tokenId, _projectId, _ngo, _amount);
+        return tokenId;
     }
-
-    /**
-     * @dev Get credit batch information
-     * @param _batchId Batch ID to query
-     */
-    function getCreditBatch(uint256 _batchId) 
-        external 
-        view 
-        returns (CreditBatch memory) 
-    {
-        require(_batchId <= _batchIds.current() && _batchId > 0, "Invalid batch ID");
-        return creditBatches[_batchId];
-    }
-
-    /**
-     * @dev Get all batches for a project
-     * @param _projectId Project ID
-     */
-    function getProjectBatches(string memory _projectId) 
-        external 
-        view 
-        returns (uint256[] memory) 
-    {
-        return projectBatches[_projectId];
-    }
-
-    /**
-     * @dev Get all batches owned by a user
-     * @param _user User address
-     */
-    function getUserBatches(address _user) 
-        external 
-        view 
-        returns (uint256[] memory) 
-    {
-        return userBatches[_user];
-    }
-
-    /**
-     * @dev Get total number of batches
-     */
-    function getTotalBatches() external view returns (uint256) {
-        return _batchIds.current();
-    }
-
-    /**
-     * @dev Calculate project statistics
-     * @param _projectId Project ID
-     */
-    function getProjectStats(string memory _projectId)
-        external
-        view
-        returns (
-            uint256 totalIssued,
-            uint256 totalRetired,
-            uint256 totalActive,
-            uint256 batchCount
-        )
-    {
-        uint256[] memory batches = projectBatches[_projectId];
-        batchCount = batches.length;
-        
-        for (uint256 i = 0; i < batches.length; i++) {
-            CreditBatch memory batch = creditBatches[batches[i]];
-            totalIssued += batch.totalCredits;
-            if (batch.retired) {
-                totalRetired += batch.totalCredits;
-            }
-        }
-        
-        totalActive = totalIssued - totalRetired;
-    }
-
-    /**
-     * @dev Get current year for vintage validation
-     */
-    function getCurrentYear() public view returns (uint256) {
-        return (block.timestamp / 365 days) + 1970;
-    }
-
-    /**
-     * @dev Update MRV Registry address
-     * @param _newRegistry New MRV Registry address
-     */
-    function updateMRVRegistry(address _newRegistry) 
-        external 
-        onlyRole(ADMIN_ROLE) 
-    {
-        require(_newRegistry != address(0), "Registry address cannot be zero");
-        address oldRegistry = address(mrvRegistry);
-        mrvRegistry = MRVRegistry(_newRegistry);
-        emit MRVRegistryUpdated(oldRegistry, _newRegistry);
-    }
-
-    /**
-     * @dev Emergency pause function
-     */
-    function pause() external onlyRole(ADMIN_ROLE) {
-        _pause();
-    }
-
-    /**
-     * @dev Unpause function
-     */
-    function unpause() external onlyRole(ADMIN_ROLE) {
-        _unpause();
-    }
-
+    
     /**
      * @dev Grant minter role
-     * @param _minter Address to grant minter role
      */
     function grantMinterRole(address _minter) external onlyRole(ADMIN_ROLE) {
-        _grantRole(MINTER_ROLE, _minter);
+        grantRole(MINTER_ROLE, _minter);
     }
-
+    
     /**
-     * @dev Revoke minter role
-     * @param _minter Address to revoke minter role from
+     * @dev Get total number of token batches
      */
-    function revokeMinterRole(address _minter) external onlyRole(ADMIN_ROLE) {
-        _revokeRole(MINTER_ROLE, _minter);
+    function getTotalBatches() external view returns (uint256) {
+        return totalBatches;
     }
-
+    
     /**
-     * @dev Override transfer to include pause functionality
+     * @dev Get token name
      */
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 amount
-    ) internal override whenNotPaused {
-        super._beforeTokenTransfer(from, to, amount);
+    function name() external pure returns (string memory) {
+        return "Blue Carbon Credits";
     }
-
+    
     /**
-     * @dev Returns the number of decimals used for token amounts
-     * Blue carbon credits typically use 3 decimals (kilograms)
+     * @dev Get token symbol
      */
-    function decimals() public pure override returns (uint8) {
-        return 3; // 1 token = 1 kg CO2e, with 3 decimals for grams
+    function symbol() external pure returns (string memory) {
+        return "BCC";
+    }
+    
+    /**
+     * @dev Get token decimals (for display purposes)
+     */
+    function decimals() external pure returns (uint8) {
+        return 18;
+    }
+    
+    /**
+     * @dev Override required by Solidity
+     */
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC1155, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 }

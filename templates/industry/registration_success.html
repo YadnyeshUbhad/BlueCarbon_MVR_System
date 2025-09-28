@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful - NCCR</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+            text-align: center;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            padding: 40px 32px;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        
+        .success-icon i {
+            font-size: 36px;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            margin: 8px 0 0 0;
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .application-id {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .application-id h3 {
+            margin: 0 0 8px 0;
+            color: #0c4a6e;
+            font-size: 16px;
+        }
+        
+        .application-id .id {
+            font-size: 24px;
+            font-weight: 700;
+            color: #0ea5e9;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .next-steps {
+            text-align: left;
+            margin-bottom: 32px;
+        }
+        
+        .next-steps h3 {
+            color: #1f2937;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding: 16px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+        
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #059669;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+        
+        .step-content h4 {
+            margin: 0 0 4px 0;
+            color: #1f2937;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        
+        .step-content p {
+            margin: 0;
+            color: #6b7280;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .contact-info {
+            background: #fffbeb;
+            border: 1px solid #f59e0b;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .contact-info h3 {
+            margin: 0 0 12px 0;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .contact-info p {
+            margin: 0;
+            color: #92400e;
+            font-size: 14px;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn.primary {
+            background: #059669;
+            color: white;
+        }
+        
+        .btn.primary:hover {
+            background: #047857;
+        }
+        
+        .btn.outline {
+            background: transparent;
+            color: #059669;
+            border: 1px solid #059669;
+        }
+        
+        .btn.outline:hover {
+            background: #059669;
+            color: white;
+        }
+        
+        .timeline {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 32px;
+        }
+        
+        .timeline h3 {
+            margin: 0 0 16px 0;
+            color: #1f2937;
+            text-align: center;
+        }
+        
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .timeline-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #10b981;
+        }
+        
+        .timeline-dot.pending {
+            background: #e5e7eb;
+        }
+        
+        .timeline-content {
+            font-size: 14px;
+        }
+        
+        .timeline-content.completed {
+            color: #059669;
+            font-weight: 500;
+        }
+        
+        .timeline-content.pending {
+            color: #6b7280;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+                border-radius: 8px;
+            }
+            
+            .actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+            <h1>Registration Successful!</h1>
+            <p>Your industry application has been submitted for review</p>
+        </div>
+        
+        <div class="content">
+            <div class="application-id">
+                <h3>Your Application ID</h3>
+                <div class="id">{{ application_id }}</div>
+                <p style="margin: 8px 0 0 0; font-size: 12px; color: #6b7280;">
+                    Please save this ID for future reference
+                </p>
+            </div>
+            
+            <div class="next-steps">
+                <h3>
+                    <i class="fas fa-list-check"></i>
+                    What happens next?
+                </h3>
+                
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Application Review</h4>
+                        <p>Our NCCR team will review your application and supporting documents within 3-5 business days.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Verification Process</h4>
+                        <p>We may contact you for additional information or clarification on your application details.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Approval & Account Setup</h4>
+                        <p>Once approved, you'll receive login credentials and can access the carbon credits marketplace.</p>
+                    </div>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Start Trading</h4>
+                        <p>Browse available carbon credits and begin your journey towards carbon neutrality.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="contact-info">
+                <h3>
+                    <i class="fas fa-envelope"></i>
+                    Need Help?
+                </h3>
+                <p>
+                    If you have any questions about your application or the registration process, 
+                    please contact our support team at <strong>support@nccr.gov.in</strong> 
+                    or call <strong>+91-11-1234-5678</strong>.
+                </p>
+            </div>
+            
+            <div class="timeline">
+                <h3>Application Progress</h3>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content completed">
+                        Application Submitted - {{ application_id }}
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot pending"></div>
+                    <div class="timeline-content pending">
+                        Under Review (3-5 business days)
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot pending"></div>
+                    <div class="timeline-content pending">
+                        Verification & Approval
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot pending"></div>
+                    <div class="timeline-content pending">
+                        Account Activation
+                    </div>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <a href="/" class="btn outline">
+                    <i class="fas fa-home"></i>
+                    Return to Home
+                </a>
+                
+                <a href="{{ url_for('industry.marketplace') }}" class="btn primary">
+                    <i class="fas fa-store"></i>
+                    Browse Marketplace
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Auto-select application ID for easy copying
+        document.addEventListener('DOMContentLoaded', function() {
+            const applicationId = document.querySelector('.application-id .id');
+            
+            applicationId.addEventListener('click', function() {
+                // Select the text
+                const range = document.createRange();
+                range.selectNode(applicationId);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                
+                // Copy to clipboard if supported
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(applicationId.textContent).then(function() {
+                        // Show feedback
+                        const originalText = applicationId.textContent;
+                        applicationId.textContent = 'Copied!';
+                        applicationId.style.color = '#059669';
+                        
+                        setTimeout(() => {
+                            applicationId.textContent = originalText;
+                            applicationId.style.color = '#0ea5e9';
+                        }, 2000);
+                    });
+                }
+            });
+            
+            // Add click cursor
+            applicationId.style.cursor = 'pointer';
+            applicationId.title = 'Click to copy Application ID';
+        });
+        
+        // Animate timeline dots
+        setTimeout(() => {
+            const firstDot = document.querySelector('.timeline-dot');
+            firstDot.style.animation = 'pulse 2s infinite';
+        }, 1000);
+        
+        // Add pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); opacity: 1; }
+                50% { transform: scale(1.2); opacity: 0.7; }
+                100% { transform: scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

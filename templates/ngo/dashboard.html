@@ -1,108 +1,322 @@
-{% extends 'base.html' %}
+{% extends 'ngo/ngo_base.html' %}
 {% set active='dashboard' %}
-{% set title='NGO Dashboard - BlueCarbon' %}
+{% set title='NGO Dashboard - BlueCarbon MRV' %}
 {% set header='Dashboard Overview' %}
+
 {% block content %}
-<div class="cards">
-    <div class="card">
-        <div class="stat-label">
-            <i class="fas fa-seedling"></i>
-            Total Projects
-        </div>
-        <div class="stat-value">{{ stats.total_projects }}</div>
-        <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            +{{ stats.projects_change }}% from last month
-        </div>
-    </div>
-    <div class="card">
-        <div class="stat-label">
-            <i class="fas fa-check-circle"></i>
-            Approved by NCCR
-        </div>
-        <div class="stat-value">{{ stats.approved_projects }}</div>
-        <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            +{{ stats.approved_change }}% approval rate
-        </div>
-    </div>
-    <div class="card">
-        <div class="stat-label">
-            <i class="fas fa-coins"></i>
-            Total Credits Earned (tCO₂e)
-        </div>
-        <div class="stat-value highlight-text" style="color: var(--highlight);">{{ stats.credits_earned }}</div>
-        <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            +{{ stats.credits_change }}% this quarter
-        </div>
-    </div>
-    <div class="card">
-        <div class="stat-label">
-            <i class="fas fa-clock"></i>
-            Pending Verifications
-        </div>
-        <div class="stat-value" style="color: var(--warning);">{{ stats.pending_verifications }}</div>
-        <div class="stat-change">
-            <i class="fas fa-info-circle"></i>
-            Avg. verification time: {{ stats.avg_verification_time }} days
-        </div>
-    </div>
-    <div class="card">
-        <div class="stat-label">
-            <i class="fas fa-times-circle"></i>
-            Applications Reversed
-        </div>
-        <div class="stat-value" style="color: var(--danger);">{{ stats.reversed_applications }}</div>
-        <div class="stat-change negative">
-            <i class="fas fa-arrow-down"></i>
-            -{{ stats.reversed_change }}% from last month
-        </div>
-    </div>
-    <div class="card">
-        <div class="stat-label">
-            <i class="fas fa-rupee-sign"></i>
-            Revenue Generated
-        </div>
-        <div class="stat-value highlight-text" style="color: var(--highlight);">₹{{ "{:,}".format(stats.revenue_generated) }}</div>
-        <div class="stat-change positive">
-            <i class="fas fa-arrow-up"></i>
-            +{{ stats.revenue_change }}% this quarter
-        </div>
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+    
+    .stat-card {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 24px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient);
+    }
+    
+    .stat-card.primary::before { background: linear-gradient(90deg, var(--primary), var(--accent)); }
+    .stat-card.success::before { background: linear-gradient(90deg, var(--secondary), #52B788); }
+    .stat-card.warning::before { background: linear-gradient(90deg, var(--warning), #FFD60A); }
+    .stat-card.highlight::before { background: linear-gradient(90deg, var(--highlight), #FFA500); }
+    
+    .stat-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+    
+    .stat-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: white;
+    }
+    
+    .stat-icon.primary { background: var(--primary); }
+    .stat-icon.success { background: var(--secondary); }
+    .stat-icon.warning { background: var(--warning); }
+    .stat-icon.highlight { background: var(--highlight); color: var(--text); }
+    
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        color: var(--text);
+    }
+    
+    .stat-label {
+        color: var(--text-light);
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 8px;
+    }
+    
+    .stat-change {
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 6px;
+    }
+    
+    .stat-change.positive {
+        background: #D1FAE5;
+        color: #065F46;
+    }
+    
+    .stat-change.negative {
+        background: #FEE2E2;
+        color: #991B1B;
+    }
+</style>
+<!-- Welcome Header -->
+<div class="card" style="margin-bottom: 32px; background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%); color: white; border: none;">
+    <div style="text-align: center;">
+        <h2 style="margin: 0 0 8px 0; color: white; font-size: 28px;">
+            <i class="fas fa-waves"></i> Welcome to BlueCarbon MRV
+        </h2>
+        <p style="margin: 0; opacity: 0.9; font-size: 16px;">
+            Monitor your marine restoration projects and carbon credit earnings
+        </p>
     </div>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-top: 24px;">
+<!-- Statistics Cards -->
+<div class="stats-grid">
+    <!-- Total Projects -->
+    <div class="stat-card primary">
+        <div class="stat-header">
+            <div class="stat-icon primary">
+                <i class="fas fa-seedling"></i>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> +{{ stats.projects_change }}%
+            </div>
+        </div>
+        <div class="stat-value">{{ stats.total_projects }}</div>
+        <div class="stat-label">Total Projects Registered</div>
+    </div>
+
+    <!-- Approved Projects -->
+    <div class="stat-card success">
+        <div class="stat-header">
+            <div class="stat-icon success">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> +{{ stats.approved_change }}%
+            </div>
+        </div>
+        <div class="stat-value">{{ stats.approved_projects }}</div>
+        <div class="stat-label">Projects Approved by NCCR</div>
+    </div>
+
+    <!-- Credits Earned -->
+    <div class="stat-card highlight">
+        <div class="stat-header">
+            <div class="stat-icon highlight">
+                <i class="fas fa-coins"></i>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> +{{ stats.credits_change }}%
+            </div>
+        </div>
+        <div class="stat-value">{{ stats.credits_earned }}</div>
+        <div class="stat-label">Total Credits Earned (tCO₂e)</div>
+    </div>
+
+    <!-- Pending Verifications -->
+    <div class="stat-card warning">
+        <div class="stat-header">
+            <div class="stat-icon warning">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div style="font-size: 12px; color: var(--text-light);">
+                Avg: {{ stats.avg_verification_time }} days
+            </div>
+        </div>
+        <div class="stat-value">{{ stats.pending_verifications }}</div>
+        <div class="stat-label">Pending Verifications</div>
+    </div>
+
+    <!-- Applications Reversed -->
+    <div class="stat-card" style="border-left: 4px solid var(--danger);">
+        <div class="stat-header">
+            <div class="stat-icon" style="background: var(--danger);">
+                <i class="fas fa-times-circle"></i>
+            </div>
+            <div class="stat-change negative">
+                <i class="fas fa-arrow-down"></i> {{ stats.reversed_change }}%
+            </div>
+        </div>
+        <div class="stat-value">{{ stats.reversed_applications }}</div>
+        <div class="stat-label">Applications Reversed by NCCR</div>
+    </div>
+
+    <!-- Revenue Generated -->
+    <div class="stat-card highlight">
+        <div class="stat-header">
+            <div class="stat-icon highlight">
+                <i class="fas fa-rupee-sign"></i>
+            </div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i> +{{ stats.revenue_change }}%
+            </div>
+        </div>
+        <div class="stat-value">₹{{ "{:,}".format(stats.revenue_generated) }}</div>
+        <div class="stat-label">Revenue Generated</div>
+    </div>
+</div>
+
+<!-- Recent Activities -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 32px;">
+    <!-- Recent Activities Card -->
     <div class="card">
-        <h3 style="margin-top: 0;">Recent Activity</h3>
-        <div style="space-y: 12px;">
+        <h3 style="margin: 0 0 24px 0; color: var(--text); display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-history" style="color: var(--primary);"></i>
+            Recent Activities
+        </h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px;">
             {% for activity in recent_activities %}
-            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border);">
-                <div style="width: 8px; height: 8px; border-radius: 50%; background: var(--{{ activity.type }});"></div>
-                <div style="flex: 1;">
-                    <div style="font-weight: 500;">{{ activity.title }}</div>
-                    <div style="font-size: 12px; color: #6B7280;">{{ activity.time }}</div>
+            <div style="display: flex; align-items: start; gap: 16px; padding: 16px; background: var(--bg); border-radius: 12px;">
+                <div style="width: 40px; height: 40px; border-radius: 50%; 
+                           background: {% if activity.type == 'success' %}var(--success){% elif activity.type == 'primary' %}var(--primary){% else %}var(--warning){% endif %}; 
+                           display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <i class="fas fa-{% if activity.type == 'success' %}check{% elif activity.type == 'primary' %}info{% else %}clock{% endif %}" 
+                       style="color: white; font-size: 14px;"></i>
+                </div>
+                <div>
+                    <div style="font-weight: 500; color: var(--text); margin-bottom: 4px;">
+                        {{ activity.title }}
+                    </div>
+                    <div style="font-size: 14px; color: var(--text-light);">
+                        {{ activity.time }}
+                    </div>
                 </div>
             </div>
             {% endfor %}
         </div>
     </div>
-    
+
+    <!-- Quick Actions Card -->
     <div class="card">
-        <h3 style="margin-top: 0;">Quick Actions</h3>
-        <div style="display: flex; flex-direction: column; gap: 12px;">
-            <a href="/ngo/projects/new" class="btn">
-                <i class="fas fa-plus"></i>
-                Register New Project
+        <h3 style="margin: 0 0 24px 0; color: var(--text); display: flex; align-items: center; gap: 12px;">
+            <i class="fas fa-bolt" style="color: var(--accent);"></i>
+            Quick Actions
+        </h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <a href="/ngo/projects/new" 
+               style="display: flex; align-items: center; gap: 16px; padding: 16px; 
+                      background: linear-gradient(135deg, var(--primary), var(--accent)); 
+                      color: white; text-decoration: none; border-radius: 12px; 
+                      transition: all 0.3s ease;"
+               onmouseover="this.style.transform='translateY(-2px)'"
+               onmouseout="this.style.transform='translateY(0)'">
+                <i class="fas fa-plus-circle" style="font-size: 24px;"></i>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Register New Project</div>
+                    <div style="font-size: 14px; opacity: 0.9;">Submit a new restoration project</div>
+                </div>
             </a>
-            <a href="/ngo/projects" class="btn secondary">
-                <i class="fas fa-seedling"></i>
-                View All Projects
+            
+            <a href="/ngo/projects" 
+               style="display: flex; align-items: center; gap: 16px; padding: 16px; 
+                      background: var(--light-green); color: var(--secondary); 
+                      text-decoration: none; border-radius: 12px; transition: all 0.3s ease;"
+               onmouseover="this.style.background='#D4EDDA'"
+               onmouseout="this.style.background='var(--light-green)'">
+                <i class="fas fa-seedling" style="font-size: 24px;"></i>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">View Projects</div>
+                    <div style="font-size: 14px; opacity: 0.8;">Monitor your project status</div>
+                </div>
             </a>
-            <a href="/ngo/credits" class="btn outline">
-                <i class="fas fa-coins"></i>
-                Manage Credits
+            
+            <a href="/ngo/credits" 
+               style="display: flex; align-items: center; gap: 16px; padding: 16px; 
+                      background: #FFF3CD; color: #856404; text-decoration: none; 
+                      border-radius: 12px; transition: all 0.3s ease;"
+               onmouseover="this.style.background='#FFF2C7'"
+               onmouseout="this.style.background='#FFF3CD'">
+                <i class="fas fa-coins" style="font-size: 24px;"></i>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">Check Credits</div>
+                    <div style="font-size: 14px; opacity: 0.8;">View earned carbon credits</div>
+                </div>
             </a>
+            
+            <a href="/ngo/revenue" 
+               style="display: flex; align-items: center; gap: 16px; padding: 16px; 
+                      background: #FFF3CD; color: #856404; text-decoration: none; 
+                      border-radius: 12px; transition: all 0.3s ease;"
+               onmouseover="this.style.background='#FFF2C7'"
+               onmouseout="this.style.background='#FFF3CD'">
+                <i class="fas fa-chart-line" style="font-size: 24px;"></i>
+                <div>
+                    <div style="font-weight: 600; margin-bottom: 4px;">View Revenue</div>
+                    <div style="font-size: 14px; opacity: 0.8;">Track credit sales revenue</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Environmental Impact Badges -->
+<div class="card" style="margin-top: 32px; background: linear-gradient(135deg, #E8F5E8 0%, #D4F1D4 100%);">
+    <h3 style="margin: 0 0 20px 0; color: var(--secondary); text-align: center;">
+        <i class="fas fa-leaf"></i> Your Environmental Impact
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 32px; font-weight: 700; color: var(--secondary); margin-bottom: 8px;">
+                {{ (stats.credits_earned * 3.67)|round|int }}
+            </div>
+            <div style="color: var(--text-light); font-size: 14px;">Tons CO₂ Absorbed</div>
+        </div>
+        
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 32px; font-weight: 700; color: var(--secondary); margin-bottom: 8px;">
+                {{ ((stats.credits_earned * 3.67 / 4.6) * 365)|round|int }}
+            </div>
+            <div style="color: var(--text-light); font-size: 14px;">Car Emission Days Offset</div>
+        </div>
+        
+        <div style="text-align: center; padding: 20px;">
+            <div style="font-size: 32px; font-weight: 700; color: var(--secondary); margin-bottom: 8px;">
+                {{ (stats.credits_earned / 0.022)|round|int }}
+            </div>
+            <div style="color: var(--text-light); font-size: 14px;">Equivalent Tree Years</div>
         </div>
     </div>
 </div>

@@ -263,22 +263,34 @@
                 <p class="form-subtitle">Sign in to your industry account</p>
             </div>
 
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}" style="background: {% if category == 'error' %}#fef2f2; color: #dc2626; border: 1px solid #fecaca;{% elif category == 'success' %}#f0f9ff; color: #0369a1; border: 1px solid #bae6fd;{% elif category == 'warning' %}#fffbeb; color: #d97706; border: 1px solid #fed7aa;{% else %}#f8fafc; color: #475569; border: 1px solid #e2e8f0;{% endif %} padding: 0.75rem; margin-bottom: 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas {% if category == 'error' %}fa-exclamation-triangle{% elif category == 'success' %}fa-check-circle{% elif category == 'warning' %}fa-exclamation-circle{% else %}fa-info-circle{% endif %}"></i>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
             <div class="demo-note">
                 <i class="fas fa-info-circle"></i>
-                <strong>Demo Access:</strong> Click "Sign In" below to access the demo dashboard with sample data.
+                <strong>Test Account:</strong> Use industry@example.com / Industry@123 to login.
             </div>
 
-            <form id="loginForm">
+            <form id="loginForm" method="POST" action="{{ url_for('industry.industry_login') }}">
                 <div class="form-group">
                     <label for="email" class="form-label">Company Email</label>
                     <input type="email" id="email" name="email" class="form-control" 
-                           placeholder="company@example.com" value="demo@ecotech.com">
+                           placeholder="company@example.com" value="industry@example.com" required>
                 </div>
 
                 <div class="form-group">
                     <label for="password" class="form-label">Password</label>
                     <input type="password" id="password" name="password" class="form-control" 
-                           placeholder="Enter your password" value="demo123">
+                           placeholder="Enter your password" value="Industry@123" required>
                 </div>
 
                 <button type="submit" class="btn btn-primary">
@@ -304,19 +316,14 @@
 
     <script>
         document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Show loading state
+            // Show loading state while form submits
             const submitBtn = document.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
             submitBtn.disabled = true;
             
-            // Simulate login process
-            setTimeout(() => {
-                // Redirect to industry dashboard
-                window.location.href = '/industry/dashboard';
-            }, 1500);
+            // Let the form submit normally to the server
+            // Don't prevent default - allow POST to /industry/login
         });
 
         function showRegisterInfo() {

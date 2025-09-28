@@ -1,16 +1,37 @@
-{% extends 'base.html' %}
+{% extends 'ngo/ngo_base.html' %}
 {% set active='projects' %}
 {% set title='Projects - BlueCarbon' %}
 {% block content %}
+<style>
+.filter-bar { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+.badge-status { padding: 6px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+.badge-verified { background: #D1FAE5; color: #065F46; }
+.badge-pending { background: #FEF3C7; color: #92400E; }
+.badge-rejected { background: #FEE2E2; color: #991B1B; }
+.table { width: 100%; border-collapse: collapse; background: var(--white); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.table th, .table td { padding: 12px 14px; border-bottom: 1px solid var(--border); text-align: left; }
+.table th { background: var(--hover); font-weight: 600; }
+.table tr:hover { background: #FAFAFA; }
+</style>
 <div style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;">
-    <h3>Recent Projects</h3>
+    <h3>Projects</h3>
     <a class="btn" href="/ngo/projects/new">Register New Project</a>
-    </div>
-<table>
+</div>
+
+<!-- Quick Filters -->
+<div class="filter-bar">
+    <a href="/ngo/projects?status=all" class="btn {{ 'outline' if status_filter != 'all' else '' }}">All</a>
+    <a href="/ngo/projects?status=verified" class="btn {{ 'outline' if status_filter != 'verified' else '' }}">Verified</a>
+    <a href="/ngo/projects?status=pending" class="btn {{ 'outline' if status_filter != 'pending' else '' }}">Pending</a>
+    <a href="/ngo/projects?status=rejected" class="btn {{ 'outline' if status_filter != 'rejected' else '' }}">Rejected</a>
+</div>
+
+<table class="table">
     <thead>
         <tr>
             <th>Project</th>
             <th>Location</th>
+            <th>Ecosystem</th>
             <th>Area (ha)</th>
             <th>Status</th>
             <th>Credits</th>
@@ -19,21 +40,44 @@
     </thead>
     <tbody>
         {% if projects|length == 0 %}
-        <tr><td colspan="6">No projects yet.</td></tr>
+        <tr><td colspan="7">No projects yet.</td></tr>
         {% else %}
         {% for p in projects %}
         <tr>
-            <td>{{ p.name }}</td>
-            <td>📍 {{ p.location }}</td>
+            <td>
+                <div style="font-weight:600;">{{ p.name }}</div>
+                <div style="font-size:12px;color:#6b7280;">ID: {{ p.id }}</div>
+            </td>
+            <td>📍 {{ p.district }}, {{ p.state }}</td>
+            <td>{{ p.ecosystem }}</td>
             <td>{{ p.area }}</td>
-            <td><span class="badge">{{ p.status }}</span></td>
-            <td>{{ p.credits }}</td>
-            <td><a class="btn secondary" href="/ngo/projects/{{ p.id }}">View Details</a></td>
+            <td>
+                <span class="badge-status {{ 'badge-verified' if p.status=='Verified' else 'badge-rejected' if p.status=='Rejected' else 'badge-pending' }}">
+                    {{ p.status }}
+                </span>
+            </td>
+            <td>
+                {% if p.status=='Verified' %}
+                    {{ p.credits_approved }} tCO₂e
+                {% elif p.status in ['Pending Review', 'Under Verification', 'Documents Missing'] %}
+                    Requested: {{ p.credits_requested }}
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>
+                <a class="btn secondary" href="/ngo/projects/{{ p.id }}">View</a>
+                {% if p.status in ['Rejected', 'Documents Missing'] %}
+                <form method="post" action="/ngo/projects/{{ p.id }}/resubmit" style="display:inline-block;">
+                    <input type="hidden" name="resubmission_notes" value="Updated details provided">
+                    <button class="btn" type="submit">Resubmit</button>
+                </form>
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         {% endif %}
     </tbody>
-    </table>
+</table>
 {% endblock %}
-
 

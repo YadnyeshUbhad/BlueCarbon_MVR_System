@@ -1,0 +1,258 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-bottom: 32px;">
+    
+    <!-- Summary Metrics -->
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-project-diagram"></i>
+            Total Projects
+        </div>
+        <div class="stat-value">{{ total_projects }}</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            {{ verification_rate }}% Verified
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-check-circle"></i>
+            Verified Projects
+        </div>
+        <div class="stat-value" style="color: var(--success);">{{ verified_projects }}</div>
+        <div class="stat-change">
+            <i class="fas fa-clock"></i>
+            {{ pending_projects }} Pending
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-leaf"></i>
+            Area Restored
+        </div>
+        <div class="stat-value" style="color: var(--secondary);">{{ total_area_restored }}</div>
+        <div style="font-size: 12px; color: #6B7280;">hectares</div>
+    </div>
+    
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-coins"></i>
+            Credits Issued
+        </div>
+        <div class="stat-value" style="color: var(--accent);">{{ total_credits_issued }}</div>
+        <div style="font-size: 12px; color: #6B7280;">{{ estimated_co2_sequestered }} tCO₂e sequestered</div>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 32px;">
+    <!-- Ecosystem Distribution -->
+    <div class="card">
+        <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-tree" style="color: var(--secondary);"></i>
+            Ecosystem Distribution
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for ecosystem, count in ecosystem_distribution.items() %}
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 500;">{{ ecosystem }}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: var(--primary); height: 8px; width: {{ (count / total_projects * 100) }}px; border-radius: 4px;"></div>
+                    <span class="badge primary">{{ count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- State Distribution -->
+    <div class="card">
+        <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-map-marker-alt" style="color: var(--accent);"></i>
+            Geographic Distribution
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            {% for state, count in state_distribution.items() %}
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-weight: 500;">{{ state }}</span>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="background: var(--accent); height: 8px; width: {{ (count / total_projects * 100) }}px; border-radius: 4px;"></div>
+                    <span class="badge">{{ count }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- NGO Performance Analysis -->
+<div class="card" style="margin-bottom: 24px;">
+    <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-users" style="color: var(--secondary);"></i>
+        NGO Performance Analysis
+    </h3>
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>NGO Name</th>
+                    <th>Projects</th>
+                    <th>Success Rate</th>
+                    <th>Credits Earned</th>
+                    <th>Revenue (₹)</th>
+                    <th>Performance</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ngo in ngo_performance %}
+                <tr>
+                    <td style="font-weight: 500;">{{ ngo.name }}</td>
+                    <td>{{ ngo.projects_submitted }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="background: {% if ngo.success_rate >= 80 %}var(--success){% elif ngo.success_rate >= 60 %}var(--warning){% else %}var(--danger){% endif %}; height: 4px; width: {{ ngo.success_rate }}px; max-width: 100px; border-radius: 2px;"></div>
+                            <span>{{ ngo.success_rate }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge primary">{{ ngo.credits_earned }}</span>
+                    </td>
+                    <td>₹{{ "{:,}".format(ngo.revenue) }}</td>
+                    <td>
+                        <span class="badge {% if ngo.success_rate >= 80 %}success{% elif ngo.success_rate >= 60 %}warning{% else %}danger{% endif %}">
+                            {% if ngo.success_rate >= 80 %}Excellent{% elif ngo.success_rate >= 60 %}Good{% else %}Needs Improvement{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 32px;">
+    <!-- Compliance Metrics -->
+    <div class="card">
+        <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-shield-alt" style="color: var(--success);"></i>
+            Compliance & Quality Metrics
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div>
+                <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">VCS Compliant</div>
+                <div style="font-size: 24px; font-weight: 600; color: var(--success);">{{ compliance_metrics.vcs_compliant }}</div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Gold Standard</div>
+                <div style="font-size: 24px; font-weight: 600; color: var(--warning);">{{ compliance_metrics.gold_standard }}</div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Complete Documentation</div>
+                <div style="font-size: 24px; font-weight: 600; color: var(--primary);">{{ compliance_metrics.documentation_complete }}</div>
+            </div>
+            <div>
+                <div style="font-size: 12px; color: #6B7280; margin-bottom: 4px;">Avg Verification Time</div>
+                <div style="font-size: 24px; font-weight: 600; color: var(--info);">{{ compliance_metrics.average_verification_time }}d</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Risk & Fraud Detection -->
+    <div class="card">
+        <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+            <i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i>
+            Risk Assessment
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 14px;">High Risk Projects</span>
+                <span class="badge {% if risk_metrics.high_risk_projects > 0 %}warning{% else %}success{% endif %}">{{ risk_metrics.high_risk_projects }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 14px;">Flagged NGOs</span>
+                <span class="badge {% if risk_metrics.flagged_ngos > 0 %}danger{% else %}success{% endif %}">{{ risk_metrics.flagged_ngos }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 14px;">Document Anomalies</span>
+                <span class="badge {% if risk_metrics.document_anomalies > 0 %}warning{% else %}success{% endif %}">{{ risk_metrics.document_anomalies }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+                <span style="font-size: 14px;">Location Duplicates</span>
+                <span class="badge {% if risk_metrics.location_duplicates > 0 %}warning{% else %}success{% endif %}">{{ risk_metrics.location_duplicates }}</span>
+            </div>
+            <div style="border-top: 1px solid var(--border); padding-top: 12px; margin-top: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-weight: 600;">Trust Score Average</span>
+                    <span style="font-size: 20px; font-weight: 700; color: var(--success);">{{ risk_metrics.trust_score_avg }}%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Blockchain Integration Status -->
+<div class="card" style="margin-bottom: 24px;">
+    <h3 style="margin: 0 0 20px 0; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-link" style="color: var(--primary);"></i>
+        Blockchain Integration Status
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+        <div>
+            <div style="font-size: 14px; color: #6B7280; margin-bottom: 8px;">Total Transactions</div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--primary);">{{ blockchain_stats.total_transactions }}</div>
+            <div style="font-size: 12px; color: #6B7280;">All blockchain operations</div>
+        </div>
+        <div>
+            <div style="font-size: 14px; color: #6B7280; margin-bottom: 8px;">Tokens Minted</div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--accent);">{{ blockchain_stats.total_tokens }}</div>
+            <div style="font-size: 12px; color: #6B7280;">Carbon credit tokens</div>
+        </div>
+        <div>
+            <div style="font-size: 14px; color: #6B7280; margin-bottom: 8px;">Total Supply</div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--secondary);">{{ "%.2f"|format(blockchain_stats.total_supply) }}</div>
+            <div style="font-size: 12px; color: #6B7280;">tCO₂e total</div>
+        </div>
+        <div>
+            <div style="font-size: 14px; color: #6B7280; margin-bottom: 8px;">Available Supply</div>
+            <div style="font-size: 28px; font-weight: 700; color: var(--success);">{{ "%.2f"|format(blockchain_stats.available_supply) }}</div>
+            <div style="font-size: 12px; color: #6B7280;">tCO₂e available</div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Buttons -->
+<div style="display: flex; gap: 16px; justify-content: flex-end; margin-top: 32px;">
+    <a href="{{ url_for('admin.export_data', data_type='projects') }}" class="btn outline">
+        <i class="fas fa-download"></i>
+        Export Projects
+    </a>
+    <a href="{{ url_for('admin.export_data', data_type='ngos') }}" class="btn outline">
+        <i class="fas fa-download"></i>
+        Export NGOs
+    </a>
+    <a href="/admin/satellite-monitoring" class="btn secondary">
+        <i class="fas fa-satellite"></i>
+        Satellite Monitoring
+    </a>
+    <a href="/admin/blockchain-stats" class="btn">
+        <i class="fas fa-link"></i>
+        Blockchain Dashboard
+    </a>
+</div>
+
+<script>
+// Auto-refresh data every 5 minutes
+setTimeout(() => {
+    window.location.reload();
+}, 300000);
+
+// Add click tracking for analytics
+document.querySelectorAll('.btn, .card').forEach(element => {
+    element.addEventListener('click', function(e) {
+        console.log('NCCR Tools interaction:', this.textContent?.trim() || this.className);
+    });
+});
+</script>
+{% endblock %}

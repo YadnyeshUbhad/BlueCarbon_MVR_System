@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title or 'BlueCarbon MRV System' }}</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Advanced blockchain-based Blue Carbon monitoring, reporting, and verification system">
+    <meta name="theme-color" content="#0077B6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="BlueCarbon MRV">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -363,11 +371,30 @@
                     <i class="fas fa-chart-line"></i>
                     Total Revenue
                 </a>
+                <a href="/ngo/satellite-monitoring" class="{% if active=='satellite' %}active{% endif %}">
+                    <i class="fas fa-satellite"></i>
+                    Satellite Monitoring
+                </a>
+                <a href="/ngo/drone-monitoring" class="{% if active=='drone' %}active{% endif %}">
+                    <i class="fas fa-helicopter"></i>
+                    Drone Analysis
+                </a>
             </nav>
         </aside>
         <header class="header">
             <h1>{{ header or 'NGO / Panchayat Portal' }}</h1>
-            <div>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                {% if session.get('user_id') %}
+                    <div style="display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 14px;">
+                        <i class="fas fa-user-circle" style="font-size: 18px;"></i>
+                        <span>{{ session.get('user_name', 'User') }}</span>
+                        <span style="opacity: 0.7;">({{ session.get('user_role', '').title() }})</span>
+                    </div>
+                    <a href="{% if 'admin' in request.endpoint %}{{ url_for('admin.logout') }}{% elif 'ngo' in request.endpoint %}{{ url_for('ngo.logout') }}{% elif 'industry' in request.endpoint %}{{ url_for('industry.logout') }}{% else %}{{ url_for('logout') }}{% endif %}" 
+                       style="background: var(--danger); color: var(--white); padding: 8px 12px; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 500;">
+                        <i class="fas fa-sign-out-alt"></i> Logout
+                    </a>
+                {% endif %}
                 <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle Dark Mode">
                     <i class="fas fa-moon" id="theme-icon"></i>
                 </button>
@@ -416,6 +443,97 @@
                 setTimeout(() => {
                     e.target.style.transform = '';
                 }, 150);
+            }
+        });
+        
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/static/sw.js')
+                    .then(function(registration) {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                        
+                        // Initialize PWA features after service worker is ready
+                        initializePWAFeatures();
+                    })
+                    .catch(function(err) {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+        
+        // PWA Features Initialization (optional and non-breaking)
+        function initializePWAFeatures() {
+            try {
+                // Install prompt handling
+                let deferredPrompt;
+                
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    deferredPrompt = e;
+                    console.log('PWA install available');
+                    // You can show an install button here if desired
+                });
+                
+                // Push notifications (only if explicitly enabled)
+                const enableNotifications = localStorage.getItem('enable-push-notifications') === 'true';
+                if (enableNotifications) {
+                    initializePushNotifications();
+                }
+                
+            } catch (err) {
+                console.warn('PWA features initialization failed:', err);
+            }
+        }
+        
+        // Push Notifications (optional, non-breaking)
+        async function initializePushNotifications() {
+            try {
+                if (!('Notification' in window) || !('serviceWorker' in navigator) || !('PushManager' in window)) {
+                    return; // Silently fail if not supported
+                }
+                
+                const permission = Notification.permission;
+                if (permission === 'granted') {
+                    console.log('Push notifications: already granted');
+                } else if (permission === 'default') {
+                    console.log('Push notifications: permission not requested yet');
+                } else {
+                    console.log('Push notifications: permission denied');
+                }
+            } catch (err) {
+                // Silently handle errors to avoid breaking the app
+                console.warn('Push notification check failed:', err);
+            }
+        }
+        
+        // Utility function to request notification permission (call this on user interaction)
+        async function requestNotificationPermission() {
+            try {
+                if (!('Notification' in window)) {
+                    return false;
+                }
+                
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    localStorage.setItem('enable-push-notifications', 'true');
+                    return true;
+                }
+                return false;
+            } catch (err) {
+                console.error('Failed to request notification permission:', err);
+                return false;
+            }
+        }
+    </script>
+    
+    <!-- Blockchain Integration Script -->
+    <script src="{{ url_for('static', filename='js/blockchain-integration.js') }}"></script>
+    <script>
+        // Initialize blockchain features if available
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof BlockchainUI !== 'undefined') {
+                console.log('🔗 Blockchain integration loaded successfully');
             }
         });
     </script>

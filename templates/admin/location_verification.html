@@ -1,0 +1,643 @@
+{% extends 'admin_base.html' %}
+{% set active='location_verification' %}
+{% set title='Location Verification - Admin Portal' %}
+{% set header='Geo-tagging & Location Verification' %}
+
+{% block content %}
+<div style="display: grid; gap: 24px;">
+    <!-- Header Section -->
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;">
+        <div>
+            <h2 style="margin: 0; color: #1f2937; display: flex; align-items: center; gap: 12px;">
+                <i class="fas fa-map-marker-alt" style="color: #059669;"></i>
+                Location Verification Center
+            </h2>
+            <p style="color: #6b7280; margin: 4px 0 0 0;">AI-powered geo-location authenticity with satellite data cross-referencing</p>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <div class="badge success" style="padding: 8px 16px;">
+                <i class="fas fa-satellite"></i> Satellite API Connected
+            </div>
+            <button onclick="bulkVerifyLocations()" class="btn">
+                <i class="fas fa-search-location"></i> Bulk Verify
+            </button>
+        </div>
+    </div>
+
+    <!-- Verification Statistics -->
+    <div class="cards">
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-map-pin"></i>
+                Locations Verified
+            </div>
+            <div class="stat-value" style="color: var(--primary);">3,247</div>
+            <div class="stat-change positive">
+                <i class="fas fa-arrow-up"></i>
+                +245 this week
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-check-circle"></i>
+                Verified Authentic
+            </div>
+            <div class="stat-value" style="color: var(--success);">2,891</div>
+            <div class="stat-change positive">
+                <i class="fas fa-percentage"></i>
+                89.0% success rate
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-exclamation-triangle"></i>
+                Suspicious Locations
+            </div>
+            <div class="stat-value" style="color: var(--warning);">267</div>
+            <div class="stat-change">
+                <i class="fas fa-eye"></i>
+                Requires review
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="stat-label">
+                <i class="fas fa-ban"></i>
+                Fraudulent Detected
+            </div>
+            <div class="stat-value" style="color: var(--danger);">89</div>
+            <div class="stat-change negative">
+                <i class="fas fa-shield-alt"></i>
+                Blocked automatically
+            </div>
+        </div>
+    </div>
+
+    <!-- Real-time Verification Queue -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-clock" style="color: var(--info);"></i>
+                    Real-time Verification Queue
+                </h3>
+                <div style="display: flex; gap: 8px;">
+                    <select onchange="filterVerificationQueue(this.value)" style="padding: 8px; border: 1px solid var(--border); border-radius: 6px;">
+                        <option value="all">All Statuses</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="completed">Completed</option>
+                    </select>
+                    <button onclick="refreshQueue()" class="btn outline">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div id="verificationQueue" style="display: grid; gap: 16px;">
+                <!-- Processing Item -->
+                <div class="verification-item" data-status="processing" style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px; border-left: 4px solid var(--info);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                <span class="badge info" style="font-size: 11px;">PROCESSING</span>
+                                <span style="font-weight: 600; color: #1e40af;">Mangrove Restoration - Sundarbans</span>
+                                <span style="color: #1e40af; font-size: 13px;">Project #MRV-2024-0892</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; font-size: 13px;">
+                                <div>
+                                    <strong>Coordinates:</strong> 21.9497°N, 88.2314°E
+                                </div>
+                                <div>
+                                    <strong>Submitted:</strong> 2 minutes ago
+                                </div>
+                                <div>
+                                    <strong>AI Engine:</strong> Analyzing satellite data
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                    <span style="font-size: 12px; color: #6b7280;">Verification Progress</span>
+                                    <span style="font-size: 12px; color: #1e40af; font-weight: 600;">78%</span>
+                                </div>
+                                <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                                    <div style="width: 78%; background: var(--info); border-radius: 4px; height: 100%; transition: width 0.3s ease;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-left: 16px;">
+                            <button onclick="viewLocationDetails('MRV-2024-0892')" class="btn outline" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-eye"></i> View
+                            </button>
+                            <button onclick="prioritizeVerification('MRV-2024-0892')" class="btn secondary" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-arrow-up"></i> Priority
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Completed Item -->
+                <div class="verification-item" data-status="completed" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px; border-left: 4px solid var(--success);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                <span class="badge success" style="font-size: 11px;">VERIFIED</span>
+                                <span style="font-weight: 600; color: #166534;">Coastal Forest Protection Initiative</span>
+                                <span style="color: #16a34a; font-size: 13px;">Project #MRV-2024-0891</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; font-size: 13px;">
+                                <div>
+                                    <strong>Coordinates:</strong> 15.2993°N, 74.1240°E
+                                </div>
+                                <div>
+                                    <strong>Verified:</strong> 5 minutes ago
+                                </div>
+                                <div>
+                                    <strong>Confidence Score:</strong> <span style="color: var(--success); font-weight: 600;">94.8%</span>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 16px; font-size: 12px; color: #166534;">
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-satellite"></i>
+                                    <span>3 satellite images analyzed</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>All verification checks passed</span>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 4px;">
+                                    <i class="fas fa-leaf"></i>
+                                    <span>Land use: Tropical forest</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-left: 16px;">
+                            <button onclick="viewLocationDetails('MRV-2024-0891')" class="btn" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-map"></i> View Report
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suspicious Item -->
+                <div class="verification-item" data-status="completed" style="background: #fffbeb; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px; border-left: 4px solid var(--warning);">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div style="flex: 1;">
+                            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                <span class="badge warning" style="font-size: 11px;">SUSPICIOUS</span>
+                                <span style="font-weight: 600; color: #92400e;">Urban Reforestation Project</span>
+                                <span style="color: #d97706; font-size: 13px;">Project #MRV-2024-0890</span>
+                            </div>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; font-size: 13px;">
+                                <div>
+                                    <strong>Coordinates:</strong> 28.7041°N, 77.1025°E
+                                </div>
+                                <div>
+                                    <strong>Flagged:</strong> 15 minutes ago
+                                </div>
+                                <div>
+                                    <strong>Confidence Score:</strong> <span style="color: var(--warning); font-weight: 600;">42.1%</span>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 8px;">
+                                <strong style="color: #92400e; font-size: 13px;">Anomalies Detected:</strong>
+                                <div style="font-size: 12px; color: #78350f; margin-top: 4px;">
+                                    • Land use inappropriate for project type (urban area vs forest project)
+                                    • High coordinate variation in satellite data (187m drift)
+                                    • Suspicious proximity to existing project (possible duplicate)
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 8px; margin-left: 16px;">
+                            <button onclick="viewLocationDetails('MRV-2024-0890')" class="btn warning" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-exclamation-triangle"></i> Review
+                            </button>
+                            <button onclick="requestManualReview('MRV-2024-0890')" class="btn outline" style="font-size: 12px; padding: 8px 12px;">
+                                <i class="fas fa-user"></i> Manual Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Satellite Imagery Analysis -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+        <!-- Satellite Data Sources -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-satellite" style="color: var(--accent);"></i>
+                    Satellite Data Sources
+                </h3>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div style="display: grid; gap: 16px;">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+                        <div style="width: 48px; height: 48px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-satellite-dish"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #166534;">Sentinel-2</div>
+                            <div style="font-size: 12px; color: #16a34a; margin-top: 2px;">
+                                10m resolution • Updated daily
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--success);">Active</div>
+                            <div style="font-size: 11px; color: #16a34a;">
+                                Last sync: 2 hrs ago
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #f0fdf4; border-radius: 8px; border: 1px solid #bbf7d0;">
+                        <div style="width: 48px; height: 48px; background: var(--info); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-globe"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #1e40af;">Landsat 8/9</div>
+                            <div style="font-size: 12px; color: #2563eb; margin-top: 2px;">
+                                30m resolution • Historical archive
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--info);">Active</div>
+                            <div style="font-size: 11px; color: #2563eb;">
+                                Last sync: 6 hrs ago
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: #fffbeb; border-radius: 8px; border: 1px solid #fed7aa;">
+                        <div style="width: 48px; height: 48px; background: var(--warning); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">
+                            <i class="fas fa-satellite"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: #92400e;">Planet Labs</div>
+                            <div style="font-size: 12px; color: #d97706; margin-top: 2px;">
+                                3m resolution • High frequency
+                            </div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 18px; font-weight: 700; color: var(--warning);">Limited</div>
+                            <div style="font-size: 11px; color: #d97706;">
+                                API quota: 78%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <button onclick="manageSatelliteAPIs()" class="btn outline" style="width: 100%;">
+                        <i class="fas fa-cogs"></i> Manage API Connections
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Analytics -->
+        <div class="card">
+            <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+                <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-chart-pie" style="color: var(--accent);"></i>
+                    Verification Analytics
+                </h3>
+            </div>
+            
+            <div style="padding: 20px;">
+                <div style="margin-bottom: 24px;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Verification Success Rate (30 days)</h4>
+                    <div style="height: 120px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed #d1d5db;">
+                        <div style="text-align: center; color: #6b7280;">
+                            <div style="font-size: 32px; font-weight: 700; color: var(--success); margin-bottom: 4px;">89%</div>
+                            <div style="font-size: 13px;">Success Rate Trend</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; gap: 12px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px;">Verified Locations</span>
+                        <span style="font-weight: 600; color: var(--success);">2,891 (89%)</span>
+                    </div>
+                    <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                        <div style="width: 89%; background: var(--success); border-radius: 4px; height: 100%;"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px;">Suspicious</span>
+                        <span style="font-weight: 600; color: var(--warning);">267 (8%)</span>
+                    </div>
+                    <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                        <div style="width: 8%; background: var(--warning); border-radius: 4px; height: 100%;"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 13px;">Fraudulent</span>
+                        <span style="font-weight: 600; color: var(--danger);">89 (3%)</span>
+                    </div>
+                    <div style="width: 100%; background: #e5e7eb; border-radius: 4px; height: 6px;">
+                        <div style="width: 3%; background: var(--danger); border-radius: 4px; height: 100%;"></div>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);">
+                    <div style="display: flex; gap: 8px;">
+                        <button onclick="exportAnalytics()" class="btn outline" style="flex: 1;">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                        <button onclick="viewDetailedAnalytics()" class="btn secondary" style="flex: 1;">
+                            <i class="fas fa-chart-bar"></i> Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Common Anomaly Patterns -->
+    <div class="card">
+        <div style="padding: 20px; border-bottom: 1px solid var(--border);">
+            <h3 style="margin: 0; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-search" style="color: var(--accent);"></i>
+                AI-Detected Anomaly Patterns
+            </h3>
+        </div>
+        
+        <div style="padding: 20px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i>
+                        <span style="font-weight: 600; color: #991b1b;">Location Spoofing</span>
+                    </div>
+                    <div style="font-size: 13px; color: #7f1d1d; margin-bottom: 8px;">
+                        Coordinates don't match satellite imagery analysis
+                    </div>
+                    <div style="font-size: 12px; color: #991b1b;">
+                        <strong>Detected:</strong> 23 cases this month • <strong>Accuracy:</strong> 96.7%
+                    </div>
+                </div>
+                
+                <div style="background: #fffbeb; border: 1px solid #fed7aa; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <i class="fas fa-clone" style="color: var(--warning);"></i>
+                        <span style="font-weight: 600; color: #92400e;">Duplicate Locations</span>
+                    </div>
+                    <div style="font-size: 13px; color: #78350f; margin-bottom: 8px;">
+                        Same coordinates used for multiple projects
+                    </div>
+                    <div style="font-size: 12px; color: #92400e;">
+                        <strong>Detected:</strong> 15 cases this month • <strong>Accuracy:</strong> 91.2%
+                    </div>
+                </div>
+                
+                <div style="background: #f0f9ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 16px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                        <i class="fas fa-map-marker-alt" style="color: var(--info);"></i>
+                        <span style="font-weight: 600; color: #1e40af;">Land Use Mismatch</span>
+                    </div>
+                    <div style="font-size: 13px; color: #1e40af; margin-bottom: 8px;">
+                        Project type doesn't match detected land cover
+                    </div>
+                    <div style="font-size: 12px; color: #1e40af;">
+                        <strong>Detected:</strong> 41 cases this month • <strong>Accuracy:</strong> 88.5%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Location Details Modal -->
+<div id="locationDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 16px; padding: 32px; width: 90%; max-width: 1000px; max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 style="margin: 0; color: #1f2937;">Location Verification Report</h3>
+            <button onclick="closeLocationModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280;">&times;</button>
+        </div>
+        
+        <div id="locationDetailsContent">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<script>
+function filterVerificationQueue(status) {
+    const items = document.querySelectorAll('.verification-item');
+    items.forEach(item => {
+        if (status === 'all' || item.dataset.status === status) {
+            item.style.display = 'block';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function refreshQueue() {
+    // Simulate refreshing the queue
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing';
+    button.disabled = true;
+    
+    setTimeout(() => {
+        button.innerHTML = originalText;
+        button.disabled = false;
+        
+        // Simulate updating progress on processing item
+        const progressBar = document.querySelector('.verification-item[data-status="processing"] .w-full > div');
+        if (progressBar) {
+            const currentWidth = parseInt(progressBar.style.width);
+            if (currentWidth < 100) {
+                progressBar.style.width = Math.min(100, currentWidth + 10) + '%';
+            }
+        }
+    }, 2000);
+}
+
+function viewLocationDetails(projectId) {
+    const modal = document.getElementById('locationDetailsModal');
+    const content = document.getElementById('locationDetailsContent');
+    
+    // Simulate loading location verification report
+    content.innerHTML = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px;">
+            <div>
+                <div style="background: #f8fafc; border-radius: 12px; padding: 20px; margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Project Information</h4>
+                    <div style="display: grid; gap: 8px; font-size: 13px;">
+                        <div><strong>Project ID:</strong> ${projectId}</div>
+                        <div><strong>Project Type:</strong> Mangrove Restoration</div>
+                        <div><strong>Submitted:</strong> 2024-01-15 14:30 UTC</div>
+                        <div><strong>Organization:</strong> Sundarbans Conservation Trust</div>
+                        <div><strong>Coordinates:</strong> 21.9497°N, 88.2314°E</div>
+                    </div>
+                </div>
+                
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 20px;">
+                    <h4 style="margin: 0 0 12px 0; color: #166534;">Verification Summary</h4>
+                    <div style="text-align: center; margin-bottom: 16px;">
+                        <div style="font-size: 48px; font-weight: 700; color: var(--success);">94.8%</div>
+                        <div style="font-size: 14px; color: #166534;">Confidence Score</div>
+                        <span class="badge success" style="margin-top: 8px;">VERIFIED AUTHENTIC</span>
+                    </div>
+                    <div style="font-size: 13px; color: #166534;">
+                        <div style="margin-bottom: 4px;"><strong>Risk Level:</strong> Very Low</div>
+                        <div style="margin-bottom: 4px;"><strong>Verification Time:</strong> 2.3 seconds</div>
+                        <div><strong>Satellite Images:</strong> 3 analyzed</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div style="margin-bottom: 16px;">
+                    <h4 style="margin: 0 0 12px 0; color: #374151;">Satellite Analysis</h4>
+                    <div style="height: 200px; background: #f8fafc; border-radius: 8px; display: flex; align-items: center; justify-content: center; border: 2px dashed #d1d5db;">
+                        <div style="text-align: center; color: #6b7280;">
+                            <i class="fas fa-satellite" style="font-size: 32px; margin-bottom: 8px;"></i>
+                            <p style="margin: 0; font-size: 13px;">Satellite Imagery Analysis</p>
+                            <p style="margin: 4px 0 0 0; font-size: 11px;">3 images from Sentinel-2</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="background: #f8fafc; border-radius: 8px; padding: 16px;">
+                    <h5 style="margin: 0 0 12px 0; color: #374151;">Key Findings</h5>
+                    <div style="display: grid; gap: 8px; font-size: 13px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>Land use appropriate for mangrove restoration</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>Coordinates consistent across satellite data</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>NDVI values indicate healthy vegetation</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                            <span>No suspicious proximity patterns detected</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div style="margin-bottom: 24px;">
+            <h4 style="margin: 0 0 12px 0; color: #374151;">Verification Checks</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 6px;">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <span style="font-size: 13px;">Coordinate Validity</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 6px;">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <span style="font-size: 13px;">Satellite Consistency</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 6px;">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <span style="font-size: 13px;">Historical Comparison</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 6px;">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <span style="font-size: 13px;">Land Use Verification</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 6px;">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <span style="font-size: 13px;">Temporal Consistency</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f0fdf4; border-radius: 6px;">
+                    <i class="fas fa-check-circle" style="color: var(--success);"></i>
+                    <span style="font-size: 13px;">Elevation Check</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px; justify-content: flex-end; padding-top: 20px; border-top: 1px solid var(--border);">
+            <button onclick="exportVerificationReport('${projectId}')" class="btn outline">
+                <i class="fas fa-download"></i> Export Report
+            </button>
+            <button onclick="approveLocation('${projectId}')" class="btn">
+                <i class="fas fa-check"></i> Approve Location
+            </button>
+        </div>
+    `;
+    
+    modal.style.display = 'block';
+}
+
+function closeLocationModal() {
+    document.getElementById('locationDetailsModal').style.display = 'none';
+}
+
+function prioritizeVerification(projectId) {
+    alert(`Project ${projectId} moved to high priority queue. Verification will complete shortly.`);
+}
+
+function requestManualReview(projectId) {
+    alert(`Manual review requested for project ${projectId}. A human analyst will verify the location within 24 hours.`);
+}
+
+function bulkVerifyLocations() {
+    alert('Bulk location verification started. Processing all pending locations...');
+}
+
+function manageSatelliteAPIs() {
+    alert('Opening satellite API management panel...');
+}
+
+function exportAnalytics() {
+    alert('Exporting location verification analytics as CSV...');
+}
+
+function viewDetailedAnalytics() {
+    alert('Opening detailed analytics dashboard...');
+}
+
+function exportVerificationReport(projectId) {
+    alert(`Exporting detailed verification report for project ${projectId}...`);
+}
+
+function approveLocation(projectId) {
+    if (confirm(`Approve location for project ${projectId}? This will allow the project to proceed.`)) {
+        alert(`Location approved for project ${projectId}. Project can now continue to next verification stage.`);
+        closeLocationModal();
+    }
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('locationDetailsModal');
+    if (event.target === modal) {
+        closeLocationModal();
+    }
+}
+
+// Simulate real-time progress updates
+setInterval(() => {
+    const progressBars = document.querySelectorAll('.verification-item[data-status="processing"] .w-full > div');
+    progressBars.forEach(bar => {
+        const currentWidth = parseInt(bar.style.width) || 0;
+        if (currentWidth < 100 && Math.random() > 0.7) {
+            bar.style.width = Math.min(100, currentWidth + Math.floor(Math.random() * 15)) + '%';
+            
+            const percentSpan = bar.parentElement.previousElementSibling.querySelector('span:last-child');
+            if (percentSpan) {
+                percentSpan.textContent = bar.style.width.replace('%', '') + '%';
+            }
+        }
+    });
+}, 3000);
+</script>
+{% endblock %}
