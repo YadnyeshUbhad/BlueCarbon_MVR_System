@@ -461,8 +461,9 @@
     </style>
 </head>
 <body>
+    <div class="mobile-nav-overlay" onclick="closeMobileNav()"></div>
     <div class="app">
-        <aside class="admin-sidebar">
+        <aside class="admin-sidebar" id="sidebar">
             <div class="admin-brand">
                 <div class="nccr-logo">N</div>
                 <div>
@@ -526,6 +527,9 @@
         </aside>
         
         <header class="header">
+            <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>
                 <i class="fas fa-shield-alt text-primary"></i>
                 {{ header or 'NCCR Admin Portal' }}
@@ -562,6 +566,37 @@
     </div>
     
     <script>
+        // Mobile Navigation Functions
+        function toggleMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function closeMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Close mobile nav when clicking on nav links
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.admin-nav a')) {
+                closeMobileNav();
+            }
+        });
+        
+        // Close mobile nav on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileNav();
+            }
+        });
+        
         // Add any global admin JavaScript here
         document.addEventListener('DOMContentLoaded', function() {
             // Auto-refresh data every 30 seconds

@@ -2372,3 +2372,34 @@
 2025-09-28 17:31:53,694 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:53] "GET /ngo/satellite-monitoring HTTP/1.1" 200 -
 2025-09-28 17:31:53,849 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:53] "[36mGET /static/js/satellite_map_utils.js HTTP/1.1[0m" 304 -
 2025-09-28 17:31:54,491 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:54] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:05:43,302 - root - INFO - Database connection initialized successfully
+2025-09-28 18:05:43,302 - root - INFO - Production services initialized for environment: production
+2025-09-28 18:05:43,305 - firebase_client - WARNING - Firebase credentials not found, using mock mode
+2025-09-28 18:05:44,319 - supabase_client - WARNING - Supabase not available or credentials not found, using mock mode
+2025-09-28 18:05:45,456 - web3_integration - INFO - Loaded contract addresses: MRV=0x5FbDB2315678afecb367f032d93F642f64180aa3, Carbon=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+2025-09-28 18:05:45,471 - web3_integration - INFO - Connected to blockchain at http://127.0.0.1:8545
+2025-09-28 18:05:45,478 - web3_integration - INFO - Chain ID: 1337
+2025-09-28 18:05:45,501 - web3_integration - INFO - Contracts loaded successfully
+2025-09-28 18:05:45,621 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.237.211.167:5000
+2025-09-28 18:05:45,621 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-28 18:05:54,677 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:05:54] "GET / HTTP/1.1" 200 -
+2025-09-28 18:05:55,591 - web3_integration - INFO - Checking account: 0xea4c25A65E6Ed0d3f5aE495303B8ADB64B188CE8, balance: 0 ETH
+2025-09-28 18:05:55,601 - web3_integration - INFO - Checking account: 0x71b83D140868E1D7c6Acc4693C5F0A61fefeeAA5, balance: 0 ETH
+2025-09-28 18:05:55,606 - web3_integration - INFO - Checking account: 0xAc38957BA864DdCbEbdc65c91ef2B555A56450E6, balance: 0 ETH
+2025-09-28 18:05:55,617 - web3_integration - INFO - Checking account: 0x1f85866AD27e521E4e393EFC5038ed2404F69c60, balance: 0 ETH
+2025-09-28 18:05:55,624 - web3_integration - INFO - Checking account: 0xc6b6978859dcB1303b392e0B0077f025a081ab55, balance: 0 ETH
+2025-09-28 18:05:55,630 - web3_integration - INFO - Checking account: 0xe60EdFd524f18D40d063c5563412d5690feFf7B8, balance: 0 ETH
+2025-09-28 18:05:55,636 - web3_integration - INFO - Checking account: 0xD075ed4EFb43631c2F663e27077ab8563E3Ba918, balance: 0 ETH
+2025-09-28 18:05:55,641 - web3_integration - INFO - Checking account: 0x72537211635f1297e7A64a5F646DB3D08797cb69, balance: 0 ETH
+2025-09-28 18:05:55,646 - web3_integration - INFO - Checking account: 0xC1403743cb896a3566ba8992A28Fe359c29FE51E, balance: 0 ETH
+2025-09-28 18:05:55,650 - web3_integration - INFO - Checking account: 0x62e9a7dB7D870e7654ADFEe853eCF62662F598F1, balance: 0 ETH
+2025-09-28 18:05:55,650 - web3_integration - ERROR - No funded accounts found on the connected blockchain. Transactions will fail.
+2025-09-28 18:05:55,653 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Address None must be provided as a string
+2025-09-28 18:05:55,655 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Address None must be provided as a string
+2025-09-28 18:05:55,656 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:05:55] "GET /api/real_blockchain/status HTTP/1.1" 200 -
+2025-09-28 18:05:56,218 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:05:56] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-09-28 18:06:01,108 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:06:01] "[32mGET /ngo/dashboard HTTP/1.1[0m" 302 -
+2025-09-28 18:06:01,142 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:06:01] "GET /ngo/login HTTP/1.1" 200 -

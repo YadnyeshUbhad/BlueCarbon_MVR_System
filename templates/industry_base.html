@@ -448,9 +448,10 @@
     </style>
 </head>
 <body>
+    <div class="mobile-nav-overlay" onclick="closeMobileNav()"></div>
     <div class="industry-container">
         <!-- Sidebar -->
-        <aside class="industry-sidebar">
+        <aside class="industry-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <h2><i class="fas fa-industry"></i> Industry Portal</h2>
                 <p>Carbon Credit Management</p>
@@ -519,6 +520,9 @@
         <!-- Main Content -->
         <main class="industry-main">
             <header class="industry-header">
+                <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="header-title">
                     <h1>{{ header or 'Industry Dashboard' }}</h1>
                     <p>{{ subheader or 'Manage your carbon credits and sustainability goals' }}</p>
@@ -539,11 +543,42 @@
         </main>
     </div>
 
-    <!-- Mobile menu toggle (for future responsive implementation) -->
+    <!-- Mobile menu toggle -->
     <script>
-        // Add any common JavaScript functionality here
+        // Mobile Navigation Functions
+        function toggleMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function closeMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Close mobile nav when clicking on nav links
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.sidebar-nav a')) {
+                closeMobileNav();
+            }
+        });
+        
+        // Close mobile nav on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileNav();
+            }
+        });
+        
+        // Legacy function for compatibility
         function toggleMobileMenu() {
-            document.querySelector('.industry-sidebar').classList.toggle('show');
+            toggleMobileNav();
         }
 
         // Close modals when clicking outside

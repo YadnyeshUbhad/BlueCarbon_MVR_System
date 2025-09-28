@@ -16,6 +16,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Montserrat:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/responsive.css') }}" rel="stylesheet">
     
     <!-- Allow child templates to add custom head content -->
     {% block head %}{% endblock %}
@@ -222,8 +223,9 @@
 </head>
 <body>
     <!-- DEBUG: This is the NGO Base Template -->
+    <div class="mobile-nav-overlay" onclick="closeMobileNav()"></div>
     <div class="app">
-        <aside class="ngo-sidebar">
+        <aside class="ngo-sidebar" id="sidebar">
             <div class="ngo-brand">
                 <i class="fas fa-water"></i>
                 <div>BlueCarbon MRV</div>
@@ -266,6 +268,9 @@
         </aside>
         
         <header class="header">
+            <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
             <h1>
                 <i class="fas fa-water" style="color: var(--primary);"></i>
                 {{ header or 'BlueCarbon MRV System' }}
@@ -292,5 +297,38 @@
             {% block content %}{% endblock %}
         </main>
     </div>
+    
+    <script>
+        // Mobile Navigation Functions
+        function toggleMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+        
+        function closeMobileNav() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.querySelector('.mobile-nav-overlay');
+            
+            sidebar.classList.remove('active');
+            overlay.classList.remove('active');
+        }
+        
+        // Close mobile nav when clicking on nav links
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.ngo-nav a')) {
+                closeMobileNav();
+            }
+        });
+        
+        // Close mobile nav on window resize to desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 768) {
+                closeMobileNav();
+            }
+        });
+    </script>
 </body>
 </html>

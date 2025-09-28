@@ -48,7 +48,10 @@
         grid-template-areas: none;
     }
 
-    .sidebar {
+    .sidebar,
+    .admin-sidebar,
+    .industry-sidebar,
+    .ngo-sidebar {
         position: fixed;
         top: 0;
         left: -100%;
@@ -60,7 +63,10 @@
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     }
 
-    .sidebar.active {
+    .sidebar.active,
+    .admin-sidebar.active,
+    .industry-sidebar.active,
+    .ngo-sidebar.active {
         left: 0;
     }
 
@@ -80,9 +86,16 @@
         margin-left: 12px;
     }
 
-    .content {
+    .content,
+    .industry-content {
         padding: var(--mobile-padding);
         margin-top: 0;
+    }
+
+    /* Industry-specific adjustments */
+    .industry-main {
+        margin-left: 0;
+        padding: 0;
     }
 
     /* Mobile Cards - Single column */
@@ -136,7 +149,10 @@
     }
 
     /* Navigation improvements */
-    .nav a {
+    .nav a,
+    .admin-nav a,
+    .sidebar-nav a,
+    .ngo-nav a {
         padding: 16px 20px;
         font-size: 16px;
         touch-action: manipulation;
@@ -224,7 +240,10 @@
         min-height: 100vh;
     }
 
-    .sidebar {
+    .sidebar,
+    .admin-sidebar,
+    .industry-sidebar,
+    .ngo-sidebar {
         position: static;
         left: auto;
         width: auto;
