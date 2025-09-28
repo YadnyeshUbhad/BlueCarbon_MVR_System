@@ -4945,16 +4945,15 @@ def health_check_system():
             'error': str(e)
         }), 500
 
+# Register blueprints at import time for production deployment
+app.register_blueprint(admin_bp)
+app.register_blueprint(ngo_bp)
+app.register_blueprint(industry_bp)
+app.register_blueprint(blockchain_bp)  # Add blockchain API routes (simulation)
+app.register_blueprint(real_blockchain_bp)  # Add real blockchain API routes
+app.register_blueprint(research_bp)  # Add research dashboard
+
 if __name__ == "__main__":
-    # Production services are already initialized on import
-    
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(ngo_bp)
-    app.register_blueprint(industry_bp)
-    app.register_blueprint(blockchain_bp)  # Add blockchain API routes (simulation)
-    app.register_blueprint(real_blockchain_bp)  # Add real blockchain API routes
-    app.register_blueprint(research_bp)  # Add research dashboard
-    
     # Print startup information
     print("\n" + "="*60)
     print("🌊 BlueCarbon MRV System Starting Up")
@@ -4964,7 +4963,20 @@ if __name__ == "__main__":
     print(f"Production Mode: {is_production()}")
     print(f"Firebase Mode: {'Production' if external_apis['firebase']['enabled'] else 'Mock Mode'}")
     print(f"Database Mode: {'Production' if is_production() else 'Development'}")
-    print(f"Server: http://127.0.0.1:5000")
+    
+    # Get port from environment or default to 5000 for local development
+    port = int(os.environ.get('PORT', 5000))
+    
+    # Use production settings if not in development
+    if is_production():
+        host = '0.0.0.0'
+        debug_mode = False
+        print(f"Production Server: Running on port {port}")
+    else:
+        host = '127.0.0.1'
+        debug_mode = True
+        print(f"Development Server: http://127.0.0.1:{port}")
+    
     print("\n🔗 Available API Endpoints:")
     print("   • /api/blockchain/stats - Blockchain statistics")
     print("   • /api/blockchain/tokens - Token management")
@@ -4982,10 +4994,13 @@ if __name__ == "__main__":
     print("   • /api/location/suitable-areas - Find suitable ecosystem areas")
     print("   • /api/location/area-calculation - Calculate polygon area")
     print("   • /api/location/project-recommendations - Location recommendations")
-    print("\n📊 Admin Dashboard: http://127.0.0.1:5000/admin/login")
-    print("🏢 Industry Portal: http://127.0.0.1:5000/industry/login")
-    print("🌱 NGO Dashboard: http://127.0.0.1:5000/ngo/dashboard")
+    
+    if not is_production():
+        print(f"\n📊 Admin Dashboard: http://127.0.0.1:{port}/admin/login")
+        print(f"🏢 Industry Portal: http://127.0.0.1:{port}/industry/login")
+        print(f"🌱 NGO Dashboard: http://127.0.0.1:{port}/ngo/dashboard")
+    
     print("\n⚠️  Remember to set up .env file for production!")
     print("="*60 + "\n")
     
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=debug_mode, host=host, port=port)
