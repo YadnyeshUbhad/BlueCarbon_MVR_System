@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <h2>📱 Responsive Design Test Page</h2>
+    <p>This page helps test responsive design across different screen sizes and devices.</p>
+</div>
+
+<!-- Stats Cards Test -->
+<div class="cards">
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-users"></i>
+            Total Users
+        </div>
+        <div class="stat-value">1,234</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            +15%
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-seedling"></i>
+            Active Projects
+        </div>
+        <div class="stat-value">56</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            +8%
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-coins"></i>
+            Credits Earned
+        </div>
+        <div class="stat-value">89,456</div>
+        <div class="stat-change negative">
+            <i class="fas fa-arrow-down"></i>
+            -3%
+        </div>
+    </div>
+    <div class="card">
+        <div class="stat-label">
+            <i class="fas fa-dollar-sign"></i>
+            Revenue
+        </div>
+        <div class="stat-value">$234K</div>
+        <div class="stat-change positive">
+            <i class="fas fa-arrow-up"></i>
+            +22%
+        </div>
+    </div>
+</div>
+
+<!-- Form Test -->
+<div class="card" style="margin-bottom: 24px;">
+    <div class="card" style="padding: 24px;">
+        <h3 style="margin-bottom: 20px;">📝 Form Responsiveness Test</h3>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="test-name">Project Name</label>
+                <input type="text" id="test-name" class="form-control" placeholder="Enter project name">
+            </div>
+            <div class="form-group">
+                <label for="test-location">Location</label>
+                <select id="test-location" class="form-control">
+                    <option>Select State</option>
+                    <option>Maharashtra</option>
+                    <option>Gujarat</option>
+                    <option>Kerala</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="test-area">Area (hectares)</label>
+                <input type="number" id="test-area" class="form-control" placeholder="0">
+            </div>
+        </div>
+        <div class="form-actions">
+            <button class="btn">Save Project</button>
+            <button class="btn outline">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Table Test -->
+<div class="table-container" style="margin-bottom: 24px;">
+    <table>
+        <thead>
+            <tr>
+                <th>Project Name</th>
+                <th>Location</th>
+                <th>Area (ha)</th>
+                <th>Status</th>
+                <th>Credits</th>
+                <th>Revenue</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Sundarbans Restoration</td>
+                <td>West Bengal</td>
+                <td>150.5</td>
+                <td><span class="badge success">Verified</span></td>
+                <td>1,205</td>
+                <td>$18,075</td>
+                <td>
+                    <button class="btn" style="padding: 6px 12px; font-size: 12px;">View</button>
+                    <button class="btn outline" style="padding: 6px 12px; font-size: 12px;">Edit</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Mangrove Conservation</td>
+                <td>Gujarat</td>
+                <td>89.2</td>
+                <td><span class="badge warning">Pending</span></td>
+                <td>0</td>
+                <td>$0</td>
+                <td>
+                    <button class="btn" style="padding: 6px 12px; font-size: 12px;">View</button>
+                    <button class="btn outline" style="padding: 6px 12px; font-size: 12px;">Edit</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Coastal Wetland Project</td>
+                <td>Kerala</td>
+                <td>234.8</td>
+                <td><span class="badge success">Verified</span></td>
+                <td>1,874</td>
+                <td>$28,110</td>
+                <td>
+                    <button class="btn" style="padding: 6px 12px; font-size: 12px;">View</button>
+                    <button class="btn outline" style="padding: 6px 12px; font-size: 12px;">Edit</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Blue Carbon Initiative</td>
+                <td>Maharashtra</td>
+                <td>67.3</td>
+                <td><span class="badge danger">Rejected</span></td>
+                <td>0</td>
+                <td>$0</td>
+                <td>
+                    <button class="btn" style="padding: 6px 12px; font-size: 12px;">View</button>
+                    <button class="btn danger" style="padding: 6px 12px; font-size: 12px;">Resubmit</button>
+                </td>
+            </tr>
+            <tr>
+                <td>Seagrass Restoration</td>
+                <td>Tamil Nadu</td>
+                <td>123.7</td>
+                <td><span class="badge primary">Under Review</span></td>
+                <td>0</td>
+                <td>$0</td>
+                <td>
+                    <button class="btn" style="padding: 6px 12px; font-size: 12px;">View</button>
+                    <button class="btn outline" style="padding: 6px 12px; font-size: 12px;">Edit</button>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Button Test -->
+<div class="card" style="margin-bottom: 24px;">
+    <div style="padding: 24px;">
+        <h3 style="margin-bottom: 20px;">🔘 Button Responsiveness Test</h3>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px;">
+            <button class="btn">Primary Button</button>
+            <button class="btn secondary">Secondary</button>
+            <button class="btn outline">Outline</button>
+            <button class="btn danger">Danger</button>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span class="badge primary">Primary Badge</span>
+            <span class="badge success">Success Badge</span>
+            <span class="badge warning">Warning Badge</span>
+            <span class="badge danger">Danger Badge</span>
+        </div>
+    </div>
+</div>
+
+<!-- Chart Container Test -->
+<div class="card">
+    <div style="padding: 24px;">
+        <h3 style="margin-bottom: 20px;">📊 Chart Container Test</h3>
+        <div class="chart-container" style="background: #f8f9fa; border: 2px dashed #dee2e6; display: flex; align-items: center; justify-content: center; min-height: 250px;">
+            <div style="text-align: center; color: #6c757d;">
+                <i class="fas fa-chart-bar" style="font-size: 48px; margin-bottom: 12px;"></i>
+                <p>Chart would render here</p>
+                <div class="chart-simple" style="display: none;">
+                    <small>📱 Mobile: Simple chart version</small>
+                </div>
+                <div class="chart-complex">
+                    <small>💻 Desktop: Complex chart version</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Responsive Debug Info -->
+<div class="card" style="margin-top: 24px; background: #f8f9fa;">
+    <div style="padding: 16px;">
+        <h4 style="color: #6c757d; margin-bottom: 12px;">🔍 Responsive Debug Info</h4>
+        <div id="debug-info" style="font-family: monospace; font-size: 14px; color: #495057;">
+            <div>Screen Width: <span id="screen-width">-</span>px</div>
+            <div>Viewport Width: <span id="viewport-width">-</span>px</div>
+            <div>Device Type: <span id="device-type">-</span></div>
+            <div>Orientation: <span id="orientation">-</span></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Debug info updater
+function updateDebugInfo() {
+    document.getElementById('screen-width').textContent = screen.width;
+    document.getElementById('viewport-width').textContent = window.innerWidth;
+    
+    let deviceType = 'Desktop';
+    if (window.innerWidth <= 480) deviceType = 'Mobile (Small)';
+    else if (window.innerWidth <= 768) deviceType = 'Mobile/Tablet';
+    else if (window.innerWidth <= 1024) deviceType = 'Tablet/Small Desktop';
+    else if (window.innerWidth <= 1200) deviceType = 'Desktop';
+    else deviceType = 'Large Desktop';
+    
+    document.getElementById('device-type').textContent = deviceType;
+    document.getElementById('orientation').textContent = window.innerHeight > window.innerWidth ? 'Portrait' : 'Landscape';
+}
+
+// Update debug info on load and resize
+updateDebugInfo();
+window.addEventListener('resize', updateDebugInfo);
+
+// Test mobile navigation
+console.log('📱 Responsive test page loaded');
+console.log('🔧 To test mobile navigation, resize window to < 768px and click hamburger menu');
+</script>
+
+{% endblock %}

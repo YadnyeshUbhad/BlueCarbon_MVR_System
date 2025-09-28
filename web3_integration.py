@@ -279,17 +279,19 @@ class Web3Integration:
                 stats['chain_id'] = self.w3.eth.chain_id
                 stats['block_number'] = self.w3.eth.block_number
                 
+                account = self.get_account()
+
                 if self.mrv_contract:
                     try:
-                        stats['total_mrv_records'] = self.mrv_contract.functions.getTotalRecords().call()
+                        stats['total_mrv_records'] = self.mrv_contract.functions.getTotalRecords().call({'from': account})
                     except Exception as e:
                         self.logger.error(f"Error calling getTotalRecords on MRV contract: {e}")
                         stats['total_mrv_records'] = 'Error'
                 
                 if self.carbon_contract:
                     try:
-                        stats['total_token_batches'] = self.carbon_contract.functions.getTotalBatches().call()
-                        stats['total_credits_issued'] = self.carbon_contract.functions.totalCreditsIssued().call() / 1000
+                        stats['total_token_batches'] = self.carbon_contract.functions.getTotalBatches().call({'from': account})
+                        stats['total_credits_issued'] = self.carbon_contract.functions.totalCreditsIssued().call({'from': account}) / 1000
                     except Exception as e:
                         self.logger.error(f"Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): {e}")
                         stats['total_token_batches'] = 'Error'

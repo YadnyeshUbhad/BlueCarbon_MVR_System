@@ -2310,3 +2310,65 @@
 2025-09-28 16:20:34,549 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Could not transact with/call contract function, is contract deployed correctly and chain synced?
 2025-09-28 16:20:34,575 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Could not transact with/call contract function, is contract deployed correctly and chain synced?
 2025-09-28 16:20:34,576 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 16:20:34] "GET /api/real_blockchain/status HTTP/1.1" 200 -
+2025-09-28 17:09:41,844 - root - INFO - Database connection initialized successfully
+2025-09-28 17:09:41,845 - root - INFO - Production services initialized for environment: production
+2025-09-28 17:09:41,847 - firebase_client - WARNING - Firebase credentials not found, using mock mode
+2025-09-28 17:09:42,799 - supabase_client - WARNING - Supabase not available or credentials not found, using mock mode
+2025-09-28 17:09:43,842 - web3_integration - INFO - Loaded contract addresses: MRV=0x5FbDB2315678afecb367f032d93F642f64180aa3, Carbon=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+2025-09-28 17:09:43,860 - web3_integration - INFO - Connected to blockchain at http://127.0.0.1:8545
+2025-09-28 17:09:43,864 - web3_integration - INFO - Chain ID: 1337
+2025-09-28 17:09:43,880 - web3_integration - INFO - Contracts loaded successfully
+2025-09-28 17:09:55,771 - root - INFO - Database connection initialized successfully
+2025-09-28 17:09:55,771 - root - INFO - Production services initialized for environment: production
+2025-09-28 17:09:55,772 - firebase_client - WARNING - Firebase credentials not found, using mock mode
+2025-09-28 17:09:56,415 - supabase_client - WARNING - Supabase not available or credentials not found, using mock mode
+2025-09-28 17:09:57,162 - web3_integration - INFO - Loaded contract addresses: MRV=0x5FbDB2315678afecb367f032d93F642f64180aa3, Carbon=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+2025-09-28 17:09:57,167 - web3_integration - INFO - Connected to blockchain at http://127.0.0.1:8545
+2025-09-28 17:09:57,172 - web3_integration - INFO - Chain ID: 1337
+2025-09-28 17:09:57,185 - web3_integration - INFO - Contracts loaded successfully
+2025-09-28 17:28:54,503 - root - INFO - Database connection initialized successfully
+2025-09-28 17:28:54,504 - root - INFO - Production services initialized for environment: production
+2025-09-28 17:28:54,505 - firebase_client - WARNING - Firebase credentials not found, using mock mode
+2025-09-28 17:28:55,150 - supabase_client - WARNING - Supabase not available or credentials not found, using mock mode
+2025-09-28 17:28:55,939 - web3_integration - INFO - Loaded contract addresses: MRV=0x5FbDB2315678afecb367f032d93F642f64180aa3, Carbon=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+2025-09-28 17:28:55,944 - web3_integration - INFO - Connected to blockchain at http://127.0.0.1:8545
+2025-09-28 17:28:55,949 - web3_integration - INFO - Chain ID: 1337
+2025-09-28 17:28:55,963 - web3_integration - INFO - Contracts loaded successfully
+2025-09-28 17:28:56,074 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-09-28 17:28:56,074 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-28 17:28:56,078 - werkzeug - INFO -  * Restarting with stat
+2025-09-28 17:28:57,693 - root - INFO - Database connection initialized successfully
+2025-09-28 17:28:57,693 - root - INFO - Production services initialized for environment: production
+2025-09-28 17:28:57,696 - firebase_client - WARNING - firebase-admin not installed, using mock mode
+2025-09-28 17:28:58,342 - supabase_client - WARNING - Supabase not available or credentials not found, using mock mode
+2025-09-28 17:28:59,162 - web3_integration - INFO - Loaded contract addresses: MRV=0x5FbDB2315678afecb367f032d93F642f64180aa3, Carbon=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+2025-09-28 17:28:59,168 - web3_integration - INFO - Connected to blockchain at http://127.0.0.1:8545
+2025-09-28 17:28:59,173 - web3_integration - INFO - Chain ID: 1337
+2025-09-28 17:28:59,186 - web3_integration - INFO - Contracts loaded successfully
+2025-09-28 17:28:59,274 - werkzeug - WARNING -  * Debugger is active!
+2025-09-28 17:28:59,278 - werkzeug - INFO -  * Debugger PIN: 623-245-698
+2025-09-28 17:29:16,910 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:29:16] "GET / HTTP/1.1" 200 -
+2025-09-28 17:29:18,209 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Could not transact with/call contract function, is contract deployed correctly and chain synced?
+2025-09-28 17:29:18,234 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Could not transact with/call contract function, is contract deployed correctly and chain synced?
+2025-09-28 17:29:18,235 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:29:18] "GET /api/real_blockchain/status HTTP/1.1" 200 -
+2025-09-28 17:29:28,899 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:29:28] "GET /admin/login HTTP/1.1" 200 -
+2025-09-28 17:29:41,760 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:29:41] "[32mPOST /admin/login HTTP/1.1[0m" 302 -
+2025-09-28 17:29:41,801 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:29:41] "GET /admin/dashboard HTTP/1.1" 200 -
+2025-09-28 17:29:41,981 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:29:41] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 17:31:03,599 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:03] "[32mGET /admin/logout HTTP/1.1[0m" 302 -
+2025-09-28 17:31:03,626 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:03] "GET /admin/login HTTP/1.1" 200 -
+2025-09-28 17:31:06,328 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:06] "GET / HTTP/1.1" 200 -
+2025-09-28 17:31:06,608 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Could not transact with/call contract function, is contract deployed correctly and chain synced?
+2025-09-28 17:31:06,639 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Could not transact with/call contract function, is contract deployed correctly and chain synced?
+2025-09-28 17:31:06,641 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:06] "GET /api/real_blockchain/status HTTP/1.1" 200 -
+2025-09-28 17:31:12,429 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:12] "[32mGET /ngo/dashboard HTTP/1.1[0m" 302 -
+2025-09-28 17:31:12,461 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:12] "GET /ngo/login HTTP/1.1" 200 -
+2025-09-28 17:31:18,545 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:18] "[32mPOST /ngo/login HTTP/1.1[0m" 302 -
+2025-09-28 17:31:18,574 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:18] "GET /ngo/dashboard HTTP/1.1" 200 -
+2025-09-28 17:31:18,967 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:18] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 17:31:21,104 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:21] "GET /ngo/projects/new HTTP/1.1" 200 -
+2025-09-28 17:31:21,584 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:21] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 17:31:53,694 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:53] "GET /ngo/satellite-monitoring HTTP/1.1" 200 -
+2025-09-28 17:31:53,849 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:53] "[36mGET /static/js/satellite_map_utils.js HTTP/1.1[0m" 304 -
+2025-09-28 17:31:54,491 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 17:31:54] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -

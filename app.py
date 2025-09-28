@@ -4945,6 +4945,15 @@ def health_check_system():
             'error': str(e)
         }), 500
 
+# Test route for responsive design (development only)
+@app.route('/test/responsive')
+def responsive_test():
+    """Test page for responsive design validation"""
+    return render_template('responsive_test.html', 
+                         title='Responsive Design Test',
+                         header='📱 Responsive Design Test',
+                         active='test')
+
 # Register blueprints at import time for production deployment
 app.register_blueprint(admin_bp)
 app.register_blueprint(ngo_bp)
