@@ -2,8 +2,14 @@
 
 {% block content %}
 <div style="margin-bottom: 20px;">
-    <h2>📱 Responsive Design Test Page</h2>
-    <p>This page helps test responsive design across different screen sizes and devices.</p>
+    <h2>🌍 Universal Responsive Design Test</h2>
+    <p>This page tests responsive design across <strong>ALL devices</strong> - from small phones to ultra-wide monitors.</p>
+    <div class="btn-group" style="margin-bottom: 20px;">
+        <button class="btn outline" onclick="simulateDevice('mobile')">📱 Mobile (375px)</button>
+        <button class="btn outline" onclick="simulateDevice('tablet')">📲 Tablet (768px)</button>
+        <button class="btn outline" onclick="simulateDevice('desktop')">💻 Desktop (1200px)</button>
+        <button class="btn outline" onclick="simulateDevice('ultrawide')">🖥️ Ultra-wide (1920px)</button>
+    </div>
 </div>
 
 <!-- Stats Cards Test -->
@@ -201,43 +207,301 @@
     </div>
 </div>
 
-<!-- Responsive Debug Info -->
+<!-- Device Testing Grid -->
+<div class="card" style="margin-bottom: 24px;">
+    <div style="padding: 24px;">
+        <h3 style="margin-bottom: 20px;">🔬 Device & Viewport Testing</h3>
+        <div class="cards" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+            <div class="card" style="text-align: center; padding: 16px;">
+                <h4>📱 Mobile Small</h4>
+                <p>320px - 575px</p>
+                <div class="badge primary" id="mobile-status">Hidden</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 16px;">
+                <h4>📲 Mobile Large</h4>
+                <p>576px - 767px</p>
+                <div class="badge warning" id="mobile-large-status">Hidden</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 16px;">
+                <h4>🖥️ Tablet</h4>
+                <p>768px - 991px</p>
+                <div class="badge info" id="tablet-status">Hidden</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 16px;">
+                <h4>💻 Desktop</h4>
+                <p>992px - 1199px</p>
+                <div class="badge success" id="desktop-status">Hidden</div>
+            </div>
+            <div class="card" style="text-align: center; padding: 16px;">
+                <h4>🗺️ Large Monitor</h4>
+                <p>1200px+</p>
+                <div class="badge danger" id="large-status">Hidden</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Enhanced Debug Info -->
 <div class="card" style="margin-top: 24px; background: #f8f9fa;">
     <div style="padding: 16px;">
-        <h4 style="color: #6c757d; margin-bottom: 12px;">🔍 Responsive Debug Info</h4>
-        <div id="debug-info" style="font-family: monospace; font-size: 14px; color: #495057;">
-            <div>Screen Width: <span id="screen-width">-</span>px</div>
-            <div>Viewport Width: <span id="viewport-width">-</span>px</div>
-            <div>Device Type: <span id="device-type">-</span></div>
-            <div>Orientation: <span id="orientation">-</span></div>
+        <h4 style="color: #6c757d; margin-bottom: 12px;">🔍 Advanced Device Information</h4>
+        <div id="debug-info" style="font-family: monospace; font-size: 14px; color: #495057; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px;">
+            <div>
+                <strong>Viewport:</strong><br>
+                Width: <span id="viewport-width">-</span>px<br>
+                Height: <span id="viewport-height">-</span>px
+            </div>
+            <div>
+                <strong>Screen:</strong><br>
+                Width: <span id="screen-width">-</span>px<br>
+                Height: <span id="screen-height">-</span>px
+            </div>
+            <div>
+                <strong>Device:</strong><br>
+                Type: <span id="device-type">-</span><br>
+                DPR: <span id="device-pixel-ratio">-</span>
+            </div>
+            <div>
+                <strong>Orientation:</strong><br>
+                Mode: <span id="orientation">-</span><br>
+                Angle: <span id="orientation-angle">-</span>°
+            </div>
+            <div>
+                <strong>Touch Support:</strong><br>
+                Touch: <span id="touch-support">-</span><br>
+                Pointer: <span id="pointer-type">-</span>
+            </div>
+            <div>
+                <strong>Browser:</strong><br>
+                UA: <span id="user-agent">-</span><br>
+                Language: <span id="browser-language">-</span>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-// Debug info updater
+// Comprehensive device detection and testing
 function updateDebugInfo() {
-    document.getElementById('screen-width').textContent = screen.width;
-    document.getElementById('viewport-width').textContent = window.innerWidth;
+    // Viewport dimensions
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
     
-    let deviceType = 'Desktop';
-    if (window.innerWidth <= 480) deviceType = 'Mobile (Small)';
-    else if (window.innerWidth <= 768) deviceType = 'Mobile/Tablet';
-    else if (window.innerWidth <= 1024) deviceType = 'Tablet/Small Desktop';
-    else if (window.innerWidth <= 1200) deviceType = 'Desktop';
-    else deviceType = 'Large Desktop';
+    // Screen dimensions
+    const screenWidth = screen.width;
+    const screenHeight = screen.height;
     
+    // Device pixel ratio
+    const devicePixelRatio = window.devicePixelRatio || 1;
+    
+    // Orientation
+    const orientation = viewportHeight > viewportWidth ? 'Portrait' : 'Landscape';
+    const orientationAngle = screen.orientation ? screen.orientation.angle : 0;
+    
+    // Touch support
+    const touchSupport = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const pointerType = window.PointerEvent ? 'Modern' : 'Legacy';
+    
+    // Browser info
+    const userAgent = navigator.userAgent.split(' ')[0] + '...';
+    const browserLanguage = navigator.language;
+    
+    // Device type classification
+    let deviceType = 'Unknown';
+    let activeBreakpoint = 'none';
+    
+    if (viewportWidth <= 575.98) {
+        deviceType = 'Mobile Small';
+        activeBreakpoint = 'mobile';
+    } else if (viewportWidth <= 767.98) {
+        deviceType = 'Mobile Large';
+        activeBreakpoint = 'mobile-large';
+    } else if (viewportWidth <= 991.98) {
+        deviceType = 'Tablet';
+        activeBreakpoint = 'tablet';
+    } else if (viewportWidth <= 1199.98) {
+        deviceType = 'Desktop';
+        activeBreakpoint = 'desktop';
+    } else {
+        deviceType = 'Large Monitor';
+        activeBreakpoint = 'large';
+    }
+    
+    // Update DOM elements
+    document.getElementById('viewport-width').textContent = viewportWidth;
+    document.getElementById('viewport-height').textContent = viewportHeight;
+    document.getElementById('screen-width').textContent = screenWidth;
+    document.getElementById('screen-height').textContent = screenHeight;
     document.getElementById('device-type').textContent = deviceType;
-    document.getElementById('orientation').textContent = window.innerHeight > window.innerWidth ? 'Portrait' : 'Landscape';
+    document.getElementById('device-pixel-ratio').textContent = devicePixelRatio;
+    document.getElementById('orientation').textContent = orientation;
+    document.getElementById('orientation-angle').textContent = orientationAngle;
+    document.getElementById('touch-support').textContent = touchSupport ? 'Yes' : 'No';
+    document.getElementById('pointer-type').textContent = pointerType;
+    document.getElementById('user-agent').textContent = userAgent;
+    document.getElementById('browser-language').textContent = browserLanguage;
+    
+    // Update breakpoint status badges
+    const statusElements = {
+        'mobile-status': 'mobile',
+        'mobile-large-status': 'mobile-large',
+        'tablet-status': 'tablet',
+        'desktop-status': 'desktop',
+        'large-status': 'large'
+    };
+    
+    Object.keys(statusElements).forEach(id => {
+        const element = document.getElementById(id);
+        if (statusElements[id] === activeBreakpoint) {
+            element.textContent = 'Active';
+            element.className = 'badge success';
+        } else {
+            element.textContent = 'Hidden';
+            element.className = 'badge secondary';
+        }
+    });
+    
+    // Console logging for development
+    console.log('📱 Current device:', deviceType, `(${viewportWidth}px)`);
 }
 
-// Update debug info on load and resize
-updateDebugInfo();
-window.addEventListener('resize', updateDebugInfo);
+// Device simulation functions
+function simulateDevice(deviceType) {
+    const deviceSizes = {
+        'mobile': { width: 375, height: 812 },
+        'tablet': { width: 768, height: 1024 },
+        'desktop': { width: 1200, height: 800 },
+        'ultrawide': { width: 1920, height: 1080 }
+    };
+    
+    const size = deviceSizes[deviceType];
+    if (size) {
+        // This would work in browser dev tools
+        console.log(`🔍 Simulate ${deviceType}: ${size.width}x${size.height}px`);
+        console.log('Use browser dev tools responsive mode to test this size');
+        
+        // Show notification
+        showNotification(`📱 Simulating ${deviceType.charAt(0).toUpperCase() + deviceType.slice(1)}: ${size.width}x${size.height}px`, 'info');
+    }
+}
 
-// Test mobile navigation
-console.log('📱 Responsive test page loaded');
-console.log('🔧 To test mobile navigation, resize window to < 768px and click hamburger menu');
+// Notification system
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 20px;
+        border-radius: 12px;
+        color: white;
+        font-weight: 500;
+        z-index: 10000;
+        max-width: 400px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        backdrop-filter: blur(10px);
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+    `;
+    
+    const colors = {
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        info: '#3b82f6'
+    };
+    
+    notification.style.background = colors[type] || colors.info;
+    notification.innerHTML = message;
+    
+    document.body.appendChild(notification);
+    
+    // Animate in
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+    }, 100);
+    
+    // Remove after delay
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 3000);
+}
+
+// Responsive breakpoint change detection
+let currentBreakpoint = 'unknown';
+function checkBreakpointChange() {
+    const width = window.innerWidth;
+    let newBreakpoint;
+    
+    if (width <= 575.98) newBreakpoint = 'xs';
+    else if (width <= 767.98) newBreakpoint = 'sm';
+    else if (width <= 991.98) newBreakpoint = 'md';
+    else if (width <= 1199.98) newBreakpoint = 'lg';
+    else newBreakpoint = 'xl';
+    
+    if (newBreakpoint !== currentBreakpoint) {
+        const breakpointNames = {
+            'xs': 'Extra Small (Mobile)',
+            'sm': 'Small (Large Mobile)',
+            'md': 'Medium (Tablet)',
+            'lg': 'Large (Desktop)',
+            'xl': 'Extra Large (Large Monitor)'
+        };
+        
+        console.log(`🔄 Breakpoint changed: ${breakpointNames[newBreakpoint]} (${width}px)`);
+        currentBreakpoint = newBreakpoint;
+        
+        // Show breakpoint change notification
+        if (currentBreakpoint !== 'unknown') {
+            showNotification(`📱 Switched to ${breakpointNames[newBreakpoint]}`, 'success');
+        }
+    }
+}
+
+// Performance-optimized resize handler
+let resizeTimeout;
+function handleResize() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        updateDebugInfo();
+        checkBreakpointChange();
+    }, 100);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateDebugInfo();
+    checkBreakpointChange();
+    
+    console.log('🌍 Universal Responsive Design System Loaded');
+    console.log('🔧 Resize the window or use browser dev tools to test responsiveness');
+    console.log('📱 Mobile navigation: < 768px shows hamburger menu');
+});
+
+// Event listeners
+window.addEventListener('resize', handleResize);
+window.addEventListener('orientationchange', () => {
+    setTimeout(updateDebugInfo, 100); // Delay for orientation change to complete
+});
+
+// Keyboard shortcuts for testing
+document.addEventListener('keydown', function(e) {
+    if (e.altKey) {
+        switch(e.key) {
+            case '1': simulateDevice('mobile'); e.preventDefault(); break;
+            case '2': simulateDevice('tablet'); e.preventDefault(); break;
+            case '3': simulateDevice('desktop'); e.preventDefault(); break;
+            case '4': simulateDevice('ultrawide'); e.preventDefault(); break;
+        }
+    }
+});
+
+console.log('⌨️ Keyboard shortcuts: Alt+1 (Mobile), Alt+2 (Tablet), Alt+3 (Desktop), Alt+4 (Ultra-wide)');
 </script>
 
 {% endblock %}

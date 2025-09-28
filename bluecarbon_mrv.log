@@ -2403,3 +2403,177 @@
 2025-09-28 18:05:56,218 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:05:56] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
 2025-09-28 18:06:01,108 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:06:01] "[32mGET /ngo/dashboard HTTP/1.1[0m" 302 -
 2025-09-28 18:06:01,142 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:06:01] "GET /ngo/login HTTP/1.1" 200 -
+2025-09-28 18:24:16,665 - root - INFO - Database connection initialized successfully
+2025-09-28 18:24:16,665 - root - INFO - Production services initialized for environment: production
+2025-09-28 18:24:16,667 - firebase_client - WARNING - Firebase credentials not found, using mock mode
+2025-09-28 18:24:18,023 - supabase_client - WARNING - Supabase not available or credentials not found, using mock mode
+2025-09-28 18:24:19,642 - web3_integration - INFO - Loaded contract addresses: MRV=0x5FbDB2315678afecb367f032d93F642f64180aa3, Carbon=0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512
+2025-09-28 18:24:19,649 - web3_integration - INFO - Connected to blockchain at http://127.0.0.1:8545
+2025-09-28 18:24:19,653 - web3_integration - INFO - Chain ID: 1337
+2025-09-28 18:24:19,717 - web3_integration - INFO - Contracts loaded successfully
+2025-09-28 18:24:19,808 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.237.211.167:5000
+2025-09-28 18:24:19,808 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-09-28 18:24:24,196 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:24] "GET / HTTP/1.1" 200 -
+2025-09-28 18:24:25,036 - web3_integration - INFO - Checking account: 0xea4c25A65E6Ed0d3f5aE495303B8ADB64B188CE8, balance: 0 ETH
+2025-09-28 18:24:25,041 - web3_integration - INFO - Checking account: 0x71b83D140868E1D7c6Acc4693C5F0A61fefeeAA5, balance: 0 ETH
+2025-09-28 18:24:25,048 - web3_integration - INFO - Checking account: 0xAc38957BA864DdCbEbdc65c91ef2B555A56450E6, balance: 0 ETH
+2025-09-28 18:24:25,052 - web3_integration - INFO - Checking account: 0x1f85866AD27e521E4e393EFC5038ed2404F69c60, balance: 0 ETH
+2025-09-28 18:24:25,060 - web3_integration - INFO - Checking account: 0xc6b6978859dcB1303b392e0B0077f025a081ab55, balance: 0 ETH
+2025-09-28 18:24:25,065 - web3_integration - INFO - Checking account: 0xe60EdFd524f18D40d063c5563412d5690feFf7B8, balance: 0 ETH
+2025-09-28 18:24:25,070 - web3_integration - INFO - Checking account: 0xD075ed4EFb43631c2F663e27077ab8563E3Ba918, balance: 0 ETH
+2025-09-28 18:24:25,077 - web3_integration - INFO - Checking account: 0x72537211635f1297e7A64a5F646DB3D08797cb69, balance: 0 ETH
+2025-09-28 18:24:25,083 - web3_integration - INFO - Checking account: 0xC1403743cb896a3566ba8992A28Fe359c29FE51E, balance: 0 ETH
+2025-09-28 18:24:25,088 - web3_integration - INFO - Checking account: 0x62e9a7dB7D870e7654ADFEe853eCF62662F598F1, balance: 0 ETH
+2025-09-28 18:24:25,088 - web3_integration - ERROR - No funded accounts found on the connected blockchain. Transactions will fail.
+2025-09-28 18:24:25,091 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Address None must be provided as a string
+2025-09-28 18:24:25,093 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Address None must be provided as a string
+2025-09-28 18:24:25,094 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:25] "GET /api/real_blockchain/status HTTP/1.1" 200 -
+2025-09-28 18:24:38,932 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:38] "GET /admin/login HTTP/1.1" 200 -
+2025-09-28 18:24:52,690 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:52] "[32mPOST /admin/login HTTP/1.1[0m" 302 -
+2025-09-28 18:24:52,761 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:52] "GET /admin/dashboard HTTP/1.1" 200 -
+2025-09-28 18:24:52,923 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:52] "GET /static/css/responsive.css HTTP/1.1" 200 -
+2025-09-28 18:24:52,936 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:52] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:24:58,224 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:58] "GET /admin/projects?tab=pending HTTP/1.1" 200 -
+2025-09-28 18:24:58,321 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:58] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:24:58,336 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:24:58] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:00,278 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:00] "GET /admin/ngos HTTP/1.1" 200 -
+2025-09-28 18:25:00,376 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:00] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:00,379 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:00] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:01,726 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:01] "GET /admin/industries HTTP/1.1" 200 -
+2025-09-28 18:25:01,824 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:01] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:01,832 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:01] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:04,707 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:04] "POST /admin/industries/null/action HTTP/1.1" 200 -
+2025-09-28 18:25:10,373 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:10] "GET /admin/industries/applications HTTP/1.1" 200 -
+2025-09-28 18:25:10,476 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:10] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:10,482 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:10] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:13,739 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:13] "GET /admin/industries/applications/IND3003 HTTP/1.1" 200 -
+2025-09-28 18:25:13,834 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:13] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:13,857 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:13] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:17,843 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:17] "GET /admin/industries/applications HTTP/1.1" 200 -
+2025-09-28 18:25:17,951 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:17] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:17,964 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:17] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:19,351 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:19] "GET /admin/revenue HTTP/1.1" 200 -
+2025-09-28 18:25:19,439 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:19] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:19,463 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:19] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:24,294 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:24] "GET /admin/nccr-tools HTTP/1.1" 200 -
+2025-09-28 18:25:24,396 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:24] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:24,399 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:24] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:30,119 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:30] "GET /admin/admins HTTP/1.1" 200 -
+2025-09-28 18:25:30,229 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:30] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:30,265 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:30] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:33,718 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:33] "GET /admin/settings HTTP/1.1" 200 -
+2025-09-28 18:25:33,803 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:33] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:33,804 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:33] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:37,467 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:37] "GET /admin/research/dashboard HTTP/1.1" 200 -
+2025-09-28 18:25:37,568 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:37] "[36mGET /static/css/admin.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:37,575 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:37] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:44,236 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:44] "[32mGET /admin/logout HTTP/1.1[0m" 302 -
+2025-09-28 18:25:44,257 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:44] "GET /admin/login HTTP/1.1" 200 -
+2025-09-28 18:25:46,671 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:46] "GET / HTTP/1.1" 200 -
+2025-09-28 18:25:46,893 - web3_integration - INFO - Checking account: 0xea4c25A65E6Ed0d3f5aE495303B8ADB64B188CE8, balance: 0 ETH
+2025-09-28 18:25:46,898 - web3_integration - INFO - Checking account: 0x71b83D140868E1D7c6Acc4693C5F0A61fefeeAA5, balance: 0 ETH
+2025-09-28 18:25:46,904 - web3_integration - INFO - Checking account: 0xAc38957BA864DdCbEbdc65c91ef2B555A56450E6, balance: 0 ETH
+2025-09-28 18:25:46,909 - web3_integration - INFO - Checking account: 0x1f85866AD27e521E4e393EFC5038ed2404F69c60, balance: 0 ETH
+2025-09-28 18:25:46,914 - web3_integration - INFO - Checking account: 0xc6b6978859dcB1303b392e0B0077f025a081ab55, balance: 0 ETH
+2025-09-28 18:25:46,918 - web3_integration - INFO - Checking account: 0xe60EdFd524f18D40d063c5563412d5690feFf7B8, balance: 0 ETH
+2025-09-28 18:25:46,924 - web3_integration - INFO - Checking account: 0xD075ed4EFb43631c2F663e27077ab8563E3Ba918, balance: 0 ETH
+2025-09-28 18:25:46,928 - web3_integration - INFO - Checking account: 0x72537211635f1297e7A64a5F646DB3D08797cb69, balance: 0 ETH
+2025-09-28 18:25:46,934 - web3_integration - INFO - Checking account: 0xC1403743cb896a3566ba8992A28Fe359c29FE51E, balance: 0 ETH
+2025-09-28 18:25:46,938 - web3_integration - INFO - Checking account: 0x62e9a7dB7D870e7654ADFEe853eCF62662F598F1, balance: 0 ETH
+2025-09-28 18:25:46,938 - web3_integration - ERROR - No funded accounts found on the connected blockchain. Transactions will fail.
+2025-09-28 18:25:46,940 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Address None must be provided as a string
+2025-09-28 18:25:46,942 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Address None must be provided as a string
+2025-09-28 18:25:46,943 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:46] "GET /api/real_blockchain/status HTTP/1.1" 200 -
+2025-09-28 18:25:52,044 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:52] "[32mGET /ngo/dashboard HTTP/1.1[0m" 302 -
+2025-09-28 18:25:52,110 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:52] "GET /ngo/login HTTP/1.1" 200 -
+2025-09-28 18:25:56,197 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:56] "[32mPOST /ngo/login HTTP/1.1[0m" 302 -
+2025-09-28 18:25:56,239 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:56] "GET /ngo/dashboard HTTP/1.1" 200 -
+2025-09-28 18:25:56,350 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:56] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:25:56,585 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:25:56] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:08,206 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:08] "GET /ngo/profile HTTP/1.1" 200 -
+2025-09-28 18:26:08,310 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:08] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:08,551 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:08] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:12,643 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:12] "GET /ngo/projects HTTP/1.1" 200 -
+2025-09-28 18:26:12,741 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:12] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:12,938 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:12] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:15,506 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:15] "GET /ngo/projects/PROJ1000 HTTP/1.1" 200 -
+2025-09-28 18:26:15,599 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:15] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:15,806 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:15] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:17,985 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:17] "GET /ngo/projects/new HTTP/1.1" 200 -
+2025-09-28 18:26:18,085 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:18] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:18,366 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:18] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:22,956 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:22] "GET /ngo/credits HTTP/1.1" 200 -
+2025-09-28 18:26:23,047 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:23] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:23,152 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:23] "GET /ngo/credits/realtime HTTP/1.1" 200 -
+2025-09-28 18:26:23,287 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:23] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:24,925 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:24] "GET /ngo/revenue HTTP/1.1" 200 -
+2025-09-28 18:26:25,031 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:25] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:25,104 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:25] "GET /ngo/revenue/realtime HTTP/1.1" 200 -
+2025-09-28 18:26:25,339 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:25] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:26,549 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:26] "GET /ngo/credits HTTP/1.1" 200 -
+2025-09-28 18:26:26,646 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:26] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:26,758 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:26] "GET /ngo/credits/realtime HTTP/1.1" 200 -
+2025-09-28 18:26:26,884 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:26] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:32,043 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:32] "GET /ngo/credits/realtime HTTP/1.1" 200 -
+2025-09-28 18:26:33,945 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:33] "GET /ngo/revenue HTTP/1.1" 200 -
+2025-09-28 18:26:34,047 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:34] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:34,121 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:34] "GET /ngo/revenue/realtime HTTP/1.1" 200 -
+2025-09-28 18:26:34,258 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:34] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:37,630 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:37] "GET /ngo/satellite-monitoring HTTP/1.1" 200 -
+2025-09-28 18:26:37,730 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:37] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:37,793 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:37] "[36mGET /static/js/satellite_map_utils.js HTTP/1.1[0m" 304 -
+2025-09-28 18:26:38,172 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:38] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:40,786 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:40] "GET /ngo/drone-monitoring HTTP/1.1" 200 -
+2025-09-28 18:26:40,871 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:40] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:41,091 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:41] "[36mGET /static/manifest.json HTTP/1.1[0m" 304 -
+2025-09-28 18:26:45,543 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:45] "[32mGET /ngo/logout HTTP/1.1[0m" 302 -
+2025-09-28 18:26:45,561 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:45] "GET / HTTP/1.1" 200 -
+2025-09-28 18:26:45,776 - web3_integration - INFO - Checking account: 0xea4c25A65E6Ed0d3f5aE495303B8ADB64B188CE8, balance: 0 ETH
+2025-09-28 18:26:45,782 - web3_integration - INFO - Checking account: 0x71b83D140868E1D7c6Acc4693C5F0A61fefeeAA5, balance: 0 ETH
+2025-09-28 18:26:45,788 - web3_integration - INFO - Checking account: 0xAc38957BA864DdCbEbdc65c91ef2B555A56450E6, balance: 0 ETH
+2025-09-28 18:26:45,793 - web3_integration - INFO - Checking account: 0x1f85866AD27e521E4e393EFC5038ed2404F69c60, balance: 0 ETH
+2025-09-28 18:26:45,798 - web3_integration - INFO - Checking account: 0xc6b6978859dcB1303b392e0B0077f025a081ab55, balance: 0 ETH
+2025-09-28 18:26:45,805 - web3_integration - INFO - Checking account: 0xe60EdFd524f18D40d063c5563412d5690feFf7B8, balance: 0 ETH
+2025-09-28 18:26:45,810 - web3_integration - INFO - Checking account: 0xD075ed4EFb43631c2F663e27077ab8563E3Ba918, balance: 0 ETH
+2025-09-28 18:26:45,816 - web3_integration - INFO - Checking account: 0x72537211635f1297e7A64a5F646DB3D08797cb69, balance: 0 ETH
+2025-09-28 18:26:45,821 - web3_integration - INFO - Checking account: 0xC1403743cb896a3566ba8992A28Fe359c29FE51E, balance: 0 ETH
+2025-09-28 18:26:45,825 - web3_integration - INFO - Checking account: 0x62e9a7dB7D870e7654ADFEe853eCF62662F598F1, balance: 0 ETH
+2025-09-28 18:26:45,825 - web3_integration - ERROR - No funded accounts found on the connected blockchain. Transactions will fail.
+2025-09-28 18:26:45,828 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Address None must be provided as a string
+2025-09-28 18:26:45,829 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Address None must be provided as a string
+2025-09-28 18:26:45,830 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:45] "GET /api/real_blockchain/status HTTP/1.1" 200 -
+2025-09-28 18:26:49,051 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:49] "GET /industry/login HTTP/1.1" 200 -
+2025-09-28 18:26:51,242 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:51] "[32mPOST /industry/login HTTP/1.1[0m" 302 -
+2025-09-28 18:26:51,307 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:51] "GET /industry/dashboard HTTP/1.1" 200 -
+2025-09-28 18:26:51,405 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:51] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:26:58,547 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:58] "GET /industry/marketplace HTTP/1.1" 200 -
+2025-09-28 18:26:58,640 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:26:58] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:27:02,807 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:02] "GET /industry/credits HTTP/1.1" 200 -
+2025-09-28 18:27:02,894 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:02] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:27:04,351 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:04] "GET /industry/footprint HTTP/1.1" 200 -
+2025-09-28 18:27:04,442 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:04] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:27:06,170 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:06] "GET /industry/profile HTTP/1.1" 200 -
+2025-09-28 18:27:06,253 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:06] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:27:07,709 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:07] "GET /industry/reports HTTP/1.1" 200 -
+2025-09-28 18:27:07,818 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:07] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:27:10,805 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:10] "GET /industry/help HTTP/1.1" 200 -
+2025-09-28 18:27:10,893 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:10] "[36mGET /static/css/responsive.css HTTP/1.1[0m" 304 -
+2025-09-28 18:27:12,167 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:12] "[32mGET /logout HTTP/1.1[0m" 302 -
+2025-09-28 18:27:12,184 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:12] "GET / HTTP/1.1" 200 -
+2025-09-28 18:27:12,413 - web3_integration - INFO - Checking account: 0xea4c25A65E6Ed0d3f5aE495303B8ADB64B188CE8, balance: 0 ETH
+2025-09-28 18:27:12,418 - web3_integration - INFO - Checking account: 0x71b83D140868E1D7c6Acc4693C5F0A61fefeeAA5, balance: 0 ETH
+2025-09-28 18:27:12,424 - web3_integration - INFO - Checking account: 0xAc38957BA864DdCbEbdc65c91ef2B555A56450E6, balance: 0 ETH
+2025-09-28 18:27:12,428 - web3_integration - INFO - Checking account: 0x1f85866AD27e521E4e393EFC5038ed2404F69c60, balance: 0 ETH
+2025-09-28 18:27:12,434 - web3_integration - INFO - Checking account: 0xc6b6978859dcB1303b392e0B0077f025a081ab55, balance: 0 ETH
+2025-09-28 18:27:12,439 - web3_integration - INFO - Checking account: 0xe60EdFd524f18D40d063c5563412d5690feFf7B8, balance: 0 ETH
+2025-09-28 18:27:12,445 - web3_integration - INFO - Checking account: 0xD075ed4EFb43631c2F663e27077ab8563E3Ba918, balance: 0 ETH
+2025-09-28 18:27:12,452 - web3_integration - INFO - Checking account: 0x72537211635f1297e7A64a5F646DB3D08797cb69, balance: 0 ETH
+2025-09-28 18:27:12,457 - web3_integration - INFO - Checking account: 0xC1403743cb896a3566ba8992A28Fe359c29FE51E, balance: 0 ETH
+2025-09-28 18:27:12,461 - web3_integration - INFO - Checking account: 0x62e9a7dB7D870e7654ADFEe853eCF62662F598F1, balance: 0 ETH
+2025-09-28 18:27:12,462 - web3_integration - ERROR - No funded accounts found on the connected blockchain. Transactions will fail.
+2025-09-28 18:27:12,464 - web3_integration - ERROR - Error calling getTotalRecords on MRV contract: Address None must be provided as a string
+2025-09-28 18:27:12,467 - web3_integration - ERROR - Error calling Carbon contract functions (getTotalBatches/totalCreditsIssued): Address None must be provided as a string
+2025-09-28 18:27:12,468 - werkzeug - INFO - 127.0.0.1 - - [28/Sep/2025 18:27:12] "GET /api/real_blockchain/status HTTP/1.1" 200 -

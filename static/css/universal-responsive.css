@@ -1,0 +1,696 @@
+/* =========================================================================
+   UNIVERSAL RESPONSIVE DESIGN SYSTEM
+   Optimized for ALL devices and screen sizes
+   Mobile-First, Progressive Enhancement Approach
+   ========================================================================= */
+
+/* ========================================
+   CSS CUSTOM PROPERTIES (CSS Variables)
+   ======================================== */
+:root {
+    /* Sidebar & Layout */
+    --sidebar-width-xs: 240px;
+    --sidebar-width-sm: 260px;
+    --sidebar-width-md: 280px;
+    --sidebar-width-lg: 300px;
+    
+    /* Header Heights */
+    --header-height-xs: 50px;
+    --header-height-sm: 56px;
+    --header-height-md: 64px;
+    --header-height-lg: 70px;
+    
+    /* Spacing System */
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px;
+    --spacing-lg: 20px;
+    --spacing-xl: 24px;
+    --spacing-xxl: 32px;
+    --spacing-xxxl: 40px;
+    
+    /* Typography Scale */
+    --font-size-xs: 12px;
+    --font-size-sm: 14px;
+    --font-size-md: 16px;
+    --font-size-lg: 18px;
+    --font-size-xl: 20px;
+    --font-size-xxl: 24px;
+    --font-size-xxxl: 28px;
+    --font-size-display: 32px;
+    
+    /* Line Heights */
+    --line-height-tight: 1.2;
+    --line-height-normal: 1.4;
+    --line-height-relaxed: 1.6;
+    
+    /* Border Radius */
+    --radius-sm: 6px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-xl: 16px;
+    
+    /* Shadows */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.12);
+    --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.15);
+    
+    /* Animation & Transitions */
+    --transition-fast: 0.15s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* Touch Targets */
+    --touch-target-min: 44px;
+    --touch-target-comfortable: 48px;
+}
+
+/* ========================================
+   RESPONSIVE BREAKPOINT SYSTEM
+   ======================================== */
+
+/* Extra Small devices (portrait phones, less than 576px) */
+@media (max-width: 575.98px) {
+    :root {
+        --sidebar-width: var(--sidebar-width-xs);
+        --header-height: var(--header-height-xs);
+        --base-font-size: var(--font-size-sm);
+        --base-padding: var(--spacing-sm);
+    }
+}
+
+/* Small devices (landscape phones, 576px and up) */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    :root {
+        --sidebar-width: var(--sidebar-width-sm);
+        --header-height: var(--header-height-sm);
+        --base-font-size: var(--font-size-md);
+        --base-padding: var(--spacing-md);
+    }
+}
+
+/* Medium devices (tablets, 768px and up) */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    :root {
+        --sidebar-width: var(--sidebar-width-md);
+        --header-height: var(--header-height-md);
+        --base-font-size: var(--font-size-md);
+        --base-padding: var(--spacing-lg);
+    }
+}
+
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    :root {
+        --sidebar-width: var(--sidebar-width-lg);
+        --header-height: var(--header-height-lg);
+        --base-font-size: var(--font-size-md);
+        --base-padding: var(--spacing-xl);
+    }
+}
+
+/* Extra large devices (large desktops, 1200px and up) */
+@media (min-width: 1200px) {
+    :root {
+        --sidebar-width: var(--sidebar-width-lg);
+        --header-height: var(--header-height-lg);
+        --base-font-size: var(--font-size-md);
+        --base-padding: var(--spacing-xxl);
+    }
+}
+
+/* ========================================
+   MOBILE NAVIGATION SYSTEM
+   ======================================== */
+.mobile-nav-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--primary);
+    font-size: clamp(20px, 4vw, 24px);
+    padding: var(--spacing-sm);
+    cursor: pointer;
+    z-index: 1001;
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-nav-toggle:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.mobile-nav-toggle:active {
+    background: rgba(0, 0, 0, 0.1);
+    transform: scale(0.95);
+}
+
+.mobile-nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity var(--transition-normal);
+}
+
+.mobile-nav-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ========================================
+   UNIVERSAL LAYOUT SYSTEM
+   ======================================== */
+
+/* Mobile-First Base Styles */
+.app {
+    display: block;
+    min-height: 100vh;
+    position: relative;
+}
+
+.sidebar,
+.admin-sidebar,
+.industry-sidebar,
+.ngo-sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: var(--sidebar-width);
+    height: 100vh;
+    z-index: 1000;
+    transition: left var(--transition-normal);
+    overflow-y: auto;
+    box-shadow: var(--shadow-xl);
+    will-change: transform;
+}
+
+.sidebar.active,
+.admin-sidebar.active,
+.industry-sidebar.active,
+.ngo-sidebar.active {
+    left: 0;
+}
+
+/* Header Responsive System */
+.header,
+.industry-header {
+    position: relative;
+    height: var(--header-height);
+    padding: 0 var(--base-padding);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    background: var(--white);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-sm);
+}
+
+.header h1,
+.industry-header h1 {
+    font-size: clamp(var(--font-size-lg), 4vw, var(--font-size-xxl));
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Content Areas */
+.content,
+.industry-content {
+    padding: var(--base-padding);
+    margin-top: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.industry-main {
+    width: 100%;
+    margin-left: 0;
+    padding: 0;
+}
+
+/* ========================================
+   CARDS & GRID SYSTEM
+   ======================================== */
+.cards,
+.stats-grid {
+    display: grid;
+    gap: var(--spacing-md);
+    margin-bottom: var(--spacing-xl);
+    grid-template-columns: 1fr;
+}
+
+/* Responsive Grid Breakpoints */
+@media (min-width: 576px) {
+    .cards,
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--spacing-lg);
+    }
+}
+
+@media (min-width: 992px) {
+    .cards,
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--spacing-xl);
+    }
+}
+
+@media (min-width: 1400px) {
+    .cards,
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Card Responsive Design */
+.card,
+.stat-card {
+    padding: clamp(var(--spacing-md), 3vw, var(--spacing-xl));
+    border-radius: var(--radius-lg);
+    transition: var(--transition-normal);
+    min-height: fit-content;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* ========================================
+   TYPOGRAPHY RESPONSIVE SYSTEM
+   ======================================== */
+.stat-value {
+    font-size: clamp(20px, 6vw, 32px);
+    line-height: var(--line-height-tight);
+    font-weight: 700;
+}
+
+.stat-label {
+    font-size: clamp(var(--font-size-xs), 2.5vw, var(--font-size-sm));
+    line-height: var(--line-height-normal);
+}
+
+/* ========================================
+   FORMS & INPUT RESPONSIVE SYSTEM
+   ======================================== */
+.form-control {
+    font-size: clamp(var(--font-size-sm), 3vw, var(--font-size-md));
+    padding: clamp(12px, 2.5vw, 16px);
+    border-radius: var(--radius-md);
+    transition: var(--transition-fast);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.form-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.form-row {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-md);
+}
+
+@media (min-width: 768px) {
+    .form-row {
+        flex-direction: row;
+        gap: var(--spacing-lg);
+    }
+    
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+}
+
+/* ========================================
+   BUTTON RESPONSIVE SYSTEM
+   ======================================== */
+.btn {
+    padding: clamp(12px, 2vw, 16px) clamp(16px, 3vw, 24px);
+    font-size: clamp(var(--font-size-sm), 2.5vw, var(--font-size-md));
+    border-radius: var(--radius-md);
+    min-height: var(--touch-target-min);
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-sm);
+    cursor: pointer;
+    text-decoration: none;
+    border: none;
+    white-space: nowrap;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+/* Button Groups */
+.btn-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+@media (min-width: 576px) {
+    .btn-group {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+}
+
+/* ========================================
+   NAVIGATION RESPONSIVE SYSTEM
+   ======================================== */
+.nav a,
+.admin-nav a,
+.sidebar-nav a,
+.ngo-nav a {
+    padding: clamp(12px, 2.5vw, 16px) clamp(16px, 3vw, 20px);
+    font-size: clamp(var(--font-size-sm), 2.5vw, var(--font-size-md));
+    line-height: var(--line-height-normal);
+    touch-action: manipulation;
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    transition: var(--transition-fast);
+    border-radius: var(--radius-md);
+    margin-bottom: var(--spacing-xs);
+}
+
+/* ========================================
+   TABLE RESPONSIVE SYSTEM
+   ======================================== */
+.table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--spacing-xl);
+}
+
+table {
+    width: 100%;
+    min-width: 600px;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: clamp(8px, 2vw, 16px);
+    font-size: clamp(var(--font-size-xs), 2vw, var(--font-size-sm));
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+
+th {
+    font-weight: 600;
+    background: var(--bg);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+/* Mobile Table Cards */
+.table-responsive-cards {
+    display: none;
+}
+
+@media (max-width: 767.98px) {
+    .table-container.use-cards table {
+        display: none;
+    }
+    
+    .table-container.use-cards .table-responsive-cards {
+        display: block;
+    }
+    
+    .responsive-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: var(--spacing-lg);
+        margin-bottom: var(--spacing-md);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    .responsive-card-header {
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-sm);
+        border-bottom: 1px solid var(--border);
+        font-size: var(--font-size-lg);
+    }
+    
+    .responsive-card-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--spacing-sm) 0;
+        gap: var(--spacing-md);
+        flex-wrap: wrap;
+    }
+    
+    .responsive-card-label {
+        font-weight: 500;
+        color: #666;
+        font-size: var(--font-size-sm);
+        min-width: 120px;
+    }
+    
+    .responsive-card-value {
+        font-weight: 600;
+        color: var(--text);
+        text-align: right;
+        flex: 1;
+    }
+}
+
+/* ========================================
+   DESKTOP RESPONSIVE BEHAVIOR
+   ======================================== */
+@media (min-width: 768px) {
+    .mobile-nav-toggle {
+        display: none;
+    }
+    
+    .app {
+        display: grid;
+        grid-template-columns: var(--sidebar-width) 1fr;
+        grid-template-rows: var(--header-height) 1fr;
+        grid-template-areas:
+            "sidebar header"
+            "sidebar content";
+        min-height: 100vh;
+    }
+    
+    .sidebar,
+    .admin-sidebar,
+    .industry-sidebar,
+    .ngo-sidebar {
+        position: static;
+        left: auto;
+        width: auto;
+        box-shadow: none;
+        border-right: 1px solid var(--border);
+    }
+    
+    .industry-main {
+        margin-left: var(--sidebar-width);
+    }
+    
+    .industry-container {
+        display: flex;
+    }
+}
+
+/* ========================================
+   DEVICE-SPECIFIC OPTIMIZATIONS
+   ======================================== */
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .btn,
+    .form-control,
+    .card {
+        border-width: 0.5px;
+    }
+}
+
+/* Touch Device Optimizations */
+@media (pointer: coarse) {
+    .btn,
+    .nav a,
+    .admin-nav a,
+    .sidebar-nav a,
+    .ngo-nav a {
+        min-height: var(--touch-target-comfortable);
+        min-width: var(--touch-target-comfortable);
+    }
+    
+    .mobile-nav-toggle {
+        min-height: var(--touch-target-comfortable);
+        min-width: var(--touch-target-comfortable);
+    }
+}
+
+/* Landscape Orientation on Mobile */
+@media (max-width: 767.98px) and (orientation: landscape) {
+    .sidebar,
+    .admin-sidebar,
+    .industry-sidebar,
+    .ngo-sidebar {
+        width: clamp(240px, 40vw, 320px);
+    }
+    
+    .header,
+    .industry-header {
+        height: clamp(48px, 8vh, 64px);
+    }
+    
+    .content,
+    .industry-content {
+        padding: var(--spacing-sm) var(--spacing-md);
+    }
+}
+
+/* Large Monitors (1440px and up) */
+@media (min-width: 1440px) {
+    .app {
+        grid-template-columns: 320px 1fr;
+    }
+    
+    .content,
+    .industry-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: var(--spacing-xxxl);
+    }
+}
+
+/* Ultra-Wide Monitors (1920px and up) */
+@media (min-width: 1920px) {
+    .content,
+    .industry-content {
+        max-width: 1600px;
+        padding: var(--spacing-xxxl) var(--spacing-xxxl);
+    }
+}
+
+/* ========================================
+   ACCESSIBILITY & USABILITY
+   ======================================== */
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    .card,
+    .btn,
+    .form-control {
+        border: 2px solid currentColor;
+    }
+}
+
+/* Focus Styles for Keyboard Navigation */
+.mobile-nav-toggle:focus,
+.nav a:focus,
+.admin-nav a:focus,
+.sidebar-nav a:focus,
+.ngo-nav a:focus,
+.btn:focus,
+.form-control:focus {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+}
+
+/* Print Styles */
+@media print {
+    .sidebar,
+    .admin-sidebar,
+    .industry-sidebar,
+    .ngo-sidebar,
+    .header,
+    .industry-header,
+    .mobile-nav-toggle,
+    .mobile-nav-overlay {
+        display: none !important;
+    }
+    
+    .app {
+        display: block;
+    }
+    
+    .content,
+    .industry-content {
+        padding: 0;
+        margin: 0;
+        max-width: none;
+    }
+    
+    .card {
+        break-inside: avoid;
+        border: 1px solid #000;
+        margin-bottom: 20px;
+    }
+}
+
+/* ========================================
+   ANIMATION & PERFORMANCE OPTIMIZATIONS
+   ======================================== */
+.sidebar,
+.admin-sidebar,
+.industry-sidebar,
+.ngo-sidebar,
+.mobile-nav-overlay,
+.mobile-nav-toggle {
+    will-change: transform;
+}
+
+/* Smooth scrolling for supported browsers */
+@media (prefers-reduced-motion: no-preference) {
+    html {
+        scroll-behavior: smooth;
+    }
+    
+    .sidebar,
+    .admin-sidebar,
+    .industry-sidebar,
+    .ngo-sidebar {
+        scroll-behavior: smooth;
+    }
+}
