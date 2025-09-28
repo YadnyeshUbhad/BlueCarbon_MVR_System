@@ -989,8 +989,17 @@ def submit_project():
             ngo_name = ngo_data['name']
             ngo_id = ngo_data['id']
         
-        # Generate new project ID
-        project_id = f'PROJ{1000 + len(admin_projects_data) + 1}'
+        # Generate new project ID (ensure it doesn't conflict with existing ones)
+        existing_ids = [p['id'] for p in admin_projects_data]
+        project_id = None
+        for i in range(1026, 9999):  # Start from PROJ1026 to avoid conflicts with demo data
+            potential_id = f'PROJ{i}'
+            if potential_id not in existing_ids:
+                project_id = potential_id
+                break
+        
+        if not project_id:
+            project_id = f'PROJ{random.randint(5000, 9999)}'
         
         # Extract form data
         project_data = {
@@ -1044,6 +1053,10 @@ def submit_project():
         
         # Add to admin projects database
         admin_projects_data.append(project_data)
+        
+        # Log the project creation for real-time monitoring
+        logger.info(f"NEW PROJECT CREATED: {project_id} - {project_data['name']} by {ngo_name} - Status: {project_data['status']}")
+        logger.info(f"Total projects in system: {len(admin_projects_data)}")
         
         # Submit to blockchain for immutable record
         try:
@@ -2136,6 +2149,9 @@ def admin_dashboard():
     total_projects = len(admin_projects_data)
     pending_verification = len([p for p in admin_projects_data if p['status'] in ['Pending Review', 'Documents Missing', 'Under Verification']])
     verified_projects = len([p for p in admin_projects_data if p['status'] == 'Verified'])
+    
+    # Log real-time dashboard stats
+    logger.info(f"ADMIN DASHBOARD: Total projects: {total_projects}, Pending: {pending_verification}, Verified: {verified_projects}")
     total_credits_generated = sum(p['credits_requested'] for p in admin_projects_data)
     total_credits_verified = sum(p['credits_approved'] for p in admin_projects_data if p['status'] == 'Verified')
     total_revenue_distributed = sum(t['total_value'] for t in transactions_data if t['status'] == 'Completed')
@@ -2193,6 +2209,17 @@ def admin_dashboard():
 def projects_management():
     """Projects Management - Main page with pending and verified tabs"""
     generate_comprehensive_admin_data()
+    
+    # Log current state for debugging
+    logger.info(f"ADMIN PROJECTS VIEW: Total projects in system: {len(admin_projects_data)}")
+    pending_projects = [p for p in admin_projects_data if p['status'] in ['Pending Review', 'Documents Missing', 'Under Verification']]
+    verified_projects = [p for p in admin_projects_data if p['status'] == 'Verified']
+    logger.info(f"ADMIN PROJECTS VIEW: Pending projects: {len(pending_projects)}, Verified projects: {len(verified_projects)}")
+    
+    # Log recent projects (last 5)
+    recent_projects = sorted(admin_projects_data, key=lambda x: x.get('submission_date', datetime.now()), reverse=True)[:5]
+    for proj in recent_projects:
+        logger.info(f"RECENT PROJECT: {proj['id']} - {proj['name']} - Status: {proj['status']} - NGO: {proj['ngo_name']}")
     
     tab = request.args.get('tab', 'pending')  # pending or verified
     search = request.args.get('search', '')
@@ -4269,6 +4296,32 @@ def get_live_token_dashboard():
     
     return jsonify(dashboard_data)
 
+
+# Debug API endpoint for real-time project monitoring
+@app.route('/api/debug/projects-state')
+def debug_projects_state():
+    """Debug endpoint to check current projects state"""
+    generate_comprehensive_admin_data()
+    
+    pending_projects = [p for p in admin_projects_data if p['status'] in ['Pending Review', 'Documents Missing', 'Under Verification']]
+    verified_projects = [p for p in admin_projects_data if p['status'] == 'Verified']
+    
+    # Get recent projects (last 10)
+    recent_projects = sorted(admin_projects_data, key=lambda x: x.get('submission_date', datetime.now()), reverse=True)[:10]
+    
+    return jsonify({
+        'total_projects': len(admin_projects_data),
+        'pending_projects': len(pending_projects),
+        'verified_projects': len(verified_projects),
+        'recent_projects': [{
+            'id': p['id'],
+            'name': p['name'],
+            'ngo_name': p['ngo_name'],
+            'status': p['status'],
+            'submission_date': p['submission_date'].isoformat() if isinstance(p['submission_date'], datetime) else str(p['submission_date'])
+        } for p in recent_projects],
+        'all_statuses': list(set(p['status'] for p in admin_projects_data))
+    })
 
 # Location Management API endpoints
 @app.route('/api/location/validate', methods=['POST'])
