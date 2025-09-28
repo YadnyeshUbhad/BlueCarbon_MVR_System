@@ -7,6 +7,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/responsive.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='css/universal-responsive.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/auto-responsive.css') }}" rel="stylesheet">
     <style>
         :root {
             --primary: #0ea5e9;
@@ -624,5 +625,8 @@
             }, 5000);
         }
     </script>
+    
+    <!-- Auto-Responsive Navigation Script -->
+    <script src="{{ url_for('static', filename='js/auto-responsive.js') }}"></script>
 </body>
 </html>
