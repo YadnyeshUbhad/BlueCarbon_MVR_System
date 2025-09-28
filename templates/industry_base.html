@@ -38,17 +38,21 @@
         .industry-container {
             display: flex;
             min-height: 100vh;
+            gap: 0;
         }
 
-        /* Sidebar */
+        /* Sidebar - Default Desktop Layout */
         .industry-sidebar {
             width: 280px;
+            min-width: 280px;
             background: linear-gradient(135deg, #1e40af, #3b82f6);
             color: white;
-            position: fixed;
             height: 100vh;
             overflow-y: auto;
-            z-index: 1000;
+            position: sticky;
+            top: 0;
+            flex-shrink: 0;
+            transition: all 0.3s ease;
         }
 
         .sidebar-header {
@@ -113,13 +117,15 @@
         /* Main Content */
         .industry-main {
             flex: 1;
-            margin-left: 280px;
-            padding: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--light);
         }
 
         .industry-header {
             background: white;
-            padding: 1.5rem 2rem;
+            padding: 1rem 2rem;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
@@ -127,17 +133,15 @@
             position: sticky;
             top: 0;
             z-index: 900;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
 
-        .header-title h1 {
-            font-size: 1.875rem;
+        .industry-header h1 {
+            font-size: 1.5rem;
             color: var(--dark);
-            margin-bottom: 0.25rem;
-        }
-
-        .header-title p {
-            color: var(--text-muted);
-            font-size: 0.875rem;
+            margin: 0;
+            flex: 1;
+            font-weight: 600;
         }
 
         .header-actions {
@@ -147,7 +151,9 @@
         }
 
         .industry-content {
-            padding: 2rem;
+            padding: 1.5rem;
+            flex: 1;
+            overflow-y: auto;
         }
 
         /* Cards */
@@ -178,20 +184,26 @@
         /* Stats Grid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
         }
 
         .stat-card {
             background: white;
-            padding: 2rem;
+            padding: 1.5rem;
             border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             border: 1px solid var(--border);
             text-align: center;
             position: relative;
             overflow: hidden;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
         }
 
         .stat-card::before {
@@ -420,19 +432,99 @@
             transition: width 0.3s ease;
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
+        /* Mobile Navigation Toggle Button */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--dark);
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+            margin-right: 1rem;
+        }
+        
+        .mobile-nav-toggle:hover {
+            background-color: #f1f5f9;
+        }
+        
+        /* Mobile Navigation Overlay */
+        .mobile-nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .mobile-nav-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Desktop Layout - Ensure proper display */
+        @media (min-width: 993px) {
+            .industry-container {
+                display: flex;
+                gap: 0;
+            }
+            
             .industry-sidebar {
+                position: sticky;
+                transform: none;
+                display: block;
+                width: 280px;
+                min-width: 280px;
+            }
+            
+            .industry-main {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .mobile-nav-overlay {
+                display: none;
+            }
+            
+            .mobile-nav-toggle {
+                display: none;
+            }
+        }
+        
+        /* Tablet and Mobile Layout */
+        @media (max-width: 992px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .industry-container {
+                display: block;
+            }
+            
+            .industry-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
                 transform: translateX(-100%);
                 transition: transform 0.3s ease;
             }
 
-            .industry-sidebar.show {
+            .industry-sidebar.active {
                 transform: translateX(0);
             }
 
             .industry-main {
-                margin-left: 0;
+                width: 100%;
             }
 
             .industry-header {
@@ -445,6 +537,26 @@
 
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .stat-card {
+                padding: 1.25rem;
+            }
+        }
+                display: none;
+            }
+        }
+        
+        /* Allow auto-responsive.css to override mobile behavior */
+        @media (max-width: 1024px) {
+            /* These styles will be overridden by auto-responsive.css !important rules */
+            .industry-sidebar {
+                /* auto-responsive.css will handle this */
+            }
+            
+            .mobile-nav-toggle {
+                /* auto-responsive.css will handle this */
             }
         }
     </style>
@@ -521,23 +633,20 @@
 
         <!-- Main Content -->
         <main class="industry-main">
-            <header class="industry-header">
-                <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle navigation">
-                    <i class="fas fa-bars"></i>
+        <header class="industry-header">
+            <button class="mobile-nav-toggle" onclick="toggleMobileNav()" aria-label="Toggle navigation">
+                <i class="fas fa-bars"></i>
+            </button>
+            <h1>{{ header or 'Industry Dashboard' }}</h1>
+            <div class="header-actions">
+                {% block header_actions %}
+                <button class="btn btn-primary" onclick="location.href='/industry/marketplace'">
+                    <i class="fas fa-plus"></i>
+                    Buy Credits
                 </button>
-                <div class="header-title">
-                    <h1>{{ header or 'Industry Dashboard' }}</h1>
-                    <p>{{ subheader or 'Manage your carbon credits and sustainability goals' }}</p>
-                </div>
-                <div class="header-actions">
-                    {% block header_actions %}
-                    <button class="btn btn-primary" onclick="location.href='/industry/marketplace'">
-                        <i class="fas fa-plus"></i>
-                        Buy Credits
-                    </button>
-                    {% endblock %}
-                </div>
-            </header>
+                {% endblock %}
+            </div>
+        </header>
             
             <div class="industry-content">
                 {% block content %}{% endblock %}

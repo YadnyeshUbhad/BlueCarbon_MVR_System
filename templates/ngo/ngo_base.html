@@ -221,6 +221,86 @@
             background: var(--primary);
             color: white;
         }
+        
+        /* Mobile Navigation Toggle Button */
+        .mobile-nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            color: var(--text);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .mobile-nav-toggle:hover {
+            background-color: #f1f5f9;
+        }
+        
+        /* Mobile Navigation Overlay */
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        .mobile-nav-overlay.active {
+            display: block;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .app {
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "header"
+                    "content";
+            }
+            
+            .ngo-sidebar {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 280px;
+                height: 100vh;
+                z-index: 1000;
+                transform: translateX(-100%);
+                transition: transform 0.3s ease;
+            }
+            
+            .ngo-sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .header {
+                padding: 0 20px;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+        
+        @media (min-width: 1025px) {
+            .ngo-sidebar {
+                transform: translateX(0) !important;
+            }
+            
+            .mobile-nav-overlay {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body>
