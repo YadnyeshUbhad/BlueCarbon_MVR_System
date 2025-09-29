@@ -61,7 +61,7 @@ class Web3Integration:
             rpc_url = "http://127.0.0.1:8545"
             self.w3 = Web3(Web3.HTTPProvider(rpc_url))
             
-            if self.w3.is_connected():
+if self.w3.isConnected():
                 self.logger.info(f"Connected to blockchain at {rpc_url}")
                 self.logger.info(f"Chain ID: {self.w3.eth.chain_id}")
             else:

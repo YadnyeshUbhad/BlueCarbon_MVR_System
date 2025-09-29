@@ -1926,26 +1926,50 @@ def credits_realtime():
 def revenue_realtime():
     """Real-time revenue data for live updates"""
     generate_comprehensive_admin_data()
-    ngo = admin_ngos_data[0] if admin_ngos_data else {'name': 'Demo NGO'}
-    ngo_projects = [p for p in admin_projects_data if p['ngo_name'] == ngo['name']]
-    ngo_transactions = [t for t in transactions_data if any(p['name'] == t['project_name'] and p['ngo_name'] == ngo['name'] for p in ngo_projects)]
     
-    total_revenue = sum(t['total_value'] for t in ngo_transactions if t['status'] == 'Completed')
+    # Get current NGO
+    user_email = session.get('user_email')
+    ngo_data = next((ngo for ngo in admin_ngos_data if ngo['email'] == user_email), None)
     
-    # Mock recent transactions
+    if not ngo_data:
+        # Use first NGO for demo
+        ngo_data = admin_ngos_data[0] if admin_ngos_data else {'name': 'Demo NGO', 'total_revenue': 0}
+    
+    # Get actual revenue from NGO data (updated by credit purchases)
+    total_revenue = ngo_data.get('total_revenue', 0)
+    credits_sold = ngo_data.get('credits_sold', 0)
+    
+    # Get transactions for this NGO
+    ngo_transactions = [t for t in transactions_data if t.get('ngo_name') == ngo_data['name'] and t['type'] == 'Credit Sale']
+    
+    # Recent transactions (last 5)
     recent_transactions = []
-    for t in ngo_transactions[-3:]:  # Last 3 transactions
+    for t in sorted(ngo_transactions, key=lambda x: x['sale_date'], reverse=True)[:5]:
         recent_transactions.append({
+            'transaction_id': t['transaction_id'],
             'project': t['project_name'],
-            'total': t['total_value'],
-            'buyer': t['buyer_name'],
+            'industry_buyer': t['industry_name'],
+            'credits_sold': t['credits_sold'],
+            'total_value': t['total_value'],
+            'sale_date': t['sale_date'].strftime('%Y-%m-%d %H:%M'),
             'status': t['status']
         })
     
+    # Calculate statistics
+    stats = {
+        'total_revenue': total_revenue,
+        'credits_sold': credits_sold,
+        'total_transactions': len(ngo_transactions),
+        'average_revenue_per_credit': total_revenue / max(credits_sold, 1),
+        'last_sale_date': ngo_data.get('last_sale_date').strftime('%Y-%m-%d') if ngo_data.get('last_sale_date') else None
+    }
+    
     return jsonify({
         'success': True,
-        'total_revenue': total_revenue,
-        'recent_transactions': recent_transactions
+        'stats': stats,
+        'recent_transactions': recent_transactions,
+        'ngo_name': ngo_data['name'],
+        'last_updated': datetime.now().strftime('%H:%M:%S')
     })
 
 @ngo_bp.route("/revenue/request_payout", methods=['POST'])
@@ -3716,6 +3740,61 @@ def buy_credits(project_id):
         industry_user_data['credits_purchased'] += credits
         industry_user_data['credits_active'] += credits
         industry_user_data['total_spent'] += total_cost
+        
+        # REAL-TIME NGO REVENUE UPDATE
+        try:
+            # Find the NGO that owns this project and update their revenue
+            project_owner_ngo = next((n for n in admin_ngos_data if n['name'] == project['ngo_name']), None)
+            if project_owner_ngo:
+                # Calculate NGO's share (typically 70-80% of credit sale value)
+                ngo_revenue_share = total_cost * 0.75  # 75% goes to NGO
+                
+                # Update NGO's revenue data
+                if 'total_revenue' not in project_owner_ngo:
+                    project_owner_ngo['total_revenue'] = 0
+                if 'credits_sold' not in project_owner_ngo:
+                    project_owner_ngo['credits_sold'] = 0
+                    
+                project_owner_ngo['total_revenue'] += ngo_revenue_share
+                project_owner_ngo['credits_sold'] += credits
+                project_owner_ngo['last_sale_date'] = datetime.now()
+                
+                # Update the specific project's sales data
+                project_in_admin_data = next((p for p in admin_projects_data if p['id'] == project_id), None)
+                if project_in_admin_data:
+                    if 'revenue_generated' not in project_in_admin_data:
+                        project_in_admin_data['revenue_generated'] = 0
+                    if 'credits_sold' not in project_in_admin_data:
+                        project_in_admin_data['credits_sold'] = 0
+                        
+                    project_in_admin_data['revenue_generated'] += ngo_revenue_share
+                    project_in_admin_data['credits_sold'] += credits
+                    project_in_admin_data['last_sale_date'] = datetime.now()
+                
+                # Add transaction to global transactions data for admin tracking
+                transaction_record = {
+                    'id': f'REV{random.randint(100000, 999999)}',
+                    'transaction_id': purchase['transaction_id'],
+                    'type': 'Credit Sale',
+                    'ngo_name': project['ngo_name'],
+                    'ngo_id': project_owner_ngo['id'],
+                    'industry_name': industry_user_data.get('company_name', 'Demo Industry'),
+                    'project_name': project['name'],
+                    'project_id': project_id,
+                    'credits_sold': credits,
+                    'total_value': ngo_revenue_share,
+                    'price_per_credit': project['price_per_credit'],
+                    'sale_date': datetime.now(),
+                    'status': 'Completed'
+                }
+                transactions_data.append(transaction_record)
+                
+                logger.info(f"✅ REAL-TIME UPDATE: NGO '{project['ngo_name']}' earned ₹{ngo_revenue_share:,.2f} from {credits} credit sale")
+            else:
+                logger.warning(f"NGO '{project['ngo_name']}' not found for revenue update")
+                
+        except Exception as e:
+            logger.error(f"Failed to update NGO revenue: {e}")
         
         # Send credit purchase notifications
         try:
