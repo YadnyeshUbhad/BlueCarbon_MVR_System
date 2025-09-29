@@ -973,7 +973,13 @@ def ngo_projects_new():
 @ngo_bp.route("/projects/submit", methods=['POST'])
 @login_required(['ngo'])
 def submit_project():
-    """Handle project submission and add to admin database"""
+    """Handle project submission and add to admin database with enhanced file handling"""
+    import os
+    from werkzeug.utils import secure_filename
+    from datetime import datetime
+    import uuid
+    import json
+    
     try:
         # Generate comprehensive admin data to ensure the lists are initialized
         generate_comprehensive_admin_data()
@@ -1001,7 +1007,92 @@ def submit_project():
         if not project_id:
             project_id = f'PROJ{random.randint(5000, 9999)}'
         
-        # Extract form data
+        # Create project directory for file uploads
+        project_upload_dir = os.path.join('uploads', 'projects', project_id)
+        os.makedirs(project_upload_dir, exist_ok=True)
+        os.makedirs(os.path.join(project_upload_dir, 'baseline'), exist_ok=True)
+        os.makedirs(os.path.join(project_upload_dir, 'media'), exist_ok=True)
+        
+        # Helper function for secure file handling
+        def save_uploaded_file(file, upload_path, allowed_extensions=None):
+            if not file or file.filename == '':
+                return None
+            
+            if allowed_extensions:
+                file_ext = file.filename.rsplit('.', 1)[1].lower() if '.' in file.filename else ''
+                if file_ext not in allowed_extensions:
+                    return None
+            
+            # Generate unique filename to prevent conflicts
+            filename = secure_filename(file.filename)
+            name, ext = os.path.splitext(filename)
+            unique_filename = f"{name}_{uuid.uuid4().hex[:8]}{ext}"
+            file_path = os.path.join(upload_path, unique_filename)
+            
+            # Save file
+            file.save(file_path)
+            return {
+                'original_name': file.filename,
+                'saved_name': unique_filename,
+                'file_path': file_path,
+                'upload_date': datetime.now().isoformat(),
+                'file_size': os.path.getsize(file_path)
+            }
+        
+        # Process baseline condition upload
+        baseline_file_info = None
+        if 'baseline' in request.files:
+            baseline_file = request.files['baseline']
+            allowed_baseline_extensions = {'pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'tiff', 'xlsx', 'xls', 'csv'}
+            baseline_upload_path = os.path.join(project_upload_dir, 'baseline')
+            baseline_file_info = save_uploaded_file(baseline_file, baseline_upload_path, allowed_baseline_extensions)
+        
+        # Process media uploads (plant images)
+        uploaded_images = []
+        if 'media' in request.files:
+            media_files = request.files.getlist('media')
+            allowed_media_extensions = {'jpg', 'jpeg', 'png', 'gif', 'tiff', 'webp'}
+            media_upload_path = os.path.join(project_upload_dir, 'media')
+            
+            for media_file in media_files:
+                if media_file and media_file.filename != '':
+                    media_info = save_uploaded_file(media_file, media_upload_path, allowed_media_extensions)
+                    if media_info:
+                        uploaded_images.append(media_info)
+        
+        # Parse location coordinates from form
+        location_coordinates = None
+        exact_location_data = None
+        location_string = request.form.get('location', '')
+        
+        if location_string:
+            try:
+                # Try to parse JSON coordinates from the form
+                if location_string.startswith('{'):
+                    location_data = json.loads(location_string)
+                    location_coordinates = {
+                        'latitude': float(location_data.get('lat', 0)),
+                        'longitude': float(location_data.get('lng', 0))
+                    }
+                    exact_location_data = location_data
+                else:
+                    # Parse comma-separated coordinates
+                    coords = location_string.split(',')
+                    if len(coords) >= 2:
+                        location_coordinates = {
+                            'latitude': float(coords[0].strip()),
+                            'longitude': float(coords[1].strip())
+                        }
+                        exact_location_data = {
+                            'lat': location_coordinates['latitude'],
+                            'lng': location_coordinates['longitude'],
+                            'address': request.form.get('admin_area', 'Location provided')
+                        }
+            except (ValueError, json.JSONDecodeError) as e:
+                logger.warning(f"Failed to parse location coordinates: {e}")
+                # Keep location as string for fallback
+        
+        # Extract form data with enhanced structure
         project_data = {
             'id': project_id,
             'name': request.form.get('name', '').strip(),
@@ -1016,7 +1107,7 @@ def submit_project():
             'number_of_trees': int(request.form.get('number_of_trees', 0)) if request.form.get('number_of_trees') else 0,
             'seedlings': int(request.form.get('seedlings', 0)) if request.form.get('seedlings') else 0,
             'carbon_credits': float(request.form.get('carbon_credits', 0)) if request.form.get('carbon_credits') else 0,
-            'location': request.form.get('location', ''),
+            'location': location_string,  # Keep original string for backward compatibility
             'tree_height': float(request.form.get('tree_height', 0)) if request.form.get('tree_height') else 0,
             'tree_dbh': float(request.form.get('tree_dbh', 0)) if request.form.get('tree_dbh') else 0,
             'tree_age': int(request.form.get('tree_age', 0)) if request.form.get('tree_age') else 0,
@@ -1035,7 +1126,22 @@ def submit_project():
             'documents': ['Project Proposal', 'Environmental Assessment'],
             # New fields for location parsing
             'state': 'Maharashtra',  # Default, could be extracted from location
-            'district': request.form.get('admin_area', '').split(',')[0] if request.form.get('admin_area') else 'Mumbai'
+            'district': request.form.get('admin_area', '').split(',')[0] if request.form.get('admin_area') else 'Mumbai',
+            
+            # NEW ENHANCED FIELDS FOR REAL-TIME ADMIN VISIBILITY
+            'location_coordinates': location_coordinates,
+            'exact_location_data': exact_location_data,
+            'baseline_file': baseline_file_info,
+            'uploaded_images': uploaded_images,
+            'upload_directory': project_upload_dir,
+            'total_uploaded_files': len(uploaded_images) + (1 if baseline_file_info else 0),
+            'submission_timestamp': datetime.now().isoformat(),
+            'real_time_data': {
+                'files_uploaded': bool(baseline_file_info or uploaded_images),
+                'coordinates_provided': bool(location_coordinates),
+                'baseline_provided': bool(baseline_file_info),
+                'images_count': len(uploaded_images)
+            }
         }
         
         # Validate required fields
@@ -1054,8 +1160,10 @@ def submit_project():
         # Add to admin projects database
         admin_projects_data.append(project_data)
         
-        # Log the project creation for real-time monitoring
+        # Enhanced logging for real-time monitoring with file and location info
         logger.info(f"NEW PROJECT CREATED: {project_id} - {project_data['name']} by {ngo_name} - Status: {project_data['status']}")
+        logger.info(f"PROJECT FILES: Baseline: {bool(baseline_file_info)}, Images: {len(uploaded_images)}, Coordinates: {bool(location_coordinates)}")
+        logger.info(f"PROJECT LOCATION: {location_coordinates if location_coordinates else 'No coordinates provided'}")
         logger.info(f"Total projects in system: {len(admin_projects_data)}")
         
         # Submit to blockchain for immutable record
@@ -1072,10 +1180,22 @@ def submit_project():
             workflow = asyncio.run(mrv_workflow_engine.create_workflow(project_data))
             project_data['workflow_id'] = workflow.workflow_id
             
-            flash(f'Project "{project_data["name"]}" submitted successfully!\n' +
-                  f'Project ID: {project_id}\n' +
-                  f'MRV Workflow ID: {workflow.workflow_id}\n' +
-                  f'Verification Score: {workflow.verification_score:.1%}', 'success')
+            # Create enhanced success message with file upload info
+            success_message = f'Project "{project_data["name"]}" submitted successfully!\n'
+            success_message += f'Project ID: {project_id}\n'
+            success_message += f'MRV Workflow ID: {workflow.workflow_id}\n'
+            success_message += f'Verification Score: {workflow.verification_score:.1%}\n'
+            
+            # Add file upload status
+            if baseline_file_info:
+                success_message += f'✓ Baseline condition file uploaded: {baseline_file_info["original_name"]}\n'
+            if uploaded_images:
+                success_message += f'✓ {len(uploaded_images)} plant image(s) uploaded\n'
+            if location_coordinates:
+                success_message += f'✓ GPS coordinates recorded: {location_coordinates["latitude"]:.4f}, {location_coordinates["longitude"]:.4f}\n'
+            
+            success_message += '\nProject is now visible in admin portal for real-time review!'
+            flash(success_message, 'success')
                   
             logger.info(f"Created MRV workflow {workflow.workflow_id} for project {project_id}")
         except Exception as e:
@@ -1382,6 +1502,7 @@ def credits_view():
 
 
 @ngo_bp.route("/upload/tree_data", methods=['POST'])
+@login_required(['ngo'])
 def process_tree_data():
     """Process uploaded CSV/Excel file with tree data and extract statistics"""
     if 'tree_data_file' not in request.files:
@@ -1514,6 +1635,7 @@ def process_tree_data():
         })
 
 @ngo_bp.route("/upload/analyze", methods=['POST'])
+@login_required(['ngo'])
 def analyze_image():
     """AI Image Analysis for tree species and carbon estimation with plant validation"""
     if 'image' not in request.files:
@@ -1608,6 +1730,49 @@ def analyze_image():
             'success': False,
             'error': f'Image analysis error: {str(e)}'
         })
+
+@ngo_bp.route("/uploads/<project_id>/<file_type>/<filename>")
+@login_required(['ngo', 'admin', 'verifier'])
+def serve_project_file(project_id, file_type, filename):
+    """Secure file serving for project uploads with access control"""
+    import os
+    from flask import send_file, abort
+    
+    try:
+        # Validate file type
+        if file_type not in ['baseline', 'media']:
+            abort(404)
+        
+        # Check if user has access to this project
+        user_role = session.get('user_role')
+        user_email = session.get('user_email')
+        
+        # Find the project
+        generate_comprehensive_admin_data()
+        project = next((p for p in admin_projects_data if p['id'] == project_id), None)
+        
+        if not project:
+            abort(404)
+        
+        # Access control: NGOs can only see their own projects, admins/verifiers can see all
+        if user_role == 'ngo':
+            ngo_data = next((ngo for ngo in admin_ngos_data if ngo['email'] == user_email), None)
+            if not ngo_data or project['ngo_name'] != ngo_data['name']:
+                abort(403)
+        
+        # Construct file path
+        file_path = os.path.join('uploads', 'projects', project_id, file_type, filename)
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+            abort(404)
+        
+        # Serve the file
+        return send_file(file_path)
+        
+    except Exception as e:
+        logger.error(f"Error serving file {filename}: {e}")
+        abort(500)
 
 @ngo_bp.route("/calculate/tree_carbon", methods=['POST'])
 def calculate_tree_carbon():
@@ -2230,6 +2395,7 @@ def admin_dashboard():
     return render_template('admin/dashboard.html', stats=stats, activities=activities)
 
 @admin_bp.route("/projects")
+@login_required(['admin'])
 def projects_management():
     """Projects Management - Main page with pending and verified tabs"""
     generate_comprehensive_admin_data()
@@ -2279,6 +2445,7 @@ def projects_management():
                          datetime=datetime)
 
 @admin_bp.route("/projects/<project_id>")
+@login_required(['admin'])
 def project_details(project_id):
     """Detailed view of a specific project"""
     generate_comprehensive_admin_data()
@@ -2294,6 +2461,7 @@ def project_details(project_id):
     return render_template('admin/project_details.html', project=project, ngo=ngo)
 
 @admin_bp.route("/projects/<project_id>/action", methods=['POST'])
+@login_required(['admin'])
 def project_action(project_id):
     """Handle project actions (approve, reject, send back)"""
     generate_comprehensive_admin_data()

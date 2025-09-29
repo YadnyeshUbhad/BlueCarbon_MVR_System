@@ -58,10 +58,10 @@ class Web3Integration:
         """Connect to blockchain network"""
         try:
             # For local development, use Hardhat network
-            rpc_url = "http://127.0.0.1:8545"
+            rpc_url = os.getenv('WEB3_PROVIDER_URL', "http://127.0.0.1:8545")
             self.w3 = Web3(Web3.HTTPProvider(rpc_url))
             
-if self.w3.isConnected():
+            if self.w3.is_connected():
                 self.logger.info(f"Connected to blockchain at {rpc_url}")
                 self.logger.info(f"Chain ID: {self.w3.eth.chain_id}")
             else:

@@ -1,0 +1,39 @@
+
+    BASELINE CONDITION REPORT
+    =========================
+    
+    Project: Test Mangrove Restoration Project
+    Location: Mumbai Coastal Area
+    Date: 2025-09-29
+    
+    Initial Ecosystem Assessment:
+    - Existing vegetation coverage: 15%
+    - Soil salinity levels: High (suitable for mangroves)
+    - Water quality: Moderate
+    - Biodiversity index: 2.3/10
+    
+    Baseline Measurements:
+    - Total area surveyed: 5.2 hectares
+    - Number of existing mature trees: 23
+    - Average canopy height: 3.2 meters
+    - Seedling survival rate (historical): 65%
+    
+    Environmental Conditions:
+    - Average tide levels: 1.2m - 2.8m
+    - Soil pH: 7.2 - 7.8
+    - Temperature range: 24°C - 32°C
+    - Annual rainfall: 1,200mm
+    
+    Pre-project Carbon Stock Estimation:
+    - Above ground biomass: 12.5 tCO2e
+    - Below ground biomass: 8.3 tCO2e
+    - Total baseline carbon: 20.8 tCO2e
+    
+    Recommendations:
+    - Plant native mangrove species (Rhizophora, Avicennia)
+    - Regular monitoring required
+    - Community engagement essential
+    
+    Report prepared by: Marine Ecosystem Research Team
+    Verification: Pending field validation
+    

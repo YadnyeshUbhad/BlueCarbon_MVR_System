@@ -4,6 +4,7 @@
 {% set header='Project Details' %}
 
 {% block content %}
+{% set total_uploaded_files = (1 if project.baseline_file else 0) + (project.uploaded_images|length if project.uploaded_images else 0) %}
 <div class="admin-header">
     <h2 style="margin: 0; color: #1f2937;">Project Details - {{ project.id }}</h2>
     <div class="admin-actions">
@@ -190,6 +191,161 @@
 </div>
 {% endif %}
 
+<!-- NEW: Location & GPS Coordinates Section -->
+{% if project.location_coordinates or project.exact_location_data or project.location %}
+<div class="card" style="margin-bottom: 20px;">
+    <h4 style="margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+        <i class="fas fa-map-marker-alt" style="color: #ef4444;"></i>
+        Project Location & GPS Coordinates
+        {% if project.real_time_data and project.real_time_data.coordinates_provided %}<span class="badge success" style="margin-left: 8px;">✓ GPS Verified</span>{% endif %}
+    </h4>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+            {% if project.location_coordinates %}
+            <div style="background: #f0f9ff; padding: 16px; border-radius: 8px; border: 1px solid #3b82f6;">
+                <h5 style="margin: 0 0 12px 0; color: #1e40af;">📍 Exact Coordinates</h5>
+                <div style="display: grid; gap: 8px;">
+                    <div><strong>Latitude:</strong> {{ "%.6f"|format(project.location_coordinates.latitude) if project.location_coordinates and project.location_coordinates.latitude else 'N/A' }}°</div>
+                    <div><strong>Longitude:</strong> {{ "%.6f"|format(project.location_coordinates.longitude) if project.location_coordinates and project.location_coordinates.longitude else 'N/A' }}°</div>
+                    <div style="font-size: 12px; color: #6b7280; margin-top: 8px;">
+                        <i class="fas fa-clock"></i> Recorded: {{ project.submission_date.strftime('%d %b %Y, %I:%M %p') }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if project.admin_area %}
+            <div style="background: #f8fafc; padding: 12px; border-radius: 8px; margin-top: 12px;">
+                <div style="color: #6b7280; font-size: 14px;">Administrative Area</div>
+                <div style="font-weight: 600;">{{ project.admin_area }}</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        {% if project.location_coordinates and project.location_coordinates.latitude and project.location_coordinates.longitude %}
+        <div>
+            <div id="locationMap" style="height: 300px; border-radius: 8px; border: 1px solid #e5e7eb;"></div>
+            <div style="text-align: center; margin-top: 8px; font-size: 12px; color: #6b7280;">
+                Interactive satellite map showing exact project location
+            </div>
+        </div>
+        {% elif project.location %}
+        <div>
+            <div style="background: #f3f4f6; padding: 20px; text-align: center; border-radius: 8px; color: #6b7280;">
+                <i class="fas fa-map-pin" style="font-size: 24px; margin-bottom: 8px;"></i>
+                <div>Location: {{ project.location }}</div>
+                <div style="font-size: 12px; margin-top: 4px;">No GPS coordinates available</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- NEW: Baseline Condition & Uploaded Files Section -->
+<div class="card" style="margin-bottom: 20px;">
+    <h4 style="margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
+        <i class="fas fa-upload" style="color: #f59e0b;"></i>
+        Baseline Condition & Project Files
+{% if project.real_time_data and project.real_time_data.files_uploaded %}<span class="badge success" style="margin-left: 8px;">{{ total_uploaded_files or 0 }} File(s)</span>{% endif %}
+    </h4>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <!-- Baseline Condition File -->
+        <div>
+            <h5 style="margin: 0 0 12px 0; color: #d97706;">
+                <i class="fas fa-file-alt"></i> Baseline Condition Upload
+            </h5>
+            {% if project.baseline_file %}
+            <div style="background: #fef3c7; padding: 16px; border-radius: 8px; border: 1px solid #f59e0b;">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                    <div style="font-size: 24px;">📄</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; color: #92400e;">{{ project.baseline_file.original_name }}</div>
+                        <div style="font-size: 12px; color: #78350f;">
+                            Size: {{ "%.1f"|format(project.baseline_file.file_size / 1024) }} KB • 
+                            Uploaded: {{ project.baseline_file.upload_date[:16].replace('T', ' at ') }}
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <a href="/ngo/uploads/{{ project.id }}/baseline/{{ project.baseline_file.saved_name }}" 
+                       class="btn outline" style="font-size: 12px;" target="_blank">
+                        <i class="fas fa-eye"></i> View File
+                    </a>
+                    <a href="/ngo/uploads/{{ project.id }}/baseline/{{ project.baseline_file.saved_name }}" 
+                       class="btn secondary" style="font-size: 12px;" download>
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; color: #6b7280;">
+                <i class="fas fa-file-slash" style="font-size: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
+                <div>No baseline condition file uploaded</div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Plant Images -->
+        <div>
+            <h5 style="margin: 0 0 12px 0; color: #059669;">
+                <i class="fas fa-images"></i> Plant Images ({{ project.uploaded_images|length if project.uploaded_images else 0 }})
+            </h5>
+            {% if project.uploaded_images and project.uploaded_images|length > 0 %}
+            <div style="background: #f0fdf4; padding: 16px; border-radius: 8px; border: 1px solid #22c55e;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; margin-bottom: 12px;">
+                    {% for image in project.uploaded_images[:6] %}
+                    <div style="position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; border: 2px solid #dcfce7; cursor: pointer;" 
+                         onclick="viewImage('/ngo/uploads/{{ project.id }}/media/{{ image.saved_name }}', '{{ image.original_name }}')">
+                        <img src="/ngo/uploads/{{ project.id }}/media/{{ image.saved_name }}" 
+                             style="width: 100%; height: 100%; object-fit: cover;" 
+                             alt="{{ image.original_name }}" 
+                             title="{{ image.original_name }}">
+                    </div>
+                    {% endfor %}
+                    {% if project.uploaded_images|length > 6 %}
+                    <div style="aspect-ratio: 1; border-radius: 6px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #6b7280; font-size: 12px; text-align: center;">
+                        +{{ project.uploaded_images|length - 6 }}<br>more
+                    </div>
+                    {% endif %}
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 12px;">
+                    <button onclick="viewAllImages()" class="btn outline" style="font-size: 12px;">
+                        <i class="fas fa-expand"></i> View All ({{ project.uploaded_images|length }})
+                    </button>
+                    <button onclick="downloadAllImages()" class="btn secondary" style="font-size: 12px;">
+                        <i class="fas fa-download"></i> Download All
+                    </button>
+                </div>
+            </div>
+            {% else %}
+            <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; text-align: center; color: #6b7280;">
+                <i class="fas fa-image" style="font-size: 24px; margin-bottom: 8px; opacity: 0.5;"></i>
+                <div>No plant images uploaded</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- File Upload Summary -->
+{% if total_uploaded_files > 0 %}
+    <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+<div style="font-size: 14px; color: #374151;">
+                <i class="fas fa-info-circle" style="color: #3b82f6;"></i>
+                <strong>Upload Summary:</strong> {{ total_uploaded_files }} total file(s) • 
+                Submission: {{ project.submission_timestamp[:16].replace('T', ' at ') if project.submission_timestamp else project.submission_date.strftime('%Y-%m-%d at %H:%M') if project.submission_date else 'N/A' }}
+            </div>
+            <div style="font-size: 12px; color: #6b7280;">
+                Real-time data available ✓
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
 <!-- Contact Information -->
 <div class="card">
     <h4 style="margin: 0 0 16px 0; color: #1f2937; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">
@@ -332,6 +488,173 @@ window.onclick = function(event) {
     if (event.target === modal) {
         closeModal();
     }
+}
+
+// NEW: Location Map Functionality
+{% if project.location_coordinates and project.location_coordinates.latitude and project.location_coordinates.longitude %}
+function initializeLocationMap() {
+    const lat = {{ project.location_coordinates.latitude }};
+    const lng = {{ project.location_coordinates.longitude }};
+    
+    // Initialize map with satellite view
+    const map = L.map('locationMap').setView([lat, lng], 15);
+    
+    // Add satellite imagery
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    }).addTo(map);
+    
+    // Add marker at project location
+    const marker = L.marker([lat, lng]).addTo(map);
+    marker.bindPopup(`
+        <div style="text-align: center; min-width: 200px;">
+            <h4 style="margin: 0 0 8px 0; color: #1f2937;">{{ project.name }}</h4>
+            <div style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">
+                <strong>NGO:</strong> {{ project.ngo_name }}<br>
+                <strong>Coordinates:</strong><br>
+                {{ "%.6f"|format(project.location_coordinates.latitude) }}°, {{ "%.6f"|format(project.location_coordinates.longitude) }}°
+            </div>
+            <div style="font-size: 12px; color: #9ca3af;">
+                Submitted: {{ project.submission_date.strftime('%d %B %Y') }}
+            </div>
+        </div>
+    `).openPopup();
+    
+    // Add project area circle if area data exists
+    {% if project.area %}
+    const areaRadius = Math.sqrt({{ project.area }} * 10000 / Math.PI); // Convert hectares to meters radius
+    L.circle([lat, lng], {
+        color: '#22c55e',
+        fillColor: '#22c55e',
+        fillOpacity: 0.1,
+        radius: areaRadius
+    }).addTo(map).bindTooltip(`Project Area: {{ project.area }} hectares`);
+    {% endif %}
+}
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Load Leaflet CSS and JS if not already loaded
+    if (!window.L) {
+        const leafletCSS = document.createElement('link');
+        leafletCSS.rel = 'stylesheet';
+        leafletCSS.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+        document.head.appendChild(leafletCSS);
+        
+        const leafletJS = document.createElement('script');
+        leafletJS.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+        leafletJS.onload = function() {
+            setTimeout(initializeLocationMap, 100);
+        };
+        document.head.appendChild(leafletJS);
+    } else {
+        initializeLocationMap();
+    }
+});
+{% endif %}
+
+// Image viewing functions
+function viewImage(imageSrc, imageName) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.9); z-index: 10000; display: flex; 
+        align-items: center; justify-content: center; cursor: pointer;
+    `;
+    
+    const img = document.createElement('img');
+    img.src = imageSrc;
+    img.alt = imageName;
+    img.style.cssText = `
+        max-width: 90%; max-height: 90%; border-radius: 8px; 
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    `;
+    
+    const caption = document.createElement('div');
+    caption.textContent = imageName;
+    caption.style.cssText = `
+        position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+        color: white; background: rgba(0,0,0,0.7); padding: 8px 16px; 
+        border-radius: 20px; font-size: 14px;
+    `;
+    
+    modal.appendChild(img);
+    modal.appendChild(caption);
+    document.body.appendChild(modal);
+    
+    modal.onclick = function() {
+        document.body.removeChild(modal);
+    };
+}
+
+function viewAllImages() {
+    const images = {{ project.uploaded_images|tojson if project.uploaded_images else '[]' }};
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+        background: rgba(0,0,0,0.95); z-index: 10000; overflow-y: auto; padding: 20px;
+    `;
+    
+    const header = document.createElement('div');
+    header.innerHTML = `
+        <div style="text-align: center; color: white; margin-bottom: 20px;">
+            <h3 style="margin: 0;">All Plant Images (${images.length})</h3>
+            <p style="margin: 8px 0; opacity: 0.8;">{{ project.name }} - {{ project.ngo_name }}</p>
+            <button onclick="this.closest('.modal-overlay').remove()" 
+                    style="background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 8px;">
+                Close Gallery
+            </button>
+        </div>
+    `;
+    
+    const gallery = document.createElement('div');
+    gallery.style.cssText = `
+        display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+        gap: 20px; max-width: 1200px; margin: 0 auto;
+    `;
+    
+    images.forEach(image => {
+        const imageContainer = document.createElement('div');
+        imageContainer.innerHTML = `
+            <div style="background: white; border-radius: 12px; padding: 12px; cursor: pointer;"
+                 onclick="viewImage('/ngo/uploads/{{ project.id }}/media/${image.saved_name}', '${image.original_name}')">
+                <img src="/ngo/uploads/{{ project.id }}/media/${image.saved_name}" 
+                     style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;" 
+                     alt="${image.original_name}">
+                <div style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">${image.original_name}</div>
+                <div style="font-size: 12px; color: #6b7280;">
+                    ${(image.file_size / 1024).toFixed(1)} KB • ${image.upload_date.substring(0, 16).replace('T', ' at ')}
+                </div>
+            </div>
+        `;
+        gallery.appendChild(imageContainer);
+    });
+    
+    modal.className = 'modal-overlay';
+    modal.appendChild(header);
+    modal.appendChild(gallery);
+    document.body.appendChild(modal);
+}
+
+function downloadAllImages() {
+    const images = {{ project.uploaded_images|tojson if project.uploaded_images else '[]' }};
+    
+    if (images.length === 0) {
+        alert('No images to download');
+        return;
+    }
+    
+    images.forEach((image, index) => {
+        setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = `/ngo/uploads/{{ project.id }}/media/${image.saved_name}`;
+            link.download = image.original_name;
+            link.click();
+        }, index * 500); // Stagger downloads
+    });
+    
+    showNotification(`Downloading ${images.length} plant images...`, 'success');
 }
 </script>
 
