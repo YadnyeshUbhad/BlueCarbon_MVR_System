@@ -36,6 +36,34 @@ SCHEMA = [
         retirement_date TEXT
     );
     """,
+    # Projects table for real-time admin visibility
+    """
+    CREATE TABLE IF NOT EXISTS projects (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        ngo_name TEXT NOT NULL,
+        ngo_id TEXT NOT NULL,
+        description TEXT,
+        ecosystem TEXT,
+        start_date TEXT,
+        area REAL,
+        admin_area TEXT,
+        species TEXT,
+        number_of_trees INTEGER,
+        carbon_credits REAL,
+        location TEXT,
+        status TEXT DEFAULT 'Pending Review',
+        submission_date TEXT,
+        credits_requested REAL,
+        credits_approved REAL DEFAULT 0,
+        contact_person TEXT,
+        phone TEXT,
+        email TEXT,
+        state TEXT,
+        district TEXT,
+        created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    );
+    """,
     # Transactions (marketplace)
     """
     CREATE TABLE IF NOT EXISTS transactions (
