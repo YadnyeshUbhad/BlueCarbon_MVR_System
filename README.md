@@ -1,10 +1,6 @@
 # BlueCarbon MRV Blockchain System - Advanced Innovation Suite
 
-## 🌊 Smart India Hackathon 2024 - Revolutionary Blue Carbon MRV Platform
-
-### 🎯 Problem Statement Alignment
-**SIH Problem ID**: [Blue Carbon MRV System Development]
-**Theme**: Blockchain-based transparent monitoring, reporting, and verification of blue carbon ecosystem restoration projects.
+## 🌊 Smart India Hackathon 2025 - Revolutionary Blue Carbon MRV Platform
 
 ---
 
