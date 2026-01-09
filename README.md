@@ -4,13 +4,6 @@
 
 **A Blockchain-Powered Monitoring, Reporting & Verification Platform for Blue Carbon Ecosystems**
 
-[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
-[![Flask](https://img.shields.io/badge/Flask-Web%20Framework-green.svg)](https://flask.palletsprojects.com)
-[![Blockchain](https://img.shields.io/badge/Blockchain-Enabled-orange.svg)](https://ethereum.org)
-[![PWA](https://img.shields.io/badge/PWA-Ready-purple.svg)](https://web.dev/progressive-web-apps)
-
-*Developed for Smart India Hackathon 2024 - Revolutionizing Blue Carbon Conservation Through Technology*
-
 </div>
 
 ## 📑 Table of Contents
@@ -51,7 +44,7 @@ Blue carbon refers to carbon captured by the world's ocean and coastal ecosystem
 
 ### 🚀 **Live Demo**
 ```
-http://localhost:5000
+[https://bluetrust.onrender.com]
 ```
 
 </div>
@@ -217,7 +210,8 @@ Open your browser and navigate to: **http://localhost:5000**
 **Glassmorphism Design with Animated Background**
 
 <!-- Replace with actual screenshot when deployed -->
-![Main Portal](https://via.placeholder.com/800x400/0066cc/ffffff?text=BlueCarbon+Main+Portal+Glassmorphism+UI)
+![Main Portal](<img width="1911" height="932" alt="image" src="https://github.com/user-attachments/assets/b805b04f-3f7b-448d-ada9-5575f569ef57" />
+)
 
 *Features:*
 - ✨ Animated gradient background with particle effects
@@ -398,52 +392,6 @@ EXPOSE 5000
 CMD ["python", "app.py"]
 ```
 
-### ☁️ Production Deployment
-1. **Environment Setup**
-   ```bash
-   export FLASK_ENV=production
-   export SECRET_KEY=your-production-secret-key
-   ```
-
-2. **Web Server Configuration**
-   - Use **Gunicorn** or **uWSGI** as WSGI server
-   - Configure **Nginx** as reverse proxy
-   - Enable **SSL/TLS** with proper certificates
-
-3. **Database Migration**
-   - Migrate from in-memory to **PostgreSQL** or **MySQL**
-   - Configure connection pooling
-   - Set up automated backups
-
-## 🧪 Testing & Quality Assurance
-
-### Test Categories
-- **🔒 Security Tests**: Authentication and authorization
-- **🔗 Integration Tests**: Blockchain functionality
-- **📊 API Tests**: Endpoint validation and response
-- **🎨 UI Tests**: Frontend rendering and user experience
-
-### Running Tests
-```bash
-# Full test suite
-python test_blockchain.py
-
-# Individual test modules
-python test_app_blockchain.py
-python blockchain_audit_system.py
-```
-
-### Test Results
-```
-✅ Blockchain initialization: PASSED
-✅ Project submission: PASSED
-✅ Token minting: PASSED
-✅ Token transfers: PASSED
-✅ Token retirement: PASSED
-✅ Field data recording: PASSED
-✅ Transaction history: PASSED
-```
-
 ## 🎯 User Guides
 
 ### For NGOs
@@ -467,65 +415,7 @@ python blockchain_audit_system.py
 4. **Retire** tokens for carbon offsetting
 5. **Track** transaction history
 
-## 🤝 Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch (`git checkout -b feature/amazing-feature`)
-3. **Commit** your changes (`git commit -m 'Add amazing feature'`)
-4. **Push** to the branch (`git push origin feature/amazing-feature`)
-5. **Open** a Pull Request
-
-### Contribution Guidelines
-- 📝 Follow PEP 8 style guidelines
-- ✅ Add comprehensive tests for new features
-- 📚 Update documentation as needed
-- 🔒 Ensure security best practices
-- 🌱 Focus on environmental impact
-
-## 📄 License
-
-This project is developed for **Smart India Hackathon 2024**. All rights reserved.
-
-### Compliance Standards
-- ✅ **International Carbon Credit Standards**
-- ✅ **Government Transparency Requirements**
-- ✅ **Environmental Data Privacy Regulations**
-- ✅ **Blockchain Technology Best Practices**
-- ✅ **Progressive Web App Standards**
-
-## 🏆 Recognition
-
-- **🥇 Smart India Hackathon 2024**: Advanced Innovation Suite
-- **🌱 Environmental Impact**: Supporting blue carbon ecosystem restoration
-- **🔗 Blockchain Excellence**: Transparent MRV system implementation
-- **🤖 AI/ML Innovation**: Predictive analytics for carbon sequestration
-
-## 📞 Support & Community
-
-### Getting Help
-- **📖 Documentation**: Check the `/docs` folder for detailed architecture diagrams
-- **📊 Visual Overview**: See [docs/visual-overview.md](docs/visual-overview.md) for system diagrams
-- **🏗️ Architecture**: See [docs/architecture-diagram.md](docs/architecture-diagram.md) for technical diagrams
-- **🐛 Issues**: Create GitHub issues for bugs
-- **💬 Discussions**: Join our community discussions
-- **📧 Contact**: Reach out to the development team
-
-### Stay Connected
-- **⭐ Star** this repository
-- **🍴 Fork** for your own projects
-- **👥 Share** with your network
-- **🚀 Contribute** to the project
-
----
-
 ## 📈 GitHub Repository Stats
-
-![GitHub stars](https://img.shields.io/github/stars/YadnyeshUbhad/BlueCarbon_MVR_System?style=social)
-![GitHub forks](https://img.shields.io/github/forks/YadnyeshUbhad/BlueCarbon_MVR_System?style=social)
-![GitHub issues](https://img.shields.io/github/issues/YadnyeshUbhad/BlueCarbon_MVR_System)
-![GitHub license](https://img.shields.io/github/license/YadnyeshUbhad/BlueCarbon_MVR_System)
 
 <div align="center">
 
