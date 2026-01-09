@@ -333,4 +333,5 @@ This system is developed for the Smart India Hackathon 2024 and adheres to:
 
 **🌊 Revolutionizing Blue Carbon Conservation Through Technology 🌊**
 
-*This comprehensive system represents a significant advancement in environmental monitoring and carbon credit management, leveraging cutting-edge technologies to ensure transparency, accuracy, and environmental impact in blue carbon ecosystem restoration.*
+*This comprehensive system represents a significant advancement in environmental monitoring and carbon credit management, leveraging cutting-edge technologies to ensure transparency, accuracy, and environmental impact in blue carbon ecosystem restoration.*#   B l u e C a r b o n _ M V R _ S y s t e m  
+ 
