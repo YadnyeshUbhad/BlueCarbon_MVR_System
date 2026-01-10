@@ -1,0 +1,76 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bluecarbon-mrv"
+version = "1.0.0"
+description = "A Blockchain-Powered Monitoring, Reporting & Verification Platform for Blue Carbon Ecosystems"
+readme = "README.md"
+requires-python = ">=3.12"
+license = {text = "MIT"}
+authors = [
+    {name = "BlueCarbon Team", email = "support@bluecarbon-mrv.org"}
+]
+keywords = ["blockchain", "carbon", "sustainability", "environment"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "Flask==2.3.3",
+    "Werkzeug==2.3.7",
+    "gunicorn==21.2.0",
+    "pandas==1.5.3",
+    "numpy==1.24.3",
+    "Pillow==9.5.0",
+    "requests==2.31.0",
+    "python-dotenv==1.0.0",
+    "bcrypt==4.0.1",
+    "python-dateutil==2.8.2",
+    "openpyxl==3.1.2",
+    "Flask-CORS==4.0.0",
+    "opencv-python-headless==4.8.0.76",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-username/bluecarbon-mrv"
+Documentation = "https://github.com/your-username/bluecarbon-mrv#readme"
+Repository = "https://github.com/your-username/bluecarbon-mrv.git"
+Issues = "https://github.com/your-username/bluecarbon-mrv/issues"
+
+[tool.setuptools]
+packages = ["bluecarbon"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+python_version = "312"
+
+[tool.pylint]
+max-line-length = 100
+disable = [
+    "C0111",  # Missing docstring
+    "R0903",  # Too few public methods
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
