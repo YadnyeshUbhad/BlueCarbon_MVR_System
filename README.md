@@ -537,6 +537,8 @@ This project is developed for **Smart India Hackathon 2024**. All rights reserve
 
 ### ⭐ If you find this project useful, please give it a star!
 
-</div>#   B l u e C a r b o n _ M V R _ S y s t e m  
- #   B l u e C a r b o n _ M V R _ S y s t e m  
+</div>#   B l u e C a r b o n _ M V R _ S y s t e m 
+ 
+ #   B l u e C a r b o n _ M V R _ S y s t e m 
+ 
  
