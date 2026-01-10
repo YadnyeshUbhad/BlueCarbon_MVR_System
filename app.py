@@ -355,7 +355,10 @@ def generate_comprehensive_admin_data():
                 'transaction_date': datetime.now() - timedelta(days=random.randint(1, 120)),
                 'status': random.choice(['Completed', 'Pending', 'Processing', 'Failed']),
                 'token_id': f'BC{random.randint(100000, 999999)}',
-                'blockchain_hash': f'0x{random.randint(1000000000000000, 9999999999999999):016x}'
+                'blockchain_hash': f'0x{random.randint(1000000000000000, 9999999999999999):016x}',
+                'type': 'Credit Sale',
+                'sale_date': datetime.now() - timedelta(days=random.randint(1, 120)),
+                'industry_name': industry['name']
             }
             transactions_data.append(transaction)
 
@@ -2258,7 +2261,7 @@ def revenue_realtime():
     credits_sold = ngo_data.get('credits_sold', 0)
     
     # Get transactions for this NGO
-    ngo_transactions = [t for t in transactions_data if t.get('ngo_name') == ngo_data['name'] and t['type'] == 'Credit Sale']
+    ngo_transactions = [t for t in transactions_data if t.get('ngo_name') == ngo_data['name'] and t.get('type') == 'Credit Sale']
     
     # Recent transactions (last 5)
     recent_transactions = []
